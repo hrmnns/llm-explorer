@@ -1,0 +1,245 @@
+{
+  "project": "LLM-Explorer",
+  "version": "2.3",
+  "scenarios": [
+    {
+      "id": "was-ist-ein-hund",
+      "name": "1. Begriffs-Definition: Hund",
+      "input_prompt": "Was ist ein Hund?",
+      "explanation": "Dieses Szenario zeigt die Balance zwischen biologischen Fakten (Säugetier) und sozialen Rollen (Gefährte).",
+      "phase_0_tokenization": {
+        "tokens": [
+          { "id": 1, "text": "Was", "explanation": "Interrogativ-Token zur Einleitung einer Definition." },
+          { "id": 2, "text": "ist", "explanation": "Kopula-Verb, das Identität oder Zugehörigkeit herstellt." },
+          { "id": 3, "text": "ein", "explanation": "Indefiniter Artikel." },
+          { "id": 4, "text": "Hund", "explanation": "Zentrales Nomen und Ankerpunkt der semantischen Analyse." },
+          { "id": 5, "text": "?", "explanation": "Satzabschlusszeichen, signalisiert das Ende der Query." }
+        ]
+      },
+      "phase_1_embedding": {
+        "token_vectors": [
+          { "token_index": 0, "base_vector": [0.1, 0.2], "positional_vector": [0.0, 0.0] },
+          { "token_index": 1, "base_vector": [0.2, 0.3], "positional_vector": [0.1, 0.0] },
+          { "token_index": 2, "base_vector": [0.1, 0.1], "positional_vector": [0.2, 0.1] },
+          { "token_index": 3, "base_vector": [0.42, 0.58], "positional_vector": [0.3, 0.2] },
+          { "token_index": 4, "base_vector": [0.9, 0.9], "positional_vector": [0.4, 0.3] }
+        ]
+      },
+      "phase_2_attention": {
+        "attention_profiles": [
+          {
+            "id": "scientific",
+            "label": "Wissenschaftlich",
+            "rules": [{ "source": 3, "target": 1, "strength": 0.85 }]
+          },
+          {
+            "id": "emotional",
+            "label": "Poetisch/Emotional",
+            "rules": [{ "source": 3, "target": 3, "strength": 0.95 }]
+          }
+        ]
+      },
+      "phase_3_ffn": {
+        "activation_profiles": [
+          {
+            "ref_profile_id": "scientific",
+            "activations": [
+              { "label": "Wissenschaftlich", "activation": 0.95 },
+              { "label": "Sozial", "activation": 0.3 },
+              { "label": "Poetisch", "activation": 0.1 },
+              { "label": "Evolutionär", "activation": 0.6 }
+            ]
+          },
+          {
+            "ref_profile_id": "emotional",
+            "activations": [
+              { "label": "Wissenschaftlich", "activation": 0.2 },
+              { "label": "Sozial", "activation": 0.85 },
+              { "label": "Poetisch", "activation": 0.95 },
+              { "label": "Evolutionär", "activation": 0.1 }
+            ]
+          }
+        ]
+      },
+      "phase_4_decoding": {
+        "outputs": [
+          { "label": "Säugetier", "logit": 6.8, "type": "Wissenschaftlich", "hallucination_risk": 0.05 },
+          { "label": "Gefährte", "logit": 5.4, "type": "Sozial", "hallucination_risk": 0.1 },
+          { "label": "Seelentröster", "logit": 5.0, "type": "Poetisch", "hallucination_risk": 0.2 },
+          { "label": "Wolfserbe", "logit": 4.5, "type": "Evolutionär", "hallucination_risk": 0.15 }
+        ]
+      },
+      "phase_5_analysis": {
+        "summary_points": [
+          "Wissenschaftlicher Fokus führt zur exakten biologischen Einordnung ('Säugetier').",
+          "Ein emotionaler Fokus aktiviert Konzepte wie 'Seelentröster'.",
+          "Hohes Vektor-Rauschen (Noise) könnte 'Hund' im Embedding-Raum zu nah an 'Katze' rücken."
+        ]
+      }
+    },
+    {
+      "id": "bank-polysemie",
+      "name": "2. Polysemie: Das Bank-Rätsel",
+      "input_prompt": "Der Bankräuber ging zur Bank und setzte sich auf die Bank am Fluss.",
+      "explanation": "Demonstration der Polysemie-Auflösung: Wie Attention identische Wörter durch ihren Kontext unterscheidet.",
+      "phase_0_tokenization": {
+        "tokens": [
+          { "id": 10, "text": "Der", "explanation": "Bestimmter Artikel." },
+          { "id": 11, "text": "Bank", "explanation": "Erste Instanz: Teil des Kompositums 'Bankräuber'." },
+          { "id": 12, "text": "##räuber", "explanation": "Subword-Token (Suffix) für 'Räuber'." },
+          { "id": 13, "text": "ging", "explanation": "Bewegungsverb." },
+          { "id": 14, "text": "zur", "explanation": "Kontraktion aus 'zu der'." },
+          { "id": 15, "text": "Bank", "explanation": "Zweite Instanz: Kontext deutet auf Finanzinstitut." },
+          { "id": 16, "text": "und", "explanation": "Konjunktion." },
+          { "id": 17, "text": "setzte", "explanation": "Aktionsverb." },
+          { "id": 18, "text": "sich", "explanation": "Reflexivpronomen." },
+          { "id": 19, "text": "auf", "explanation": "Präposition." },
+          { "id": 20, "text": "die", "explanation": "Artikel." },
+          { "id": 21, "text": "Bank", "explanation": "Dritte Instanz: Kontext 'auf'/'Fluss' deutet auf Möbel." },
+          { "id": 22, "text": "am", "explanation": "Lokalpräposition." },
+          { "id": 23, "text": "Fluss", "explanation": "Kontextueller Hinweisgeber für Natur/Möbel." }
+        ]
+      },
+      "phase_1_embedding": {
+        "token_vectors": [
+          { "token_index": 1, "base_vector": [0.8, 0.2], "positional_vector": [0.05, 0.0], "note": "Finanz-Cluster" },
+          { "token_index": 5, "base_vector": [0.8, 0.2], "positional_vector": [0.4, 0.1] },
+          { "token_index": 11, "base_vector": [0.8, 0.2], "positional_vector": [0.9, 0.3], "note": "Gleiche Basis wie Finanz, aber weit entfernt durch Position." },
+          { "token_index": 13, "base_vector": [0.2, 0.8], "positional_vector": [0.95, 0.4], "note": "Natur-Cluster" }
+        ]
+      },
+      "phase_2_attention": {
+        "attention_profiles": [
+          {
+            "id": "financial",
+            "label": "Kriminell/Finanz",
+            "rules": [
+              { "source": 5, "target": 1, "strength": 0.95, "explanation": "Verbindet die Bank mit dem Räuber." }
+            ]
+          },
+          {
+            "id": "nature",
+            "label": "Natur/Erholung",
+            "rules": [
+              { "source": 11, "target": 13, "strength": 0.9, "explanation": "Verbindet die Bank mit dem Fluss." }
+            ]
+          }
+        ]
+      },
+      "phase_3_ffn": {
+        "activation_profiles": [
+          {
+            "ref_profile_id": "financial",
+            "activations": [
+              { "label": "Wissenschaftlich", "activation": 0.7 },
+              { "label": "Sozial", "activation": 0.95 },
+              { "label": "Poetisch", "activation": 0.1 },
+              { "label": "Evolutionär", "activation": 0.4 }
+            ]
+          },
+          {
+            "ref_profile_id": "nature",
+            "activations": [
+              { "label": "Wissenschaftlich", "activation": 0.4 },
+              { "label": "Sozial", "activation": 0.6 },
+              { "label": "Poetisch", "activation": 0.85 },
+              { "label": "Evolutionär", "activation": 0.5 }
+            ]
+          }
+        ]
+      },
+      "phase_4_decoding": {
+        "outputs": [
+          { "label": "Tresorraum", "logit": 6.4, "type": "Sozial", "hallucination_risk": 0.05 },
+          { "label": "Sitzgelegenheit", "logit": 5.8, "type": "Wissenschaftlich", "hallucination_risk": 0.1 },
+          { "label": "Uferböschung", "logit": 4.2, "type": "Poetisch", "hallucination_risk": 0.25 }
+        ]
+      },
+      "phase_5_analysis": {
+        "summary_points": [
+          "Attention löst die Polysemie auf: 'Bank' wird durch 'Räuber' oder 'Fluss' eindeutig.",
+          "Ohne Positional Encoding (Phase 1) könnte das Modell nicht unterscheiden, welche 'Bank' gemeint ist."
+        ]
+      }
+    },
+    {
+      "id": "zeit-metapher",
+      "name": "3. Metaphorik: Zeit verfliegt",
+      "input_prompt": "Die Zeit verfliegt, wenn man Spaß hat.",
+      "explanation": "Unterscheidung zwischen physikalischer Messgröße und metaphorischem Erleben.",
+      "phase_0_tokenization": {
+        "tokens": [
+          { "id": 30, "text": "Die", "explanation": "Artikel." },
+          { "id": 31, "text": "Zeit", "explanation": "Abstraktes Nomen." },
+          { "id": 32, "text": "ver", "explanation": "Präfix, ändert die Bewegungsrichtung des Verbs." },
+          { "id": 33, "text": "fliegt", "explanation": "Metaphorisch gebrauchtes Bewegungsverb." },
+          { "id": 34, "text": ",", "explanation": "Satzzeichen." },
+          { "id": 35, "text": "wenn", "explanation": "Konditional-Konjunktion." },
+          { "id": 36, "text": "man", "explanation": "Unpersönliches Pronomen." },
+          { "id": 37, "text": "Spaß", "explanation": "Emotionaler Trigger." },
+          { "id": 38, "text": "hat", "explanation": "Hilfsverb." }
+        ]
+      },
+      "phase_1_embedding": {
+        "token_vectors": [
+          { "token_index": 1, "base_vector": [0.5, 0.5], "positional_vector": [0.1, 0.1] },
+          { "token_index": 3, "base_vector": [0.1, 0.9], "positional_vector": [0.3, 0.4], "note": "Cluster: Bewegung/Vögel" },
+          { "token_index": 7, "base_vector": [0.9, 0.1], "positional_vector": [0.7, 0.2], "note": "Cluster: Emotion" }
+        ]
+      },
+      "phase_2_attention": {
+        "attention_profiles": [
+          {
+            "id": "metaphorical",
+            "label": "Metaphorisch",
+            "rules": [
+              { "source": 3, "target": 7, "strength": 0.92, "explanation": "Verknüpft Fliegen mit Spaß." }
+            ]
+          },
+          {
+            "id": "chronological",
+            "label": "Physikalisch",
+            "rules": [
+              { "source": 1, "target": 1, "strength": 0.8, "explanation": "Fokus auf die Zeit als Messgröße." }
+            ]
+          }
+        ]
+      },
+      "phase_3_ffn": {
+        "activation_profiles": [
+          {
+            "ref_profile_id": "metaphorical",
+            "activations": [
+              { "label": "Wissenschaftlich", "activation": 0.1 },
+              { "label": "Sozial", "activation": 0.6 },
+              { "label": "Poetisch", "activation": 0.98 },
+              { "label": "Evolutionär", "activation": 0.3 }
+            ]
+          },
+          {
+            "ref_profile_id": "chronological",
+            "activations": [
+              { "label": "Wissenschaftlich", "activation": 0.95 },
+              { "label": "Sozial", "activation": 0.3 },
+              { "label": "Poetisch", "activation": 0.2 },
+              { "label": "Evolutionär", "activation": 0.6 }
+            ]
+          }
+        ]
+      },
+      "phase_4_decoding": {
+        "outputs": [
+          { "label": "Augenblick", "logit": 6.7, "type": "Poetisch", "hallucination_risk": 0.1 },
+          { "label": "Relativität", "logit": 5.2, "type": "Wissenschaftlich", "hallucination_risk": 0.05 },
+          { "label": "Sekundenzeiger", "logit": 4.8, "type": "Wissenschaftlich", "hallucination_risk": 0.1 }
+        ]
+      },
+      "phase_5_analysis": {
+        "summary_points": [
+          "Das Modell versteht 'fliegen' hier nicht als physikalische Aktion, sondern als Zeitwahrnehmung.",
+          "Hohe Temperature führt zu philosophischen Antworten wie 'Ewigkeit'."
+        ]
+      }
+    }
+  ]
+}
