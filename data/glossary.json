@@ -5,13 +5,15 @@
       "id": "embedding",
       "title": "Embedding",
       "category": "Mathematik",
-      "content": "Wörter werden in Vektoren umgewandelt. 'Hund' bekommt Koordinaten basierend auf seiner Bedeutung."
+      "content": "Wörter werden in Vektoren umgewandelt. 'Hund' bekommt Koordinaten basierend auf seiner Bedeutung.",
+      "url": "https://de.wikipedia.org/wiki/Word_Embedding"
     },
     {
       "id": "attention",
       "title": "Attention",
       "category": "Architektur",
-      "content": "Der Fokus des Modells. Es 'versteht', welche Wörter im aktuellen Kontext am wichtigsten sind."
+      "content": "Der Fokus des Modells. Es 'versteht', welche Wörter im aktuellen Kontext am wichtigsten sind.",
+      "url": "https://arxiv.org/abs/1706.03762"
     },
     {
       "id": "ffn",
