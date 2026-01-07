@@ -1,0 +1,23 @@
+{
+  "version": "1.0",
+  "terms": [
+    {
+      "id": "embedding",
+      "title": "Embedding",
+      "category": "Mathematik",
+      "content": "Wörter werden in Vektoren umgewandelt. 'Hund' bekommt Koordinaten basierend auf seiner Bedeutung."
+    },
+    {
+      "id": "attention",
+      "title": "Attention",
+      "category": "Architektur",
+      "content": "Der Fokus des Modells. Es 'versteht', welche Wörter im aktuellen Kontext am wichtigsten sind."
+    },
+    {
+      "id": "ffn",
+      "title": "Die 4 Kategorien (FFN)",
+      "category": "Wissen",
+      "content": "Hier wird Wissen abgerufen: \n1. Logisch/Wissenschaftlich\n2. Funktional\n3. Poetisch\n4. Ancestral"
+    }
+  ]
+}
