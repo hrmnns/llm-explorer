@@ -84,7 +84,14 @@ function AppContent() {
 
           {/* Rechtes Panel (Sidebar) */}
           <aside className={`transition-all duration-300 ${isSidebarExpanded ? 'flex-1 min-w-[320px]' : 'flex-none w-auto'}`}>
-            <PhaseSidebar activePhase={activePhase} activeScenario={activeScenario} theme={theme} isExpanded={isSidebarExpanded} setIsExpanded={setIsSidebarExpanded} />
+            <PhaseSidebar
+              activePhase={activePhase}
+              activeScenario={activeScenario}
+              simulator={simulator} // <-- Neu hinzugefügt
+              theme={theme}
+              isExpanded={isSidebarExpanded}
+              setIsExpanded={setIsSidebarExpanded}
+            />
           </aside>
         </div>
       </main>
