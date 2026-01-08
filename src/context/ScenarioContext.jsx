@@ -44,24 +44,25 @@ export const ScenarioProvider = ({ children }) => {
   // Global Reset Funktion: Wird beim Szenarien-Wechsel aufgerufen
   const handleScenarioChange = (scenarioId) => {
     // Wir wandeln beide Seiten in Strings um, um sicherzugehen
-    const handleScenarioChange = (scenarioId) => {
-      const selected = scenarios.find(s => String(s.id) === String(scenarioId));
-      if (selected) {
-        setActiveScenario(selected);
-      }
-    };
-
-    return (
-      <ScenarioContext.Provider value={{
-        scenarios,
-        activeScenario,
-        setActiveScenario, // <- Das hier MUSS rein, damit Header.jsx darauf zugreifen kann
-        handleScenarioChange,
-        loading
-      }}>
-        {children}
-      </ScenarioContext.Provider>
-    );
+    const selected = scenarios.find(s => String(s.id) === String(scenarioId));
+    if (selected) {
+      setActiveScenario(selected);
+    } else {
+      console.error("Szenario nicht gefunden für ID:", scenarioId);
+    }
   };
 
-  export const useScenarios = () => useContext(ScenarioContext);
+  return (
+    <ScenarioContext.Provider value={{
+      scenarios,
+      activeScenario,
+      setActiveScenario, // <- Das hier MUSS rein, damit Header.jsx darauf zugreifen kann
+      handleScenarioChange,
+      loading
+    }}>
+      {children}
+    </ScenarioContext.Provider>
+  );
+};
+
+export const useScenarios = () => useContext(ScenarioContext);
