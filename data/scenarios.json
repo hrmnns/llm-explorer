@@ -1,6 +1,6 @@
 {
   "project": "LLM-Explorer",
-  "version": "2.4",
+  "version": "2.6",
   "scenarios": [
     {
       "id": "was-ist-ein-hund",
@@ -201,8 +201,8 @@
             "id": "metaphorical",
             "label": "Metaphorisch",
             "rules": [
-              { "source": 33, "target": 37, "strength": 0.92, "explanation": "Koppelt Geschwindigkeit an emotionale Intensität." },
-              { "source": 33, "target": 31, "strength": 0.75, "explanation": "Verknüpft Bewegung mit dem Zeitbegriff." }
+              { "source": 31, "target": 33, "strength": 0.92, "explanation": "Koppelt Zeit an das Verb 'fliegen'." },
+              { "source": 31, "target": 37, "strength": 0.85, "explanation": "Verknüpft Zeitempfinden mit Spaß." }
             ]
           },
           {
@@ -286,8 +286,8 @@
             "id": "conspiracy",
             "label": "Narrativ/Zweifel",
             "rules": [
-              { "source": 44, "target": 45, "strength": 0.95, "explanation": "Verbindet Studio direkt mit Dreharbeiten." },
-              { "source": 44, "target": 42, "strength": 0.65, "explanation": "Zieht das Event in den fiktionalen Raum." }
+              { "source": 42, "target": 44, "strength": 0.95, "explanation": "Verbindet Mondlandung mit Studio." },
+              { "source": 42, "target": 45, "strength": 0.65, "explanation": "Zieht das Event in den fiktionalen Raum." }
             ]
           }
         ]
