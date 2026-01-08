@@ -1,14 +1,13 @@
 import React from 'react';
 
-// Wir nehmen "simulator" als Prop entgegen, genau wie in Phase 4
-const Phase3_FFN = ({ simulator }) => {
+// setHoveredItem als Prop hinzufügen
+const Phase3_FFN = ({ simulator, setHoveredItem }) => {
   const { mlpThreshold, setMlpThreshold, activeFFN } = simulator;
 
   if (!activeFFN || activeFFN.length === 0) {
     return <div className="p-10 text-center text-slate-500 animate-pulse">Warte auf Aktivierungsdaten...</div>;
   }
 
-  // Erweiterte Map, die sowohl deutsche als auch englische Keys aus der JSON versteht
   const colorMap = {
     "Wissenschaftlich": "border-blue-500 shadow-blue-500/20 text-blue-400",
     "Scientific": "border-blue-500 shadow-blue-500/20 text-blue-400",
@@ -42,10 +41,22 @@ const Phase3_FFN = ({ simulator }) => {
         {activeFFN.map((cat) => (
           <div
             key={cat.label}
-            className={`relative flex flex-col items-center justify-center rounded-3xl border-2 transition-all duration-500 ${cat.isActive
+            className={`relative flex flex-col items-center justify-center rounded-3xl border-2 transition-all duration-500 cursor-help ${cat.isActive
                 ? `${colorMap[cat.label]} ${glowMap[cat.label]} scale-100 opacity-100 shadow-2xl`
                 : 'border-slate-800 bg-slate-900/20 scale-95 opacity-30 text-slate-600'
               }`}
+            // Hover Events für den Detail-Inspektor
+            onMouseEnter={() => setHoveredItem({
+              title: `Wissens-Cluster: ${cat.label}`,
+              data: {
+                "Netz-Aktivierung": (cat.activation * 100).toFixed(1) + "%",
+                "MLP-Filter": mlpThreshold.toFixed(2),
+                "Status": cat.isActive ? "Aktiviert" : "Gefiltert",
+                "Input-Quelle": "Feed-Forward-Network",
+                "Vektorklasse": cat.label
+              }
+            })}
+            onMouseLeave={() => setHoveredItem(null)}
           >
             <div className="text-lg font-bold uppercase tracking-wider text-center px-2">
               {cat.label}
@@ -55,13 +66,13 @@ const Phase3_FFN = ({ simulator }) => {
               {(cat.activation * 100).toFixed(0)}% Power
             </div>
 
-            {/* Kleines Icon-Symbol passend zur Kategorie */}
+            {/* Kleines Icon-Symbol */}
             {cat.isActive && (
               <div className="absolute top-4 right-4 animate-pulse text-xl">
-                {cat.label === "Wissenschaftlich" && "🔬"}
-                {cat.label === "Sozial" && "🤝"}
-                {cat.label === "Poetisch" && "✨"}
-                {cat.label === "Evolutionär" && "🦴"}
+                {(cat.label === "Wissenschaftlich" || cat.label === "Scientific") && "🔬"}
+                {(cat.label === "Sozial" || cat.label === "Social") && "🤝"}
+                {(cat.label === "Poetisch" || cat.label === "Poetic") && "✨"}
+                {(cat.label === "Evolutionär" || cat.label === "Ancestral") && "🦴"}
               </div>
             )}
           </div>
