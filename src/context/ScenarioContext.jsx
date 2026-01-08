@@ -6,6 +6,7 @@ export const ScenarioProvider = ({ children }) => {
   const [scenarios, setScenarios] = useState([]);
   const [activeScenario, setActiveScenario] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [scenariosData, setScenariosData] = useState(null); 
 
   // Initiales Laden der scenarios.json
   useEffect(() => {
@@ -21,6 +22,7 @@ export const ScenarioProvider = ({ children }) => {
       })
       .then((data) => {
         console.log("Daten empfangen:", data);
+        setScenariosData(data);
 
         // WICHTIG: Wir greifen auf den Schlüssel "scenarios" im Objekt zu
         const scenarioArray = data.scenarios;
@@ -55,6 +57,7 @@ export const ScenarioProvider = ({ children }) => {
   return (
     <ScenarioContext.Provider value={{
       scenarios,
+      scenariosData,
       activeScenario,
       setActiveScenario, // <- Das hier MUSS rein, damit Header.jsx darauf zugreifen kann
       handleScenarioChange,

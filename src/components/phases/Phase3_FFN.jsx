@@ -42,8 +42,8 @@ const Phase3_FFN = ({ simulator, setHoveredItem }) => {
           <div
             key={cat.label}
             className={`relative flex flex-col items-center justify-center rounded-3xl border-2 transition-all duration-500 cursor-help ${cat.isActive
-                ? `${colorMap[cat.label]} ${glowMap[cat.label]} scale-100 opacity-100 shadow-2xl`
-                : 'border-slate-800 bg-slate-900/20 scale-95 opacity-30 text-slate-600'
+              ? `${colorMap[cat.label]} ${glowMap[cat.label]} scale-100 opacity-100 shadow-2xl`
+              : 'border-slate-800 bg-slate-900/20 scale-95 opacity-30 text-slate-600'
               }`}
             // Hover Events für den Detail-Inspektor
             onMouseEnter={() => setHoveredItem({
@@ -57,12 +57,24 @@ const Phase3_FFN = ({ simulator, setHoveredItem }) => {
               }
             })}
             onMouseLeave={() => setHoveredItem(null)}
+
+
           >
-            <div className="text-lg font-bold uppercase tracking-wider text-center px-2">
+
+            {/* Visueller Füllstand im Hintergrund */}
+            <div
+              className="absolute bottom-0 left-0 w-full transition-all duration-700 opacity-20"
+              style={{
+                height: `${cat.activation * 100}%`,
+                backgroundColor: 'currentColor'
+              }}
+            />
+
+            <div className="z-10 text-lg font-bold uppercase tracking-wider text-center px-2">
               {cat.label}
             </div>
 
-            <div className="text-[10px] font-mono mt-2 opacity-60">
+            <div className="z-10 text-[10px] font-mono mt-2 opacity-60">
               {(cat.activation * 100).toFixed(0)}% Power
             </div>
 

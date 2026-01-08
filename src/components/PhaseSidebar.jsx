@@ -144,13 +144,6 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                     </div>
                 </section>
 
-                {/* 3. Schnell-Info Fußzeile */}
-                <div className="pt-4 border-t border-slate-500/10">
-                    <p className="text-[9px] leading-relaxed opacity-40 uppercase font-mono">
-                        Eingabe: "{activeScenario?.phase_0_tokenization?.tokens.map(t => t.text).join(" ")}"
-                    </p>
-                </div>
-
             </div>
         </div>
     );

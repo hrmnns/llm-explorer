@@ -1,6 +1,6 @@
 {
   "project": "LLM-Explorer",
-  "version": "2.3",
+  "version": "2.9",
   "scenarios": [
     {
       "id": "was-ist-ein-hund",
@@ -9,90 +9,20 @@
       "explanation": "Dieses Szenario zeigt die Balance zwischen biologischen Fakten (Säugetier) und sozialen Rollen (Gefährte).",
       "phase_0_tokenization": {
         "tokens": [
-          {
-            "id": 1,
-            "text": "Was",
-            "explanation": "Interrogativ-Token zur Einleitung einer Definition."
-          },
-          {
-            "id": 2,
-            "text": "ist",
-            "explanation": "Kopula-Verb, das Identität oder Zugehörigkeit herstellt."
-          },
-          {
-            "id": 3,
-            "text": "ein",
-            "explanation": "Indefiniter Artikel."
-          },
-          {
-            "id": 4,
-            "text": "Hund",
-            "explanation": "Zentrales Nomen und Ankerpunkt der semantischen Analyse."
-          },
-          {
-            "id": 5,
-            "text": "?",
-            "explanation": "Satzabschlusszeichen, signalisiert das Ende der Query."
-          }
+          { "id": 1, "text": "Was", "explanation": "Interrogativ-Token zur Einleitung." },
+          { "id": 2, "text": "ist", "explanation": "Kopula-Verb für Identität." },
+          { "id": 3, "text": "ein", "explanation": "Indefiniter Artikel." },
+          { "id": 4, "text": "Hund", "explanation": "Zentrales Nomen (Ankerpunkt)." },
+          { "id": 5, "text": "?", "explanation": "Satzabschlusszeichen." }
         ]
       },
       "phase_1_embedding": {
         "token_vectors": [
-          {
-            "token_index": 0,
-            "base_vector": [
-              0.1,
-              0.2
-            ],
-            "positional_vector": [
-              0.0,
-              0.0
-            ]
-          },
-          {
-            "token_index": 1,
-            "base_vector": [
-              0.2,
-              0.3
-            ],
-            "positional_vector": [
-              0.1,
-              0.0
-            ]
-          },
-          {
-            "token_index": 2,
-            "base_vector": [
-              0.1,
-              0.1
-            ],
-            "positional_vector": [
-              0.2,
-              0.1
-            ]
-          },
-          {
-            "token_index": 3,
-            "base_vector": [
-              0.42,
-              0.58
-            ],
-            "positional_vector": [
-              0.3,
-              0.2
-            ]
-          },
-          {
-            "token_index": 4,
-            "base_vector": [
-              0.9,
-              0.9
-            ],
-            "positional_vector": [
-              0.4,
-              0.3
-            ]
-          }
+          { "token_index": 0, "base_vector": [0.1, 0.2], "positional_vector": [0.0, 0.0] },
+          { "token_index": 1, "base_vector": [0.2, 0.3], "positional_vector": [0.1, 0.0] },
+          { "token_index": 2, "base_vector": [0.1, 0.1], "positional_vector": [0.2, 0.1] },
+          { "token_index": 3, "base_vector": [0.42, 0.58], "positional_vector": [0.3, 0.2] },
+          { "token_index": 4, "base_vector": [0.9, 0.9], "positional_vector": [0.4, 0.3] }
         ]
       },
       "phase_2_attention": {
@@ -101,22 +31,16 @@
             "id": "scientific",
             "label": "Wissenschaftlich",
             "rules": [
-              {
-                "source": 3,
-                "target": 1,
-                "strength": 0.85
-              }
+              { "source": 4, "target": 1, "strength": 0.9, "explanation": "Sucht nach der Definition (Was)." },
+              { "source": 4, "target": 2, "strength": 0.75, "explanation": "Prüft die Seins-Beziehung (ist)." }
             ]
           },
           {
             "id": "emotional",
             "label": "Poetisch/Emotional",
             "rules": [
-              {
-                "source": 3,
-                "target": 3,
-                "strength": 0.95
-              }
+              { "source": 4, "target": 3, "strength": 0.95, "explanation": "Fokus auf das Individuum (ein Hund)." },
+              { "source": 4, "target": 4, "strength": 0.6, "explanation": "Eigen-Gewichtung des Begriffs." }
             ]
           }
         ]
@@ -126,80 +50,36 @@
           {
             "ref_profile_id": "scientific",
             "activations": [
-              {
-                "label": "Wissenschaftlich",
-                "activation": 0.95
-              },
-              {
-                "label": "Sozial",
-                "activation": 0.3
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.1
-              },
-              {
-                "label": "Evolutionär",
-                "activation": 0.6
-              }
+              { "label": "Wissenschaftlich", "activation": 0.95 },
+              { "label": "Sozial", "activation": 0.3 },
+              { "label": "Poetisch", "activation": 0.1 },
+              { "label": "Evolutionär", "activation": 0.6 }
             ]
           },
           {
             "ref_profile_id": "emotional",
             "activations": [
-              {
-                "label": "Wissenschaftlich",
-                "activation": 0.2
-              },
-              {
-                "label": "Sozial",
-                "activation": 0.85
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.95
-              },
-              {
-                "label": "Evolutionär",
-                "activation": 0.1
-              }
+              { "label": "Wissenschaftlich", "activation": 0.2 },
+              { "label": "Sozial", "activation": 0.85 },
+              { "label": "Poetisch", "activation": 0.95 },
+              { "label": "Evolutionär", "activation": 0.1 }
             ]
           }
         ]
       },
       "phase_4_decoding": {
         "outputs": [
-          {
-            "label": "Säugetier",
-            "logit": 6.8,
-            "type": "Wissenschaftlich",
-            "hallucination_risk": 0.05
-          },
-          {
-            "label": "Gefährte",
-            "logit": 5.4,
-            "type": "Sozial",
-            "hallucination_risk": 0.1
-          },
-          {
-            "label": "Seelentröster",
-            "logit": 5.0,
-            "type": "Poetisch",
-            "hallucination_risk": 0.2
-          },
-          {
-            "label": "Wolfserbe",
-            "logit": 4.5,
-            "type": "Evolutionär",
-            "hallucination_risk": 0.15
-          }
+          { "label": "Säugetier", "logit": 6.8, "type": "Wissenschaftlich", "hallucination_risk": 0.05 },
+          { "label": "Gefährte", "logit": 5.4, "type": "Sozial", "hallucination_risk": 0.1 },
+          { "label": "Seelentröster", "logit": 5.0, "type": "Poetisch", "hallucination_risk": 0.2 },
+          { "label": "Wolfserbe", "logit": 4.5, "type": "Evolutionär", "hallucination_risk": 0.15 }
         ]
       },
       "phase_5_analysis": {
         "summary_points": [
-          "Wissenschaftlicher Fokus führt zur exakten biologischen Einordnung ('Säugetier').",
-          "Ein emotionaler Fokus aktiviert Konzepte wie 'Seelentröster'.",
-          "Hohes Vektor-Rauschen (Noise) könnte 'Hund' im Embedding-Raum zu nah an 'Katze' rücken."
+          "Wissenschaftlicher Fokus führt zur exakten biologischen Einordnung.",
+          "Emotionaler Fokus aktiviert soziale Konzepte wie 'Gefährte'.",
+          "Vektor-Rauschen kann die Grenze zwischen biologisch und emotional verwischen."
         ]
       }
     },
@@ -207,130 +87,30 @@
       "id": "bank-polysemie",
       "name": "2. Polysemie: Das Bank-Rätsel",
       "input_prompt": "Der Bankräuber ging zur Bank und setzte sich auf die Bank am Fluss.",
-      "explanation": "Demonstration der Polysemie-Auflösung: Wie Attention identische Wörter durch ihren Kontext unterscheidet.",
+      "explanation": "Demonstration der Polysemie-Auflösung durch Kontext-Vektoren.",
       "phase_0_tokenization": {
         "tokens": [
-          {
-            "id": 10,
-            "text": "Der",
-            "explanation": "Bestimmter Artikel."
-          },
-          {
-            "id": 11,
-            "text": "Bank",
-            "explanation": "Erste Instanz: Teil des Kompositums 'Bankräuber'."
-          },
-          {
-            "id": 12,
-            "text": "##räuber",
-            "explanation": "Subword-Token (Suffix) für 'Räuber'."
-          },
-          {
-            "id": 13,
-            "text": "ging",
-            "explanation": "Bewegungsverb."
-          },
-          {
-            "id": 14,
-            "text": "zur",
-            "explanation": "Kontraktion aus 'zu der'."
-          },
-          {
-            "id": 15,
-            "text": "Bank",
-            "explanation": "Zweite Instanz: Kontext deutet auf Finanzinstitut."
-          },
-          {
-            "id": 16,
-            "text": "und",
-            "explanation": "Konjunktion."
-          },
-          {
-            "id": 17,
-            "text": "setzte",
-            "explanation": "Aktionsverb."
-          },
-          {
-            "id": 18,
-            "text": "sich",
-            "explanation": "Reflexivpronomen."
-          },
-          {
-            "id": 19,
-            "text": "auf",
-            "explanation": "Präposition."
-          },
-          {
-            "id": 20,
-            "text": "die",
-            "explanation": "Artikel."
-          },
-          {
-            "id": 21,
-            "text": "Bank",
-            "explanation": "Dritte Instanz: Kontext 'auf'/'Fluss' deutet auf Möbel."
-          },
-          {
-            "id": 22,
-            "text": "am",
-            "explanation": "Lokalpräposition."
-          },
-          {
-            "id": 23,
-            "text": "Fluss",
-            "explanation": "Kontextueller Hinweisgeber für Natur/Möbel."
-          }
+          { "id": 10, "text": "Der", "explanation": "Artikel." },
+          { "id": 11, "text": "Bank", "explanation": "Erste Bank (Teil von Räuber)." },
+          { "id": 12, "text": "##räuber", "explanation": "Suffix." },
+          { "id": 13, "text": "ging", "explanation": "Verb." },
+          { "id": 14, "text": "zur", "explanation": "Präposition." },
+          { "id": 15, "text": "Bank", "explanation": "Zweite Bank (Zielort)." },
+          { "id": 16, "text": "und", "explanation": "Konjunktion." },
+          { "id": 17, "text": "setzte", "explanation": "Verb." },
+          { "id": 18, "text": "sich", "explanation": "Pronomen." },
+          { "id": 19, "text": "auf", "explanation": "Lokalpräposition." },
+          { "id": 20, "text": "die", "explanation": "Artikel." },
+          { "id": 21, "text": "Bank", "explanation": "Dritte Bank (Möbel)." },
+          { "id": 22, "text": "am", "explanation": "Lokalpräposition." },
+          { "id": 23, "text": "Fluss", "explanation": "Kontextueller Hinweis." }
         ]
       },
       "phase_1_embedding": {
         "token_vectors": [
-          {
-            "token_index": 1,
-            "base_vector": [
-              0.8,
-              0.2
-            ],
-            "positional_vector": [
-              0.05,
-              0.0
-            ],
-            "note": "Finanz-Cluster"
-          },
-          {
-            "token_index": 5,
-            "base_vector": [
-              0.8,
-              0.2
-            ],
-            "positional_vector": [
-              0.4,
-              0.1
-            ]
-          },
-          {
-            "token_index": 11,
-            "base_vector": [
-              0.8,
-              0.2
-            ],
-            "positional_vector": [
-              0.9,
-              0.3
-            ],
-            "note": "Gleiche Basis wie Finanz, aber weit entfernt durch Position."
-          },
-          {
-            "token_index": 13,
-            "base_vector": [
-              0.2,
-              0.8
-            ],
-            "positional_vector": [
-              0.95,
-              0.4
-            ],
-            "note": "Natur-Cluster"
-          }
+          { "token_index": 1, "base_vector": [0.8, 0.2], "positional_vector": [0.05, 0.0] },
+          { "token_index": 5, "base_vector": [0.8, 0.2], "positional_vector": [0.4, 0.1] },
+          { "token_index": 11, "base_vector": [0.8, 0.2], "positional_vector": [0.9, 0.3] }
         ]
       },
       "phase_2_attention": {
@@ -339,24 +119,16 @@
             "id": "financial",
             "label": "Kriminell/Finanz",
             "rules": [
-              {
-                "source": 5,
-                "target": 1,
-                "strength": 0.95,
-                "explanation": "Verbindet die Bank mit dem Räuber."
-              }
+              { "source": 15, "target": 11, "strength": 0.95, "explanation": "Verbindet Ort (Bank) mit Täter (Bankräuber)." },
+              { "source": 15, "target": 12, "strength": 0.85, "explanation": "Zieht Kontext aus der Handlung 'Räuber'." }
             ]
           },
           {
             "id": "nature",
             "label": "Natur/Erholung",
             "rules": [
-              {
-                "source": 11,
-                "target": 13,
-                "strength": 0.9,
-                "explanation": "Verbindet die Bank mit dem Fluss."
-              }
+              { "source": 21, "target": 23, "strength": 0.98, "explanation": "Eindeutige Zuordnung durch Ufernähe (Fluss)." },
+              { "source": 21, "target": 19, "strength": 0.75, "explanation": "Präposition 'auf' deutet auf Sitzgelegenheit hin." }
             ]
           }
         ]
@@ -366,73 +138,35 @@
           {
             "ref_profile_id": "financial",
             "activations": [
-              {
-                "label": "Wissenschaftlich",
-                "activation": 0.7
-              },
-              {
-                "label": "Sozial",
-                "activation": 0.95
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.1
-              },
-              {
-                "label": "Evolutionär",
-                "activation": 0.4
-              }
+              { "label": "Wissenschaftlich", "activation": 0.7 },
+              { "label": "Sozial", "activation": 0.95 },
+              { "label": "Poetisch", "activation": 0.1 },
+              { "label": "Evolutionär", "activation": 0.4 }
             ]
           },
           {
             "ref_profile_id": "nature",
             "activations": [
-              {
-                "label": "Wissenschaftlich",
-                "activation": 0.4
-              },
-              {
-                "label": "Sozial",
-                "activation": 0.6
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.85
-              },
-              {
-                "label": "Evolutionär",
-                "activation": 0.5
-              }
+              { "label": "Wissenschaftlich", "activation": 0.4 },
+              { "label": "Sozial", "activation": 0.6 },
+              { "label": "Poetisch", "activation": 0.85 },
+              { "label": "Evolutionär", "activation": 0.5 }
             ]
           }
         ]
       },
       "phase_4_decoding": {
         "outputs": [
-          {
-            "label": "Tresorraum",
-            "logit": 6.4,
-            "type": "Sozial",
-            "hallucination_risk": 0.05
-          },
-          {
-            "label": "Sitzgelegenheit",
-            "logit": 5.8,
-            "type": "Wissenschaftlich",
-            "hallucination_risk": 0.1
-          },
-          {
-            "label": "Uferböschung",
-            "logit": 4.2,
-            "type": "Poetisch",
-            "hallucination_risk": 0.25
-          }
+          { "label": "Tresorraum", "logit": 6.4, "type": "Sozial", "hallucination_risk": 0.05 },
+          { "label": "Sitzbank", "logit": 5.8, "type": "Wissenschaftlich", "hallucination_risk": 0.1 },
+          { "label": "Uferböschung", "logit": 4.2, "type": "Poetisch", "hallucination_risk": 0.25 }
         ]
       },
       "phase_5_analysis": {
         "summary_points": [
-          "Attention löst die Polysemie auf: 'Bank' wird durch 'Räuber' oder 'Fluss' eindeutig.",
-          "Ohne Positional Encoding (Phase 1) könnte das Modell nicht unterscheiden, welche 'Bank' gemeint ist."
+          "Attention löst die Polysemie live auf.",
+          "Wörter sammeln Kontext von ihren Nachbarn ein.",
+          "Ohne Attention wäre 'Bank' für die KI immer das gleiche Wort."
         ]
       }
     },
@@ -440,93 +174,25 @@
       "id": "zeit-metapher",
       "name": "3. Metaphorik: Zeit verfliegt",
       "input_prompt": "Die Zeit verfliegt, wenn man Spaß hat.",
-      "explanation": "Unterscheidung zwischen physikalischer Messgröße und metaphorischem Erleben.",
+      "explanation": "Physikalische Messgröße vs. metaphorisches Erleben.",
       "phase_0_tokenization": {
         "tokens": [
-          {
-            "id": 30,
-            "text": "Die",
-            "explanation": "Artikel."
-          },
-          {
-            "id": 31,
-            "text": "Zeit",
-            "explanation": "Abstraktes Nomen."
-          },
-          {
-            "id": 32,
-            "text": "ver",
-            "explanation": "Präfix, ändert die Bewegungsrichtung des Verbs."
-          },
-          {
-            "id": 33,
-            "text": "fliegt",
-            "explanation": "Metaphorisch gebrauchtes Bewegungsverb."
-          },
-          {
-            "id": 34,
-            "text": ",",
-            "explanation": "Satzzeichen."
-          },
-          {
-            "id": 35,
-            "text": "wenn",
-            "explanation": "Konditional-Konjunktion."
-          },
-          {
-            "id": 36,
-            "text": "man",
-            "explanation": "Unpersönliches Pronomen."
-          },
-          {
-            "id": 37,
-            "text": "Spaß",
-            "explanation": "Emotionaler Trigger."
-          },
-          {
-            "id": 38,
-            "text": "hat",
-            "explanation": "Hilfsverb."
-          }
+          { "id": 30, "text": "Die", "explanation": "Artikel." },
+          { "id": 31, "text": "Zeit", "explanation": "Abstraktum." },
+          { "id": 32, "text": "ver", "explanation": "Präfix." },
+          { "id": 33, "text": "fliegt", "explanation": "Metapher." },
+          { "id": 34, "text": ",", "explanation": "Interpunktion." },
+          { "id": 35, "text": "wenn", "explanation": "Konjunktion." },
+          { "id": 36, "text": "man", "explanation": "Pronomen." },
+          { "id": 37, "text": "Spaß", "explanation": "Trigger." },
+          { "id": 38, "text": "hat", "explanation": "Verb." }
         ]
       },
       "phase_1_embedding": {
         "token_vectors": [
-          {
-            "token_index": 1,
-            "base_vector": [
-              0.5,
-              0.5
-            ],
-            "positional_vector": [
-              0.1,
-              0.1
-            ]
-          },
-          {
-            "token_index": 3,
-            "base_vector": [
-              0.1,
-              0.9
-            ],
-            "positional_vector": [
-              0.3,
-              0.4
-            ],
-            "note": "Cluster: Bewegung/Vögel"
-          },
-          {
-            "token_index": 7,
-            "base_vector": [
-              0.9,
-              0.1
-            ],
-            "positional_vector": [
-              0.7,
-              0.2
-            ],
-            "note": "Cluster: Emotion"
-          }
+          { "token_index": 1, "base_vector": [0.5, 0.5], "positional_vector": [0.1, 0.1] },
+          { "token_index": 3, "base_vector": [0.1, 0.9], "positional_vector": [0.3, 0.4] },
+          { "token_index": 7, "base_vector": [0.9, 0.1], "positional_vector": [0.7, 0.2] }
         ]
       },
       "phase_2_attention": {
@@ -535,24 +201,15 @@
             "id": "metaphorical",
             "label": "Metaphorisch",
             "rules": [
-              {
-                "source": 3,
-                "target": 7,
-                "strength": 0.92,
-                "explanation": "Verknüpft Fliegen mit Spaß."
-              }
+              { "source": 31, "target": 33, "strength": 0.92, "explanation": "Koppelt Zeit an das Verb 'fliegen'." },
+              { "source": 31, "target": 37, "strength": 0.88, "explanation": "Verknüpft Zeitempfinden mit Spaß." }
             ]
           },
           {
             "id": "chronological",
             "label": "Physikalisch",
             "rules": [
-              {
-                "source": 1,
-                "target": 1,
-                "strength": 0.8,
-                "explanation": "Fokus auf die Zeit als Messgröße."
-              }
+              { "source": 31, "target": 30, "strength": 0.9, "explanation": "Fokus auf die Zeit als mathematische Konstante." }
             ]
           }
         ]
@@ -562,73 +219,34 @@
           {
             "ref_profile_id": "metaphorical",
             "activations": [
-              {
-                "label": "Wissenschaftlich",
-                "activation": 0.1
-              },
-              {
-                "label": "Sozial",
-                "activation": 0.6
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.98
-              },
-              {
-                "label": "Evolutionär",
-                "activation": 0.3
-              }
+              { "label": "Wissenschaftlich", "activation": 0.1 },
+              { "label": "Sozial", "activation": 0.6 },
+              { "label": "Poetisch", "activation": 0.98 },
+              { "label": "Evolutionär", "activation": 0.3 }
             ]
           },
           {
             "ref_profile_id": "chronological",
             "activations": [
-              {
-                "label": "Wissenschaftlich",
-                "activation": 0.95
-              },
-              {
-                "label": "Sozial",
-                "activation": 0.3
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.2
-              },
-              {
-                "label": "Evolutionär",
-                "activation": 0.6
-              }
+              { "label": "Wissenschaftlich", "activation": 0.95 },
+              { "label": "Sozial", "activation": 0.3 },
+              { "label": "Poetisch", "activation": 0.2 },
+              { "label": "Evolutionär", "activation": 0.6 }
             ]
           }
         ]
       },
       "phase_4_decoding": {
         "outputs": [
-          {
-            "label": "Augenblick",
-            "logit": 6.7,
-            "type": "Poetisch",
-            "hallucination_risk": 0.1
-          },
-          {
-            "label": "Relativität",
-            "logit": 5.2,
-            "type": "Wissenschaftlich",
-            "hallucination_risk": 0.05
-          },
-          {
-            "label": "Sekundenzeiger",
-            "logit": 4.8,
-            "type": "Wissenschaftlich",
-            "hallucination_risk": 0.1
-          }
+          { "label": "Augenblick", "logit": 6.7, "type": "Poetisch", "hallucination_risk": 0.1 },
+          { "label": "Relativität", "logit": 5.2, "type": "Wissenschaftlich", "hallucination_risk": 0.05 },
+          { "label": "Sekundenzeiger", "logit": 4.8, "type": "Wissenschaftlich", "hallucination_risk": 0.1 }
         ]
       },
       "phase_5_analysis": {
         "summary_points": [
-          "Das Modell versteht 'fliegen' hier nicht als physikalische Aktion, sondern als Zeitwahrnehmung.",
-          "Hohe Temperature führt zu philosophischen Antworten wie 'Ewigkeit'."
+          "KI erkennt Metaphern durch Aufmerksamkeitsshifts.",
+          "Emotionale Begriffe wie 'Spaß' verändern die Wortbedeutung von 'fliegen'."
         ]
       }
     },
@@ -636,72 +254,22 @@
       "id": "mondlandung-fake",
       "name": "4. Faktencheck: Mondlandung",
       "input_prompt": "Wurde die Mondlandung im Studio gedreht?",
-      "explanation": "Dieses Szenario zeigt, wie das Modell zwischen Fakten (Wissenschaft) und Verschwörungstheorien (Sozial/Poetisch) navigiert.",
+      "explanation": "Navigation zwischen harten Fakten und Narrativen.",
       "phase_0_tokenization": {
         "tokens": [
-          {
-            "id": 40,
-            "text": "Wurde",
-            "explanation": "Hilfsverb zur Fragestellung."
-          },
-          {
-            "id": 41,
-            "text": "die",
-            "explanation": "Artikel."
-          },
-          {
-            "id": 42,
-            "text": "Mondlandung",
-            "explanation": "Historisches Fakten-Token."
-          },
-          {
-            "id": 43,
-            "text": "im",
-            "explanation": "Präposition."
-          },
-          {
-            "id": 44,
-            "text": "Studio",
-            "explanation": "Kritischer Kontext-Trigger für alternative Theorien."
-          },
-          {
-            "id": 45,
-            "text": "gedreht",
-            "explanation": "Verb, das Fiktion impliziert."
-          },
-          {
-            "id": 46,
-            "text": "?",
-            "explanation": "Fragezeichen."
-          }
+          { "id": 40, "text": "Wurde", "explanation": "Anfrage-Verb." },
+          { "id": 41, "text": "die", "explanation": "Artikel." },
+          { "id": 42, "text": "Mondlandung", "explanation": "Historisches Event." },
+          { "id": 43, "text": "im", "explanation": "Präposition." },
+          { "id": 44, "text": "Studio", "explanation": "Alternativer Kontext." },
+          { "id": 45, "text": "gedreht", "explanation": "Fiktions-Trigger." },
+          { "id": 46, "text": "?", "explanation": "Fragezeichen." }
         ]
       },
       "phase_1_embedding": {
         "token_vectors": [
-          {
-            "token_index": 2,
-            "base_vector": [
-              0.95,
-              0.05
-            ],
-            "positional_vector": [
-              0.1,
-              0.1
-            ],
-            "note": "Cluster: Wissenschaft/Geschichte"
-          },
-          {
-            "token_index": 4,
-            "base_vector": [
-              0.1,
-              0.9
-            ],
-            "positional_vector": [
-              0.4,
-              0.2
-            ],
-            "note": "Cluster: Unterhaltung/Film"
-          }
+          { "token_index": 2, "base_vector": [0.95, 0.05], "positional_vector": [0.1, 0.1] },
+          { "token_index": 4, "base_vector": [0.1, 0.9], "positional_vector": [0.4, 0.2] }
         ]
       },
       "phase_2_attention": {
@@ -710,24 +278,16 @@
             "id": "fact-based",
             "label": "Fakten-Check",
             "rules": [
-              {
-                "source": 42,
-                "target": 42,
-                "strength": 0.98,
-                "explanation": "Fokus auf historische Beweise."
-              }
+              { "source": 42, "target": 42, "strength": 0.98, "explanation": "Sichert den Kern des historischen Fakts." },
+              { "source": 42, "target": 40, "strength": 0.75, "explanation": "Prüft die historische Fragestellung (Wurde)." }
             ]
           },
           {
             "id": "conspiracy",
             "label": "Narrativ/Zweifel",
             "rules": [
-              {
-                "source": 44,
-                "target": 45,
-                "strength": 0.95,
-                "explanation": "Verbindet Studio mit Dreharbeiten."
-              }
+              { "source": 42, "target": 44, "strength": 0.95, "explanation": "Verbindet Mondlandung mit Studio-Kontext." },
+              { "source": 42, "target": 45, "strength": 0.85, "explanation": "Kopplung an fiktionale Begriffe (gedreht)." }
             ]
           }
         ]
@@ -737,74 +297,34 @@
           {
             "ref_profile_id": "fact-based",
             "activations": [
-              {
-                "label": "Wissenschaftlich",
-                "activation": 0.99
-              },
-              {
-                "label": "Sozial",
-                "activation": 0.1
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.05
-              },
-              {
-                "label": "Evolutionär",
-                "activation": 0.2
-              }
+              { "label": "Wissenschaftlich", "activation": 0.99 },
+              { "label": "Sozial", "activation": 0.1 },
+              { "label": "Poetisch", "activation": 0.05 },
+              { "label": "Evolutionär", "activation": 0.2 }
             ]
           },
           {
             "ref_profile_id": "conspiracy",
             "activations": [
-              {
-                "label": "Wissenschaftlich",
-                "activation": 0.2
-              },
-              {
-                "label": "Sozial",
-                "activation": 0.8
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.9
-              },
-              {
-                "label": "Evolutionär",
-                "activation": 0.1
-              }
+              { "label": "Wissenschaftlich", "activation": 0.2 },
+              { "label": "Sozial", "activation": 0.8 },
+              { "label": "Poetisch", "activation": 0.9 },
+              { "label": "Evolutionär", "activation": 0.1 }
             ]
           }
         ]
       },
       "phase_4_decoding": {
         "outputs": [
-          {
-            "label": "Historisches Faktum",
-            "logit": 8.5,
-            "type": "Wissenschaftlich",
-            "hallucination_risk": 0.01
-          },
-          {
-            "label": "Verschwörungstheorie",
-            "logit": 4.2,
-            "type": "Poetisch",
-            "hallucination_risk": 0.6
-          },
-          {
-            "label": "Regisseur Stanley Kubrick",
-            "logit": 3.8,
-            "type": "Sozial",
-            "hallucination_risk": 0.85
-          }
+          { "label": "Historisches Faktum", "logit": 8.5, "type": "Wissenschaftlich", "hallucination_risk": 0.01 },
+          { "label": "Verschwörung", "logit": 4.2, "type": "Poetisch", "hallucination_risk": 0.6 },
+          { "label": "Stanley Kubrick", "logit": 3.8, "type": "Sozial", "hallucination_risk": 0.85 }
         ]
       },
       "phase_5_analysis": {
         "summary_points": [
-          "Bei niedriger Temperature bleibt das Modell bei Fakten ('Historisches Faktum').",
-          "Hohe Temperature lässt den Logit für 'Stanley Kubrick' gewinnen – eine klassische KI-Halluzination.",
-          "Der MLP-Filter kann helfen, das Rauschen aus dem 'Studio'-Kontext zu unterdrücken."
+          "Fokus auf 'Studio' aktiviert alternative Wissensstrukturen.",
+          "Temperature-Erhöhung begünstigt den Sieg fiktionaler Logits."
         ]
       }
     }

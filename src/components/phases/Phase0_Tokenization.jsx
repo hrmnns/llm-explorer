@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 
 const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
   const { phase_0_tokenization } = simulator;
-  // State für das aktivierte Info-Fenster
   const [clickedTokenId, setClickedTokenId] = useState(null);
 
   if (!phase_0_tokenization) return null;
@@ -17,12 +16,13 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
         {phase_0_tokenization.tokens.map((token, index) => (
           <div
             key={index}
+            // WICHTIG: Hier wird z-50 hinzugefügt, wenn das Token aktiv ist
             className={`group relative flex flex-col items-center p-6 min-w-[100px] rounded-3xl border-2 transition-all duration-300 cursor-pointer ${
               clickedTokenId === token.id
-                ? 'bg-blue-600 border-blue-400 scale-105 shadow-[0_0_30px_rgba(59,130,246,0.4)]'
+                ? 'bg-blue-600 border-blue-400 scale-105 shadow-[0_0_30px_rgba(59,130,246,0.4)] z-50' // z-50 hinzugefügt
                 : theme === 'dark' 
-                  ? 'bg-slate-900 border-slate-800 hover:border-blue-500/50 hover:bg-slate-800' 
-                  : 'bg-white border-slate-200 hover:border-blue-400 hover:shadow-lg'
+                  ? 'bg-slate-900 border-slate-800 hover:border-blue-500/50 hover:bg-slate-800 z-10' 
+                  : 'bg-white border-slate-200 hover:border-blue-400 hover:shadow-lg z-10'
             }`}
             onClick={() => setClickedTokenId(clickedTokenId === token.id ? null : token.id)}
             onMouseEnter={() => setHoveredItem({
@@ -43,11 +43,11 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
               {token.text}
             </span>
 
-            {/* Der Klick-Tooltip für Phase 0 */}
+            {/* Der Klick-Tooltip */}
             {clickedTokenId === token.id && (
               <div 
-                className="absolute z-50 top-full mt-4 w-64 p-4 rounded-2xl border shadow-2xl animate-in slide-in-from-top-2 duration-200 bg-slate-900 border-blue-400 text-white cursor-default"
-                onClick={(e) => e.stopPropagation()} // Verhindert Schließen bei Klick in den Tooltip
+                className="absolute top-full mt-4 w-64 p-4 rounded-2xl border shadow-2xl animate-in slide-in-from-top-2 duration-200 bg-slate-900 border-blue-400 text-white cursor-default left-1/2 -translate-x-1/2"
+                onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex justify-between items-center mb-2 border-b border-blue-500/30 pb-2">
                   <span className="text-[9px] font-black uppercase text-blue-400 tracking-widest text-left">Semantische Bedeutung</span>
@@ -56,8 +56,8 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
                 <p className="text-[12px] leading-relaxed italic text-slate-200 text-left">
                   {token.explanation}
                 </p>
-                {/* Kleiner Pfeil nach oben */}
-                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-900 border-l border-top border-blue-400 rotate-45 border-t border-l"></div>
+                {/* Pfeil */}
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-900 border-l border-t border-blue-400 rotate-45"></div>
               </div>
             )}
           </div>
