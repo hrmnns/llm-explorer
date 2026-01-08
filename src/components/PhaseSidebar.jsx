@@ -114,13 +114,26 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                                     {hoveredItem.title}
                                 </h6>
                                 <div className="space-y-1">
-                                    {Object.entries(hoveredItem.data || {}).map(([key, value]) => (
+                                    {Object.entries(hoveredItem.data || {}).map(([key, value]) => {
+                                        // Wir prüfen, ob der Wert ein langer Text ist oder "Stabilität" heißt
+                                        const isLongText = typeof value === 'string' && value.length > 20;
 
-                                        <div key={key} className="grid grid-cols-[80px_1fr] gap-2 text-[10px] font-mono">
-                                            <span className="opacity-40 uppercase truncate">{key}</span>
-                                            <span className="font-bold truncate text-right">{value}</span>
-                                        </div>
-                                    ))}
+                                        return (
+                                            <div key={key} className={`text-[10px] font-mono mb-1 ${isLongText ? 'flex flex-col gap-1' : 'grid grid-cols-[80px_1fr] gap-2 border-b border-slate-500/5 pb-1'}`}>
+                                                <span className="opacity-40 uppercase tracking-tighter">{key}</span>
+
+                                                {isLongText ? (
+                                                    <div className={`p-2 rounded-lg leading-relaxed italic ${theme === 'dark' ? 'bg-slate-950/50 text-blue-300 border border-blue-500/10' : 'bg-blue-50 text-blue-700 border border-blue-100'}`}>
+                                                        {value}
+                                                    </div>
+                                                ) : (
+                                                    <span className="font-bold text-blue-500 text-right truncate">
+                                                        {value}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         ) : (
