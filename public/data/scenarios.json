@@ -185,31 +185,66 @@
         "outputs": [
           {
             "label": "Säugetier",
-            "logit": 6.8,
+            "logit": 8.5,
             "type": "Wissenschaftlich",
             "hallucination_risk": 0.05,
             "causality_trace": "Wurde priorisiert, da Phase 3 das 'Wissenschaftliche Cluster' zu 95% aktiviert hat. Die Wurzel liegt in Phase 2, die den Fokus (Attention) extrem stark auf die Identitäts-Koppelung 'Hund' + 'ist' gesetzt hat."
           },
           {
             "label": "Gefährte",
-            "logit": 5.4,
+            "logit": 7.8,
             "type": "Sozial",
             "hallucination_risk": 0.1,
             "causality_trace": "Entstand durch die Aktivierung des 'Sozialen Clusters'. Phase 2 hat hierbei die Beziehung zwischen dem unbestimmten Artikel 'ein' und 'Hund' gewichtet, was auf eine soziale Rolle hindeutet."
           },
           {
-            "label": "Seelentröster",
-            "logit": 5.0,
-            "type": "Poetisch",
-            "hallucination_risk": 0.2,
-            "causality_trace": "ToDo: Warum würde <i>Seelentröster</i> ausgewählt?"
-          },
+            "label": "Haustier",
+            "logit": 7.2,
+            "type": "Sozial",
+            "hallucination_risk": 0.1,
+            "causality_trace": "Entstand durch die Aktivierung des 'Sozialen Clusters'. Phase 2 hat hierbei die Beziehung zwischen dem unbestimmten Artikel 'ein' und 'Hund' gewichtet, was auf eine soziale Rolle hindeutet."
+          },          
           {
             "label": "Wolfserbe",
-            "logit": 4.5,
+            "logit": 6.5,
             "type": "Evolutionär",
+            "hallucination_risk": 0.1,
+            "causality_trace": "ToDo: Warum würde das ausgewählt?"
+          },   
+          {
+            "label": "Vierbeiner",
+            "logit": 5.9,
+            "type": "Wissenschaftlich",
+            "hallucination_risk": 0.2,
+            "causality_trace": "ToDo: Warum würde das ausgewählt?"
+          },
+          {
+            "label": "Freund",
+            "logit": 5.2,
+            "type": "Poetisch",
             "hallucination_risk": 0.15,
-            "causality_trace": "ToDo: Warum würde <i>Wolfserbe</i> ausgewählt?"
+            "causality_trace": "ToDo: Warum würde das ausgewählt?"
+          },
+          {
+            "label": "Wächter",
+            "logit": 4.1,
+            "type": "Sozial",
+            "hallucination_risk": 0.15,
+            "causality_trace": "ToDo: Warum würde das ausgewählt?"
+          },
+          {
+            "label": "Bellen",
+            "logit": 3.2,
+            "type": "Wissenschaftlich",
+            "hallucination_risk": 3.2,
+            "causality_trace": "ToDo: Warum würde das ausgewählt?"
+          },
+          {
+            "label": "Schatten",
+            "logit": 2.1,
+            "type": "Poetisch",
+            "hallucination_risk": 3.2,
+            "causality_trace": "ToDo: Warum würde das ausgewählt?"
           }
         ]
       },
