@@ -6,7 +6,6 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
   const { activeScenario: contextScenario } = useScenarios();
   const { phase_0_tokenization, activeScenario: simScenario } = simulator;
   
-  // States für Selektion und Tooltip-Sichtbarkeit
   const [selectedTokenId, setSelectedTokenId] = useState(null);
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -33,7 +32,7 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
       const token = tokens.find(t => t.id === selectedTokenId);
       if (token) setHoveredItem(getInspectorData(token));
     }
-  }, [selectedTokenId, tokens]);
+  }, [selectedTokenId, tokens, setHoveredItem]);
 
   const handleMouseEnter = (token) => {
     setHoveredItem(getInspectorData(token));
@@ -51,10 +50,8 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
   const handleTokenClick = (token, e) => {
     e.stopPropagation();
     if (selectedTokenId === token.id) {
-      // Wenn bereits selektiert, Tooltip umschalten
       setShowTooltip(!showTooltip);
     } else {
-      // Neu selektieren und Tooltip immer öffnen
       setSelectedTokenId(token.id);
       setShowTooltip(true);
       setHoveredItem(getInspectorData(token));
@@ -72,39 +69,41 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
       ]}
       visualization={
         <div 
-          className="w-full h-full flex flex-col space-y-4 lg:space-y-6"
+          className="w-full h-full flex flex-col pt-4"
           onClick={() => { setSelectedTokenId(null); setShowTooltip(false); setHoveredItem(null); }}
         >
           {/* INPUT STRING BEREICH */}
-          <div className="flex items-center gap-4 bg-slate-900/40 p-4 rounded-lg border border-white/5">
-            <div className="w-10 h-10 shrink-0 rounded-lg bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-500 text-lg">
-              📑
-            </div>
-            <div className="min-w-0">
-              <span className="text-[7px] uppercase font-black text-slate-600 block mb-0.5 tracking-widest">Input String</span>
-              <p className="text-sm font-medium text-slate-300 truncate italic">
-                "{rawText}"
-              </p>
+          <div className="px-6 shrink-0">
+            <div className="flex items-center gap-4 bg-slate-900/40 p-4 rounded-lg border border-white/5">
+              <div className="w-10 h-10 shrink-0 rounded-lg bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-500 text-lg">
+                📑
+              </div>
+              <div className="min-w-0">
+                <span className="text-[7px] uppercase font-black text-slate-600 block mb-0.5 tracking-widest">Aktueller Prompt</span>
+                <p className="text-sm font-medium text-slate-300 truncate italic">
+                  "{rawText}"
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 px-8">
+          {/* TRENNER */}
+          <div className="flex items-center gap-2 px-10 py-6 shrink-0">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-800 to-transparent"></div>
-            <div className="text-[9px] font-black text-blue-500/50 uppercase tracking-tighter">Decomposition</div>
+            <div className="text-[8px] font-black text-blue-500/40 uppercase tracking-widest">Decomposition</div>
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-800 to-transparent"></div>
           </div>
 
-          {/* TOKEN CLOUD BEREICH */}
+          {/* TOKEN CLOUD BEREICH (Zentriert) */}
           <div className="flex-1 min-h-0 overflow-y-auto">
-            {/* p-6 sorgt für genug Platz für skalierte Tokens am Rand */}
-            <div className="flex flex-wrap justify-start content-start gap-3 p-6">
+            <div className="flex flex-wrap justify-center content-center gap-4 p-8">
               {tokens.map((token, index) => {
                 const isSelected = selectedTokenId === token.id;
                 return (
                   <div
                     key={index}
                     className={`
-                      relative group flex flex-col items-center p-3 min-w-[80px] rounded-lg border-2 transition-all duration-300 cursor-pointer
+                      relative group flex flex-col items-center p-3 min-w-[85px] rounded-lg border-2 transition-all duration-300 cursor-pointer
                       ${isSelected
                         ? 'bg-blue-600 border-white scale-105 shadow-xl z-20'
                         : 'bg-slate-900/60 border-slate-800 hover:border-blue-500/50 z-10'
@@ -121,11 +120,10 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
                       {token.text}
                     </span>
 
-                    {/* TOOLTIP: Nur anzeigen wenn isSelected UND showTooltip wahr ist */}
                     {isSelected && showTooltip && (
                       <div 
                         className="absolute top-full mt-3 w-56 p-4 rounded-lg border shadow-2xl bg-slate-900 border-white text-white z-[100] left-1/2 -translate-x-1/2 cursor-default"
-                        onClick={(e) => e.stopPropagation()} // Verhindert Schließen beim Klick in den Tooltip
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex justify-between items-center mb-2 border-b border-white/10 pb-2">
                           <span className="text-[8px] font-black uppercase text-blue-400 tracking-widest">Semantik-Quickinfo</span>
@@ -160,8 +158,8 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
           </div>
           <div className="flex gap-6">
              <div className="text-right border-l border-white/5 pl-6">
-                <span className="text-[7px] uppercase font-black text-slate-600 block">Efficiency</span>
-                <span className="text-[10px] font-mono font-bold text-blue-400">89.4%</span>
+                <span className="text-[7px] uppercase font-black text-slate-600 block">System-Status</span>
+                <span className="text-[10px] font-mono font-bold text-blue-400 uppercase">Input geladen</span>
              </div>
              <div className="text-right border-l border-white/5 pl-6">
                 <span className="text-[7px] uppercase font-black text-slate-600 block">Vocab-ID</span>
