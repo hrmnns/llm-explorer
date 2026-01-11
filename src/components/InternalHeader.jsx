@@ -5,69 +5,99 @@ const InternalHeader = ({
   toggleTheme, 
   onOpenHelp, 
   onOpenInfo,
-  onRestart,           // Prop für den Phasen-Wechsel auf -1
-  showScenarioSelector // Wird hier genutzt, um den Neustart-Button nur während der Simulation zu zeigen
-}) => (
-  <header className={`w-full px-6 py-4 flex flex-col md:flex-row justify-between items-center border-b transition-colors duration-500 z-50 ${
-    theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
-  }`}>
-    
-    <div className="flex items-center gap-6 mb-4 md:mb-0">
-      <h1 className="text-lg font-black uppercase tracking-tighter text-blue-500">
-        LLM Explorer <span className="font-light opacity-50 text-[10px] tracking-normal"> CHERWARE.DE</span>
-      </h1>
-      
-      {/* Hinweis: Der Selektor wurde entfernt. Die Auswahl findet nun im IntroScreen statt. */}
-    </div>
+  onRestart, 
+  showScenarioSelector 
+}) => {
+  
+  // Zentrale Stil-Klassen für maximale Konsistenz
+  const baseBtnClass = "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-300 group shadow-sm";
+  const labelClass = "text-[9px] font-black uppercase tracking-widest hidden lg:inline";
 
-    <div className="flex items-center gap-4">
+  return (
+    <header className={`w-full px-6 py-2 flex items-center justify-between border-b transition-all duration-500 z-50 sticky top-0 ${
+      theme === 'dark' 
+        ? 'bg-slate-950/80 border-white/5 backdrop-blur-md text-white' 
+        : 'bg-white/80 border-slate-200 backdrop-blur-md shadow-sm text-slate-900'
+    }`}>
       
-      {/* NEUSTART / SZENARIO WECHSELN BUTTON: Erscheint nur während der Simulation (Phasen 0-5) */}
-      {showScenarioSelector && (
+      {/* BRANDING */}
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20 text-lg">
+          🧠
+        </div>
+        <div className="flex flex-col">
+          <h1 className="text-sm font-black uppercase tracking-tighter leading-none text-blue-500">
+            LLM Explorer
+          </h1>
+          <span className="text-[8px] font-mono opacity-40 tracking-[0.2em] uppercase leading-tight">
+            Sim Lab | CHERWARE.DE
+          </span>
+        </div>
+      </div>
+
+      {/* NAVIGATION */}
+      <div className="flex items-center gap-2">
+        
+        {/* 1. SZENARIO WECHSELN (Rot-Akzent) */}
+        {showScenarioSelector && (
+          <button 
+            onClick={onRestart}
+            className={`${baseBtnClass} ${
+              theme === 'dark' 
+                ? 'bg-red-500/5 border-white/5 hover:border-red-500/40 hover:bg-red-500/10 text-slate-400 hover:text-red-400' 
+                : 'bg-red-50 border-slate-200 hover:border-red-500/40 hover:bg-red-100 text-slate-600 hover:text-red-600'
+            }`}
+          >
+            <span className="text-xs group-hover:rotate-[-180deg] transition-transform duration-500">↺</span>
+            <span className={labelClass}>Wechseln</span>
+          </button>
+        )}
+
+        {/* 2. WISSENS-DB (Blau-Akzent) */}
         <button 
-          onClick={onRestart}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all group ${
+          onClick={onOpenHelp} 
+          className={`${baseBtnClass} ${
             theme === 'dark' 
-              ? 'bg-slate-800/50 border-white/5 hover:border-red-500/40 hover:bg-red-500/5' 
-              : 'bg-slate-100 border-slate-200 hover:border-red-500/40 hover:bg-red-50'
+              ? 'bg-blue-500/5 border-white/5 hover:border-blue-500/40 hover:bg-blue-500/10 text-slate-400 hover:text-blue-400' 
+              : 'bg-blue-50 border-slate-200 hover:border-blue-500/40 hover:bg-blue-100 text-slate-600 hover:text-blue-600'
           }`}
-          title="Zurück zum Startbildschirm"
         >
-          <span className="text-sm group-hover:rotate-[-180deg] transition-transform duration-500 text-slate-400 group-hover:text-red-500">
-            ↺
-          </span>
-          <span className={`text-[9px] font-black uppercase tracking-widest hidden sm:inline ${
-            theme === 'dark' ? 'text-slate-400 group-hover:text-red-400' : 'text-slate-600 group-hover:text-red-500'
-          }`}>
-            Szenario wechseln
-          </span>
+          <span className="text-xs">📖</span>
+          <span className={labelClass}>Wissens-DB</span>
         </button>
-      )}
 
-      {/* THEME TOGGLE */}
-      <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-blue-500/10 transition-all text-xl">
-        {theme === 'dark' ? '☀️' : '🌙'}
-      </button>
+        {/* DIVIDER */}
+        <div className="h-4 w-px bg-white/10 mx-1 hidden sm:block" />
 
-      {/* WISSENS-DB / GLOSSAR */}
-      <button 
-        onClick={onOpenHelp} 
-        className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black rounded-lg uppercase transition-all shadow-lg shadow-blue-900/20 active:scale-95"
-      >
-        Wissens-DB
-      </button>
+        {/* 3. THEME TOGGLE (Neutral/Gelb-Akzent) */}
+        <button 
+          onClick={toggleTheme} 
+          className={`${baseBtnClass} ${
+            theme === 'dark' 
+              ? 'bg-white/5 border-white/5 hover:border-yellow-500/40 hover:bg-yellow-500/10 text-slate-400 hover:text-yellow-400' 
+              : 'bg-slate-50 border-slate-200 hover:border-yellow-500/40 hover:bg-yellow-50 text-slate-600 hover:text-yellow-600'
+          }`}
+        >
+          <span className="text-xs">{theme === 'dark' ? '☀️' : '🌙'}</span>
+          <span className={labelClass}>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+        </button>
 
-      {/* INFO / ABOUT */}
-      <button 
-        onClick={onOpenInfo} 
-        className="p-2 w-10 h-10 flex items-center justify-center rounded-lg border border-transparent hover:border-white/5 hover:bg-white/5 transition-all text-xl opacity-50 hover:opacity-100"
-        title="Projekt-Info"
-      >
-        ℹ️
-      </button>
+        {/* 4. INFO BUTTON (Neutral-Akzent) */}
+        <button 
+          onClick={onOpenInfo} 
+          className={`${baseBtnClass} ${
+            theme === 'dark' 
+              ? 'bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10 text-slate-500 hover:text-white' 
+              : 'bg-slate-50 border-slate-200 hover:border-slate-400 hover:bg-slate-100 text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <span className="text-xs italic font-serif">i</span>
+          <span className={labelClass}>Info</span>
+        </button>
 
-    </div>
-  </header>
-);
+      </div>
+    </header>
+  );
+};
 
 export default InternalHeader;
