@@ -1,10 +1,14 @@
 import React from 'react';
-// Importiert die package.json. Der Pfad ../../ geht davon aus, 
-// dass die Komponente in src/components/ liegt.
-import pkg from '../../package.json';
+import { useScenarios } from '../context/ScenarioContext';
 
 const InfoModal = ({ isOpen, onClose, theme }) => {
+  const { scenariosData } = useScenarios();
+
   if (!isOpen) return null;
+
+  // Ermittlung der Versions- und Buildnummer analog zum Footer
+  const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '20260108-STABLE';
+  const buildDate = typeof __BUILD_DATE__ !== 'undefined' ? __BUILD_DATE__ : '08.01.2026';
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
@@ -27,10 +31,22 @@ const InfoModal = ({ isOpen, onClose, theme }) => {
           <h2 className="text-2xl font-black uppercase tracking-tighter text-blue-500">
             LLM Explorer <span className="font-light opacity-50 text-sm tracking-normal">CHERWARE.DE</span>
           </h2>
-          {/* Dynamische Versionsnummer aus der package.json */}
-          <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500 mt-1">
-            Version {pkg.version}
-          </p>
+
+          {/* VERSION & BUILD INFO (Synchron zum Footer/IntroScreen) */}
+          <div className="flex flex-col items-center mt-2 space-y-1 opacity-60">
+            <div className="flex gap-3 items-center">
+              <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">
+                Engine: <span className="text-purple-500 font-bold">v{scenariosData?.version || "?.?"}</span>
+              </span>
+              <span className="text-slate-800">|</span>
+              <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">
+                Build: <span className="text-blue-500 font-bold">{appVersion}</span>
+              </span>
+            </div>
+            <div className="text-[9px] font-mono uppercase tracking-[0.2em] text-slate-600 opacity-40">
+              {buildDate}
+            </div>
+          </div>
         </div>
 
         {/* Content */}

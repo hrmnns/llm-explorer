@@ -1,5 +1,5 @@
 import React from 'react';
-import { useScenarios } from '../context/ScenarioContext'; // Pfad korrigiert von ../../ auf ../
+import { useScenarios } from '../context/ScenarioContext'; 
 
 const Footer = () => {
   const { scenariosData } = useScenarios();
