@@ -9,6 +9,10 @@
       "Prüfe im Inspektor (rechts), wie die statistische Verteilung der Tokens aussieht."
     ],
     "insight": "Tokens sind die 'Atome' der Sprache für ein Sprachmodell."
+    "externalResource": {
+      "label": "Interaktiver Tokenizer (OpenAI)",
+      "url": "https://platform.openai.com/tokenizer"
+    }
   },
   "1": {
     "title": "Embedding",
@@ -31,6 +35,10 @@
       "Beobachte, wie Verben eine starke Verbindung zu ihren Subjekten aufbauen."
     ],
     "insight": "Attention erlaubt es der KI, den Kontext und Bezüge im Satz zu 'greifen'."
+    "externalResource": {
+      "label": "The Illustrated Transformer",
+      "url": "https://jalammar.github.io/illustrated-transformer/"
+    }
   },
   "3": {
     "title": "Feed-Forward (FFN)",
