@@ -10,6 +10,7 @@ import InternalHeader from './components/InternalHeader';
 import GlossaryModal from './components/GlossaryModal';
 import InfoModal from './components/InfoModal';
 import IntroScreen from './components/IntroScreen';
+import PhaseBriefing from './components/PhaseBriefing'; // NEU: Import der Briefing-Komponente
 
 // Phasen-Importe
 import Phase0_Tokenization from './components/phases/Phase0_Tokenization';
@@ -30,14 +31,27 @@ function AppContent() {
   const [hoveredItem, setHoveredItem] = useState(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
+  // NEU: States für das Onboarding-System
+  const [showBriefing, setShowBriefing] = useState(false);
+  const [briefings, setBriefings] = useState({});
+
   const { scenarios, activeScenario, handleScenarioChange } = useScenarios();
   const simulator = useLLMSimulator(activeScenario);
 
+  // Bestands-Daten laden (Glossar)
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data/glossary.json`)
       .then(res => res.json())
       .then(data => setGlossaryData(data))
       .catch(err => console.error("Glossar-Ladefehler:", err));
+  }, []);
+
+  // NEU: Briefing-Inhalte laden
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}data/phaseBriefings.json`)
+      .then(res => res.json())
+      .then(data => setBriefings(data))
+      .catch(err => console.error("Briefing-Ladefehler:", err));
   }, []);
 
   // Automatischer Scroll nach oben bei Phasenwechsel
@@ -47,6 +61,13 @@ function AppContent() {
     const mainElement = document.querySelector('main');
     if (mainElement) {
       mainElement.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [activePhase]);
+
+  // NEU: Briefing automatisch bei jeder neuen Phase einblenden
+  useEffect(() => {
+    if (activePhase >= 0) {
+      setShowBriefing(true);
     }
   }, [activePhase]);
 
@@ -62,9 +83,8 @@ function AppContent() {
   }
 
   return (
-    <div className={`min-h-screen lg:h-screen flex flex-col transition-colors duration-700 ${
-      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
-    } font-sans`}>
+    <div className={`min-h-screen lg:h-screen flex flex-col transition-colors duration-700 ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+      } font-sans`}>
 
       <InternalHeader
         theme={theme}
@@ -96,16 +116,24 @@ function AppContent() {
         </main>
       ) : (
         <>
-          <PhaseNavigator activePhase={activePhase} setActivePhase={setActivePhase} activeScenario={activeScenario} theme={theme} />
+          <PhaseNavigator activePhase={activePhase} setActivePhase={setActivePhase} activeScenario={activeScenario} theme={theme} onOpenBriefing={() => setShowBriefing(true)} />
 
-          {/* PT-4 sorgt für den optisch ansprechenden Abstand zum Header/Nav auf allen Geräten */}
           <main className="flex-1 flex flex-col items-center pt-4 pb-4 px-4 overflow-y-auto lg:overflow-hidden min-h-0">
             <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-4 h-auto lg:h-full min-h-0">
 
               {/* LINKES PANEL */}
-              <div className={`w-full lg:flex-1 relative border rounded-2xl shadow-2xl overflow-hidden backdrop-blur-md transition-all duration-500 flex flex-col min-h-[500px] lg:min-h-0 ${
-                theme === 'dark' ? 'bg-slate-900/40 border-slate-800' : 'bg-white/80 border-slate-200'
-              }`}>
+              <div className={`w-full lg:flex-1 relative border rounded-2xl shadow-2xl overflow-hidden backdrop-blur-md transition-all duration-500 flex flex-col min-h-[500px] lg:min-h-0 ${theme === 'dark' ? 'bg-slate-900/40 border-slate-800' : 'bg-white/80 border-slate-200'
+                }`}>
+
+                {/* NEU: Das Briefing-Overlay innerhalb des relativen Panel-Containers */}
+                {showBriefing && briefings[activePhase] && (
+                  <PhaseBriefing
+                    data={briefings[activePhase]}
+                    onClose={() => setShowBriefing(false)}
+                    theme={theme}
+                  />
+                )}
+
                 {(!activeScenario || !simulator) ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
@@ -135,7 +163,6 @@ function AppContent() {
                 />
               </aside>
 
-              {/* MOBILER ABSTANDHALTER: Verhindert, dass die Sidebar von der fixierten Bottom-Nav verdeckt wird */}
               <div className="lg:hidden h-36 w-full shrink-0 pointer-events-none" />
             </div>
           </main>

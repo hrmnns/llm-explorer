@@ -1,0 +1,92 @@
+{
+  "0": {
+    "title": "Tokenisierung",
+    "subtitle": "Vom Wort zum Baustein",
+    "mission": "Hier zerlegt die KI deinen Satz in 'Tokens'. Da Computer keine Sprache, sondern nur Zahlen verstehen, ist dies der erste Schritt der Abstraktion.",
+    "steps": [
+      "Klicke auf die Tokens, um ihre eindeutige ID in der Datenbank zu sehen.",
+      "Beobachte, wie Satzzeichen oder Wortteile oft eigene Tokens sind.",
+      "Prüfe im Inspektor (rechts), wie die statistische Verteilung der Tokens aussieht."
+    ],
+    "insight": "Tokens sind die 'Atome' der Sprache für ein Sprachmodell.",
+    "externalResource": {
+      "label": "Interaktiver OpenAI Tokenizer",
+      "url": "https://platform.openai.com/tokenizer"
+    }
+  },
+  "1": {
+    "title": "Embedding",
+    "subtitle": "Sprache wird Mathematik",
+    "mission": "Tokens werden in hochdimensionale Vektoren umgewandelt. Jedes Wort bekommt eine feste Koordinate in einem riesigen, abstrakten Bedeutungsraum.",
+    "steps": [
+      "Vergleiche die Vektoren verschiedener Wörter im Inspektor.",
+      "Erkenne, wie semantische Nähe (z.B. 'Hund' und 'Welpe') in mathematische Nähe übersetzt wird.",
+      "Achte auf die Dimensionen – jedes Feld im Vektor steht für eine abstrakte Eigenschaft."
+    ],
+    "insight": "Im Vektorraum haben Wörter 'Nachbarn' mit ähnlicher Bedeutung.",
+    "externalResource": {
+      "label": "TensorFlow Embedding Projector",
+      "url": "https://projector.tensorflow.org/"
+    }
+  },
+  "2": {
+    "title": "Self-Attention",
+    "subtitle": "Den Kontext verstehen",
+    "mission": "Das ist das Herzstück: Die KI prüft, welche Wörter im Satz wichtig füreinander sind. Sie lernt Bezüge zwischen Subjekten, Objekten und Verben.",
+    "steps": [
+      "Fahre über die Tokens, um die Aufmerksamkeits-Verbindungen zu sehen.",
+      "Dicke Linien bedeuten: Diese Wörter sind für das Verständnis des aktuellen Tokens entscheidend.",
+      "Beobachte, wie das Modell lernt, worauf sich Pronomen (er, sie, es) beziehen."
+    ],
+    "insight": "Attention erlaubt es der KI, den Kontext und Bezüge im Satz zu 'greifen'.",
+    "externalResource": {
+      "label": "The Illustrated Transformer",
+      "url": "https://jalammar.github.io/illustrated-transformer/"
+    }
+  },
+  "3": {
+    "title": "Feed-Forward (FFN)",
+    "subtitle": "Wissen & Logik anwenden",
+    "mission": "Nachdem der Kontext klar ist, wird das 'Weltwissen' aktiviert. Das Netzwerk verarbeitet die Informationen und gleicht sie mit gelernten Mustern ab.",
+    "steps": [
+      "Beobachte die Aktivierungsmuster der Neuronen.",
+      "Achte darauf, wie die Vektoren hier 'veredelt' werden, um eine Antwort vorzubereiten.",
+      "In dieser Phase entstehen die inhaltlichen Tendenzen der Antwort."
+    ],
+    "insight": "Das FFN-Netzwerk fungiert als das 'Gedächtnis' und die Logik-Einheit der KI.",
+    "externalResource": {
+      "label": "FFN als Key-Value Memory (Forschung)",
+      "url": "https://ar5iv.labs.arxiv.org/html/2012.14913"
+    }
+  },
+  "4": {
+    "title": "Decoding & Softmax",
+    "subtitle": "Die Wahl des nächsten Wortes",
+    "mission": "Die KI berechnet nun die Wahrscheinlichkeit für jedes mögliche nächste Wort. Am Ende gewinnt das Wort, das statistisch am besten passt.",
+    "steps": [
+      "Schau dir die Top-Kandidaten für die Antwort an.",
+      "Verstehe, wie Parameter wie 'Temperature' entscheiden, ob die KI sicher oder gewagt antwortet.",
+      "Der höchste Balken zeigt das Wort an, das als nächstes ausgegeben wird."
+    ],
+    "insight": "KI ist letztlich eine Vorhersagemaschine für das wahrscheinlichste nächste Wort.",
+    "externalResource": {
+      "label": "Hugging Face: Decoding Strategies",
+      "url": "https://huggingface.co/blog/how-to-generate"
+    }
+  },
+  "5": {
+    "title": "Analyse & Output",
+    "subtitle": "Das Ergebnis der Reise",
+    "mission": "Die Reise durch die Schichten ist beendet. Hier siehst du das Ergebnis und eine Zusammenfassung der kausalen Einflüsse.",
+    "steps": [
+      "Lies die finale Antwort im Kontext deines gewählten Szenarios.",
+      "Analysiere, ob die Antwort eher wissenschaftlich, sozial oder poetisch ausgefallen ist.",
+      "Nutze den Inspektor, um die Kausalkette der Entscheidung nachzuvollziehen."
+    ],
+    "insight": "Jede Antwort ist das Ergebnis von Milliarden kleiner mathematischer Gewichtungen.",
+    "externalResource": {
+      "label": "Anthropic: Mapping the Mind of LLMs",
+      "url": "https://www.anthropic.com/news/mapping-mind-language-model"
+    }
+  }
+}
