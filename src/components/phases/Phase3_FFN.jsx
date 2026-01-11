@@ -6,11 +6,11 @@ const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
   const [selectedLabel, setSelectedLabel] = useState(null);
 
   if (!activeFFN || activeFFN.length === 0) {
-    return <div className="p-10 text-center text-slate-500 animate-pulse">Warte auf Aktivierungsdaten...</div>;
+    return <div className="p-10 text-center text-slate-500 animate-pulse font-mono text-xs">Warte auf Aktivierungsdaten der Neuronen-Matrix...</div>;
   }
 
   const activeCategory = useMemo(() => {
-    return activeFFN.find(cat => cat.isActive)?.label || "Neutral";
+    return activeFFN.find(cat => cat.isActive)?.label || "Keine Dominanz";
   }, [activeFFN]);
 
   const colorMap = {
@@ -24,25 +24,30 @@ const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
     "Ancestral": "border-orange-500 shadow-orange-500/20 text-orange-400 bg-orange-500/5"
   };
 
+  // Synchronisation mit dem Phase 2 Inspektor-Format
   const getInspectorData = (cat) => ({
-    title: `Wissens-Cluster: ${cat.label}`,
-    subtitle: "FFN Aktivierung",
+    title: `🧠 Cluster: ${cat.label}`,
+    subtitle: "FFN Neuronale Aktivierung",
     data: {
-      "Netz-Aktivierung": (cat.activation * 100).toFixed(1) + "%",
-      "MLP-Filter": mlpThreshold.toFixed(2),
-      "Status": cat.isActive ? "Aktiviert" : "Gefiltert",
-      "Input-Quelle": "Feed-Forward-Network",
-      "Vektorklasse": cat.label
+      "--- Mechanik": "---",
+      "Vektorklasse": cat.label,
+      "Status": cat.isActive ? "GEFEUERT (Aktiv)" : "GEHEMMT (Inaktiv)",
+      "--- Mathematik": "---",
+      "Netz-Spannung": (cat.activation * 100).toFixed(1) + "%",
+      "MLP-Threshold": mlpThreshold.toFixed(2),
+      "--- Erkenntnis": "---",
+      "Information": cat.isActive 
+        ? `Dieses Wissens-Cluster wurde durch den Kontext aus Phase 2 erfolgreich aktiviert. Die Neuronen projizieren das Token nun in den "${cat.label}"-Vektorraum.` 
+        : `Die Kontext-Energie ist mit ${(cat.activation * 100).toFixed(1)}% zu schwach, um den eingestellten MLP-Filter von ${mlpThreshold.toFixed(2)} zu durchbrechen. Dieses Wissen wird unterdrückt.`
     }
   });
 
-  // Reagiert auf Änderungen am Schwellenwert für das bereits selektierte Element
   useEffect(() => {
     if (selectedLabel) {
       const cat = activeFFN.find(c => c.label === selectedLabel);
       if (cat) setHoveredItem(getInspectorData(cat));
     }
-  }, [activeFFN, mlpThreshold]);
+  }, [activeFFN, mlpThreshold, selectedLabel, setHoveredItem]);
 
   const handleCategoryClick = (cat, e) => {
     e.stopPropagation();
@@ -55,22 +60,6 @@ const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
     }
   };
 
-  const handleMouseEnter = (cat) => {
-    // Zeige immer das Element an, über dem die Maus gerade schwebt
-    setHoveredItem(getInspectorData(cat));
-  };
-
-  const handleMouseLeave = () => {
-    if (selectedLabel) {
-      // Wenn etwas markiert ist, springe zur Markierung zurück
-      const selectedCat = activeFFN.find(c => c.label === selectedLabel);
-      if (selectedCat) setHoveredItem(getInspectorData(selectedCat));
-    } else {
-      // Wenn nichts markiert ist, leere den Inspektor
-      setHoveredItem(null);
-    }
-  };
-
   return (
     <PhaseLayout
       title="Phase 3: Feed-Forward Network (FFN)"
@@ -78,57 +67,57 @@ const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
       theme={theme}
       badges={[
         { text: `Fokus: ${activeCategory}`, className: "border-blue-500/30 text-blue-400 bg-blue-500/5" },
-        { text: `Filter: ${mlpThreshold.toFixed(2)}`, className: "border-slate-500/30 text-slate-500 bg-white/5" }
+        { text: `Threshold: ${mlpThreshold.toFixed(2)}`, className: "border-slate-500/30 text-slate-500 bg-white/5" }
       ]}
       visualization={
         <div 
           className="w-full h-full flex flex-col justify-center items-center py-4"
           onClick={() => { setSelectedLabel(null); setHoveredItem(null); }}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl px-6">
             {activeFFN.map((cat) => {
               const isSelected = selectedLabel === cat.label;
               return (
                 <div
                   key={cat.label}
                   className={`
-                    relative flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all duration-500 cursor-pointer overflow-hidden
+                    relative flex flex-col items-center justify-center p-8 rounded-xl border-2 transition-all duration-500 cursor-pointer overflow-hidden
                     ${cat.isActive
                       ? `${colorMap[cat.label] || 'border-blue-500'} opacity-100 shadow-xl`
-                      : 'border-white/5 bg-slate-900/20 opacity-20 text-slate-600 grayscale'
+                      : 'border-white/5 bg-slate-900/40 opacity-25 text-slate-600 grayscale'
                     }
-                    ${isSelected ? 'ring-2 ring-white ring-offset-4 ring-offset-slate-950 scale-105 z-20' : 'z-10'}
+                    ${isSelected ? 'ring-2 ring-white ring-offset-4 ring-offset-slate-950 scale-105 z-20' : 'z-10 hover:border-slate-500'}
                   `}
-                  onMouseEnter={() => handleMouseEnter(cat)}
-                  onMouseLeave={handleMouseLeave}
+                  onMouseEnter={() => setHoveredItem(getInspectorData(cat))}
+                  onMouseLeave={() => !selectedLabel && setHoveredItem(null)}
                   onClick={(e) => handleCategoryClick(cat, e)}
                 >
                   <div
-                    className="absolute bottom-0 left-0 w-full transition-all duration-1000 opacity-10 pointer-events-none"
+                    className="absolute bottom-0 left-0 w-full transition-all duration-700 opacity-10 pointer-events-none"
                     style={{
                       height: `${cat.activation * 100}%`,
                       backgroundColor: 'currentColor'
                     }}
                   />
 
-                  <div className="z-10 text-xs font-black uppercase tracking-widest text-center px-2">
+                  <div className="z-10 text-[10px] font-black uppercase tracking-widest text-center px-2">
                     {cat.label}
                   </div>
 
-                  <div className="z-10 text-[9px] font-mono mt-1 opacity-60">
+                  <div className="z-10 text-[9px] font-mono mt-2 opacity-60">
                     {(cat.activation * 100).toFixed(0)}% Power
                   </div>
 
                   {cat.isActive && (
-                    <div className="absolute top-3 right-3 animate-pulse text-lg">
-                      {cat.label.includes("Wissenschaft") || cat.label.includes("Scientific") ? "🔬" : ""}
-                      {cat.label.includes("Sozial") || cat.label.includes("Social") ? "🤝" : ""}
-                      {cat.label.includes("Poetisch") || cat.label.includes("Poetic") ? "✨" : ""}
-                      {cat.label.includes("Evolution") || cat.label.includes("Ancestral") ? "🦴" : ""}
+                    <div className="absolute top-4 right-4 animate-pulse text-xl">
+                      {(cat.label.includes("Wissenschaft") || cat.label.includes("Scientific")) && "🔬"}
+                      {(cat.label.includes("Sozial") || cat.label.includes("Social")) && "🤝"}
+                      {(cat.label.includes("Poetisch") || cat.label.includes("Poetic")) && "✨"}
+                      {(cat.label.includes("Evolution") || cat.label.includes("Ancestral")) && "🦴"}
                     </div>
                   )}
                   
-                  <div className={`absolute top-3 left-3 w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-blue-400 animate-ping' : (cat.isActive ? 'bg-current opacity-40' : 'bg-slate-800')}`} />
+                  <div className={`absolute top-4 left-4 w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-blue-400 animate-ping' : (cat.isActive ? 'bg-current opacity-40' : 'bg-slate-800')}`} />
                 </div>
               );
             })}
@@ -136,21 +125,25 @@ const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
         </div>
       }
       controls={
-        <div className="col-span-full px-4 py-3 bg-slate-900/80 rounded-lg border border-white/5" onClick={(e) => e.stopPropagation()}>
-          <div className="flex justify-between items-center mb-2">
-            <label className="text-[8px] uppercase font-black text-slate-500 tracking-widest leading-none">
+        <div className="col-span-full px-6 py-4 bg-slate-900/80 rounded-xl border border-white/5 backdrop-blur-md" onClick={(e) => e.stopPropagation()}>
+          <div className="flex justify-between items-center mb-3">
+            <label className="text-[9px] uppercase font-black text-slate-500 tracking-widest leading-none">
               Aktivierungsschwelle (MLP-Threshold)
             </label>
-            <div className="text-[10px] font-mono font-black text-blue-400">
+            <div className="text-sm font-mono font-black text-blue-400">
               {mlpThreshold.toFixed(2)}
             </div>
           </div>
           <input
-            type="range" min="0" max="1" step="0.05"
+            type="range" min="0" max="1" step="0.01"
             value={mlpThreshold}
             onChange={(e) => setMlpThreshold(parseFloat(e.target.value))}
-            className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+            className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 shadow-inner"
           />
+          <div className="flex justify-between mt-2 text-[7px] font-bold text-slate-600 uppercase">
+            <span>Kreatives Rauschen</span>
+            <span>Strenge Logik</span>
+          </div>
         </div>
       }
     />
