@@ -254,6 +254,287 @@
       }
     },
     {
+      "id": "winograd-schema-size",
+      "name": "3. Winograd-Schema: Die Pronomen-Falle",
+      "input_prompt": "Der Pokal passte nicht in den Koffer, weil er zu groß war.",
+      "explanation": "Dieses Szenario demonstriert eines der schwierigsten Probleme der KI: Die Auflösung von Mehrdeutigkeiten bei Pronomen (Winograd-Schema). Das Modell muss entscheiden, ob sich 'er' auf den 'Pokal' oder den 'Koffer' bezieht, indem es das Adjektiv 'groß' semantisch korrekt verknüpft.",
+      "phase_0_tokenization": {
+        "tokens": [
+          {
+            "id": 10,
+            "text": "Der",
+            "explanation": "Bestimmter Artikel (Nominativ, Maskulinum)."
+          },
+          {
+            "id": 11,
+            "text": "Pokal",
+            "explanation": "Subjekt des Hauptsatzes; potenzielles Bezugswort für das Pronomen."
+          },
+          {
+            "id": 12,
+            "text": "passte",
+            "explanation": "Prädikat; beschreibt eine räumliche Relation."
+          },
+          {
+            "id": 13,
+            "text": "nicht",
+            "explanation": "Negationspartikel; invertiert die logische Aussage von 'passte'."
+          },
+          {
+            "id": 14,
+            "text": "in",
+            "explanation": "Lokale Präposition; leitet das Ziel der Relation ein."
+          },
+          {
+            "id": 15,
+            "text": "den",
+            "explanation": "Bestimmter Artikel (Akkusativ, Maskulinum)."
+          },
+          {
+            "id": 16,
+            "text": "Koffer",
+            "explanation": "Objekt der Präposition; zweites potenzielles Bezugswort für das Pronomen."
+          },
+          {
+            "id": 17,
+            "text": ",",
+            "explanation": "Satzzeichen; trennt Haupt- und Nebensatz."
+          },
+          {
+            "id": 18,
+            "text": "weil",
+            "explanation": "Kausale Konjunktion; leitet die Begründung ein."
+          },
+          {
+            "id": 19,
+            "text": "er",
+            "explanation": "Personalpronomen; die zentrale Ambiguität des Satzes."
+          },
+          {
+            "id": 20,
+            "text": "zu",
+            "explanation": "Gradpartikel; verstärkt das folgende Adjektiv."
+          },
+          {
+            "id": 21,
+            "text": "groß",
+            "explanation": "Adjektiv; der semantische Schlüssel zur Auflösung der Ambiguität."
+          },
+          {
+            "id": 22,
+            "text": "war",
+            "explanation": "Kopulaverb im Nebensatz."
+          },
+          {
+            "id": 23,
+            "text": ".",
+            "explanation": "Satzendezeichen."
+          }
+        ]
+      },
+      "phase_1_embedding": {
+        "token_vectors": [
+          {
+            "token_index": 11,
+            "base_vector": [
+              0.9,
+              0.1
+            ],
+            "positional_vector": [
+              0.1,
+              0.05
+            ],
+            "explanation": "Pokal: Hoher Wert auf 'Physisches Objekt', niedriger Wert auf 'Behältnis'."
+          },
+          {
+            "token_index": 16,
+            "base_vector": [
+              0.4,
+              0.9
+            ],
+            "positional_vector": [
+              0.5,
+              0.1
+            ],
+            "explanation": "Koffer: Mittlerer Wert auf 'Physisches Objekt', hoher Wert auf 'Behältnis'."
+          },
+          {
+            "token_index": 19,
+            "base_vector": [
+              0.5,
+              0.5
+            ],
+            "positional_vector": [
+              0.7,
+              0.4
+            ],
+            "explanation": "er: Neutraler Vektor; wartet auf Kontext-Update durch Attention."
+          },
+          {
+            "token_index": 21,
+            "base_vector": [
+              0.95,
+              0.0
+            ],
+            "positional_vector": [
+              0.85,
+              0.6
+            ],
+            "explanation": "groß: Extremer Wert in der Dimension 'Dimension/Größe'."
+          }
+        ]
+      },
+      "phase_2_attention": {
+        "attention_profiles": [
+          {
+            "id": "semantic_logical",
+            "label": "Logisch-Semantische Inferenz",
+            "rules": [
+              {
+                "head": 1,
+                "source": 11,
+                "target": 21,
+                "strength": 0.85,
+                "explanation": "H1 (Semantik): Verknüpft 'Pokal' mit der Eigenschaft 'groß', um Weltwissen zu aktivieren."
+              },
+              {
+                "head": 1,
+                "source": 21,
+                "target": 11,
+                "strength": 0.88,
+                "explanation": "H1 (Bi-Direktional): 'groß' bezieht sich zurück auf das primäre Objekt 'Pokal'."
+              },
+              {
+                "head": 2,
+                "source": 14,
+                "target": 16,
+                "strength": 0.95,
+                "explanation": "H2 (Syntax): Präposition 'in' bindet stark an das Behältnis 'Koffer'."
+              },
+              {
+                "head": 2,
+                "source": 16,
+                "target": 14,
+                "strength": 0.70,
+                "explanation": "H2 (Bi-Direktional): 'Koffer' bestätigt seine Rolle als Ziel von 'in'."
+              },
+              {
+                "head": 3,
+                "source": 13,
+                "target": 12,
+                "strength": 0.98,
+                "explanation": "H3 (Logik): 'nicht' modifiziert die Bedeutung von 'passte' (Negations-Mapping)."
+              },
+              {
+                "head": 3,
+                "source": 12,
+                "target": 11,
+                "strength": 0.60,
+                "explanation": "H3 (Aktion): 'passte' sucht das Subjekt 'Pokal', dessen Eigenschaft die Passung verhindert."
+              },
+              {
+                "head": 4,
+                "source": 19,
+                "target": 11,
+                "strength": 0.92,
+                "explanation": "H4 (Referenz): Entscheidender Schritt: 'er' wird dem 'Pokal' zugeordnet, da dieser logisch die Passung durch Größe verhindert."
+              },
+              {
+                "head": 4,
+                "source": 11,
+                "target": 19,
+                "strength": 0.50,
+                "explanation": "H4 (Referenz): 'Pokal' stellt Informationen für die Pronomen-Substitution bereit."
+              }
+            ]
+          },
+          {
+            "id": "syntactic_bias",
+            "label": "Syntaktischer Bias (Fehleranfällig)",
+            "rules": [
+              {
+                "head": 4,
+                "source": 19,
+                "target": 16,
+                "strength": 0.75,
+                "explanation": "H4 (Referenz-Fehler): Das Modell wählt fälschlicherweise das zeitlich nähere Nomen 'Koffer' als Bezugswort."
+              },
+              {
+                "head": 2,
+                "source": 19,
+                "target": 18,
+                "explanation": "H2: Fokus auf die rein grammatikalische Struktur des Nebensatzes."
+              },
+              {
+                "head": 1,
+                "source": 21,
+                "target": 16,
+                "strength": 0.40,
+                "explanation": "H1: Schwache semantische Kopplung von Größe an den Koffer."
+              }
+            ]
+          }
+        ]
+      },
+      "phase_3_ffn": {
+        "activation_profiles": [
+          {
+            "ref_profile_id": "semantic_logical",
+            "activations": [
+              {
+                "label": "Räumliche Geometrie",
+                "activation": 0.98
+              },
+              {
+                "label": "Physikalische Logik",
+                "activation": 0.92
+              },
+              {
+                "label": "Volumen-Interaktion",
+                "activation": 0.85
+              }
+            ]
+          },
+          {
+            "ref_profile_id": "syntactic_bias",
+            "activations": [
+              {
+                "label": "Oberflächliche Grammatik",
+                "activation": 0.90
+              },
+              {
+                "label": "Lineare Sequenzierung",
+                "activation": 0.80
+              }
+            ]
+          }
+        ]
+      },
+      "phase_4_decoding": {
+        "outputs": [
+          {
+            "label": "Eigenschaft: Pokal",
+            "logit": 9.8,
+            "type": "Logik",
+            "causality_trace": "Head 4 hat die Referenz ID 19 erfolgreich auf ID 11 abgebildet. Das FFN hat daraufhin das Volumen-Modell für Pokale aktiviert."
+          },
+          {
+            "label": "Eigenschaft: Koffer",
+            "logit": 2.1,
+            "type": "Bias",
+            "causality_trace": "Geringe Wahrscheinlichkeit, da die physikalische Bedingung 'passte nicht' im Widerspruch zu einem 'zu großen' Behältnis steht."
+          }
+        ]
+      },
+      "phase_5_analysis": {
+        "summary_points": [
+          "Die Auflösung des Pronomen 'er' erfolgt nicht durch Grammatik, sondern durch semantischen Abgleich mit dem Adjektiv 'groß'.",
+          "Head 4 (Struktur/Referenz) fungiert als Brücke zwischen dem Subjekt im Hauptsatz und dem Pronomen im Nebensatz.",
+          "Die bi-direktionale Attention zwischen 'Pokal' und 'groß' ist der Schlüssel, um den syntaktischen Bias des näherliegenden Nomens 'Koffer' zu überwinden."
+        ]
+      }
+    },
+    {
       "id": "bank-polysemie",
       "name": "2. Polysemie: Das Bank-Rätsel",
       "input_prompt": "Der Bankräuber ging zur Bank und setzte sich auf die Bank am Fluss.",
