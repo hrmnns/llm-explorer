@@ -15,15 +15,20 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
 
   if (!tokens.length) return <div className="p-10 text-center opacity-50">Warte auf Token-Daten...</div>;
 
+  // Optimierte Datenstruktur für den Inspektor
   const getInspectorData = (token) => ({
     title: `Token-Analyse: ${token.text}`,
     subtitle: "Preprocessing (BPE)",
     data: {
+      "--- Spezifikationen": "---",
       "Token-ID": `#${token.id}`,
       "Inhalt": `"${token.text}"`,
       "Länge": token.text.length + " Zeichen",
-      "Typ": token.id === 1 ? "Start-of-Sequence" : "Content-Token",
-      "Analyse": token.explanation || "Erfolgreich segmentiert."
+      "Typ": token.id === 10 ? "Start-of-Sequence" : "Content-Token",
+      
+      "--- Linguistik": "---",
+      // Wir nutzen "Information", damit die Sidebar die große Textbox rendert
+      "Information": token.explanation || "Dieses Token wurde erfolgreich durch Byte-Pair-Encoding segmentiert und der Vokabular-ID zugewiesen."
     }
   });
 
@@ -74,7 +79,7 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
         >
           {/* INPUT STRING BEREICH */}
           <div className="px-6 shrink-0">
-            <div className="flex items-center gap-4 bg-slate-900/40 p-4 rounded-lg border border-white/5">
+            <div className="flex items-center gap-4 bg-slate-900/40 p-4 rounded-lg border border-white/5 shadow-inner">
               <div className="w-10 h-10 shrink-0 rounded-lg bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-500 text-lg">
                 📑
               </div>
@@ -94,8 +99,8 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-800 to-transparent"></div>
           </div>
 
-          {/* TOKEN CLOUD BEREICH (Zentriert) */}
-          <div className="flex-1 min-h-0 overflow-y-auto">
+          {/* TOKEN CLOUD BEREICH */}
+          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
             <div className="flex flex-wrap justify-center content-center gap-4 p-8">
               {tokens.map((token, index) => {
                 const isSelected = selectedTokenId === token.id;
@@ -106,7 +111,7 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
                       relative group flex flex-col items-center p-3 min-w-[85px] rounded-lg border-2 transition-all duration-300 cursor-pointer
                       ${isSelected
                         ? 'bg-blue-600 border-white scale-105 shadow-xl z-20'
-                        : 'bg-slate-900/60 border-slate-800 hover:border-blue-500/50 z-10'
+                        : 'bg-slate-900/60 border-slate-800 hover:border-blue-500/50 z-10 shadow-lg'
                       }
                     `}
                     onMouseEnter={() => handleMouseEnter(token)}
@@ -122,11 +127,11 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
 
                     {isSelected && showTooltip && (
                       <div 
-                        className="absolute top-full mt-3 w-56 p-4 rounded-lg border shadow-2xl bg-slate-900 border-white text-white z-[100] left-1/2 -translate-x-1/2 cursor-default"
+                        className="absolute top-full mt-3 w-56 p-4 rounded-lg border shadow-2xl bg-slate-900 border-white text-white z-[100] left-1/2 -translate-x-1/2 cursor-default animate-in zoom-in-95 duration-200"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex justify-between items-center mb-2 border-b border-white/10 pb-2">
-                          <span className="text-[8px] font-black uppercase text-blue-400 tracking-widest">Semantik-Quickinfo</span>
+                          <span className="text-[8px] font-black uppercase text-blue-400 tracking-widest">Quickinfo</span>
                           <button 
                             onClick={(e) => { e.stopPropagation(); setShowTooltip(false); }}
                             className="text-white opacity-50 hover:opacity-100 transition-opacity text-sm leading-none"
@@ -159,11 +164,11 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
           <div className="flex gap-6">
              <div className="text-right border-l border-white/5 pl-6">
                 <span className="text-[7px] uppercase font-black text-slate-600 block">System-Status</span>
-                <span className="text-[10px] font-mono font-bold text-blue-400 uppercase">Input geladen</span>
+                <span className="text-[10px] font-mono font-bold text-blue-400 uppercase tracking-tighter">Input segmentiert</span>
              </div>
              <div className="text-right border-l border-white/5 pl-6">
-                <span className="text-[7px] uppercase font-black text-slate-600 block">Vocab-ID</span>
-                <span className="text-[10px] font-mono font-bold text-blue-400">#4096-X</span>
+                <span className="text-[7px] uppercase font-black text-slate-600 block">Vocab-ID Space</span>
+                <span className="text-[10px] font-mono font-bold text-blue-400 tracking-tighter">#50.257 (GPT-Standard)</span>
              </div>
           </div>
         </div>

@@ -82,16 +82,16 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
       targetId = hoveredTokenId;
     } 
     
-    if (!rule) {
+    if (!rule && activeRules.length > 0) {
       const sorted = [...activeRules].sort((a, b) => b.strength - a.strength);
-      if (sorted.length > 0) {
-        rule = sorted[0];
-        targetId = rule.target;
-      }
+      rule = sorted[0];
+      targetId = rule.target;
     }
 
     const targetToken = tokens.find(t => Number(t.id) === Number(targetId));
-    const strength = rule ? rule.strength : 0;
+    
+    // FIX: Fallback auf 0, damit toFixed() nicht auf undefined aufgerufen wird
+    const strength = (rule && typeof rule.strength === 'number') ? rule.strength : 0;
     const isLive = !!hoveredTokenId;
 
     setHoveredItem({
@@ -100,9 +100,9 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
       data: {
         "--- Mechanik": "---",
         "QUERY": sourceToken ? `"${sourceToken.text}" (${sourceToken.id})` : "N/A",
-        "KEY": rule ? `"${targetToken?.text}" (${targetToken?.id})` : (isLive ? "Kein Fokus" : "Standby / Inaktiv"),
+        "KEY": targetToken ? `"${targetToken.text}" (${targetToken.id})` : (isLive ? "Kein Fokus" : "Standby / Inaktiv"),
         "--- Mathematik": "---",
-        "Attention Score": rule ? (strength * 100).toFixed(1) + "%" : "0.0%",
+        "Attention Score": (strength * 100).toFixed(1) + "%",
         "Raw Weight": strength.toFixed(4),
         "--- Erkenntnis": "---",
         "Information": rule ? rule.explanation : "Dieser Head liefert für dieses Wort aktuell keine Kontext-Informationen."
@@ -179,7 +179,6 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
                 } else if (strength > 0.1) {
                   tokenClasses += 'bg-slate-900 border-white text-white scale-110 shadow-lg z-30';
                 } else if (hasActivity) {
-                  // DER EXPERT-GLOW: Markiert Wörter, die in diesem Kopf eine Rolle spielen
                   tokenClasses += 'bg-slate-950/80 text-slate-300';
                   tokenStyle = { borderColor: `${themeColor}60`, boxShadow: `0 0 12px ${themeColor}30` };
                 } else {
