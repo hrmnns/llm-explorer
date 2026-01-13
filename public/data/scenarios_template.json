@@ -1,0 +1,86 @@
+{
+  "project": "<string>",
+  "version": "<string>",
+  "scenarios": [
+    {
+      "id": "<string>",
+      "name": "<string>",
+      "input_prompt": "<string>",
+      "explanation": "<string>",
+      "phase_0_tokenization": {
+        "tokens": [
+          {
+            "id": 0,
+            "text": "<string>",
+            "explanation": "<string>"
+          }
+        ]
+      },
+      "phase_1_embedding": {
+        "token_vectors": [
+          {
+            "token_index": 0,
+            "base_vector": [
+              0.0,
+              0.0
+            ],
+            "positional_vector": [
+              0.0,
+              0.0
+            ],
+            "information": "<string or omit in your concrete scenario>"
+          }
+        ]
+      },
+      "phase_2_attention": {
+        "attention_profiles": [
+          {
+            "id": "<string>",
+            "label": "<string>",
+            "rules": [
+              {
+                "head": 1,
+                "source": 0,
+                "target": 0,
+                "strength": 0.0,
+                "explanation": "<string>"
+              }
+            ]
+          }
+        ]
+      },
+      "phase_3_ffn": {
+        "activation_profiles": [
+          {
+            "ref_profile_id": "<string>",
+            "activations": [
+              {
+                "label": "<string>",
+                "activation": 0.0
+              }
+            ]
+          }
+        ]
+      },
+      "phase_4_decoding": {
+        "outputs": [
+          {
+            "label": "<string>",
+            "logit": 0.0,
+            "type": "<string>",
+            "hallucination_risk": 0.0,
+            "hallucination_risk_percent": 0,
+            "causality_trace": "<string>"
+          }
+        ]
+      },
+      "phase_5_analysis": {
+        "summary_points": [
+          "<string>"
+        ],
+        "storyline": "<string>",
+        "didactic_outlook": "<string>"
+      }
+    }
+  ]
+}

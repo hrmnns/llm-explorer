@@ -1,6 +1,6 @@
 {
   "project": "LLM-Explorer",
-  "version": "3.2",
+  "version": "3.3",
   "scenarios": [
     {
       "id": "was-ist-ein-hund",
@@ -254,76 +254,91 @@
       }
     },
     {
-      "id": "winograd-pokal-koffer-groesse",
-      "name": "Winograd-Schema: Pronomen-Auflösung durch Größenlogik",
-      "input_prompt": "Der Pokal passte nicht in den Koffer, weil er zu groß war.",
-      "explanation": "Dieses Szenario zeigt, wie ein Transformer die Pronomen-Referenz in einem Winograd-Schema auflöst. Der Satz ist absichtlich so gebaut, dass reine Nähe-Heuristiken (\"er\" bezieht sich auf das zuletzt genannte Nomen) zu einer falschen Lesart führen können. Erst die Kombination aus Syntax (wer ist Subjekt/Objekt?), Semantik (Pokal vs. Koffer) und Kausalität (\"passt nicht, weil ...\") macht die korrekte Interpretation stabil.",
+      "id": "winograd-trophaee-tasche-klein",
+      "name": "Winograd-Schema: Pronomen-Auflösung durch Größenlogik (zu klein)",
+      "input_prompt": "Die Trophäe passte nicht in die braune Tasche, weil sie zu klein war.",
+      "explanation": "Dieses Szenario ist ein klassisches Winograd-ähnliches Rätsel: Das Pronomen \"sie\" kann sich grammatisch auf \"Trophäe\" oder \"Tasche\" beziehen (beides feminin). Der entscheidende Hinweis liegt in der Kausalität: Wenn etwas nicht hineinpasst, weil \"sie zu klein\" ist, dann ist der Container (die Tasche) zu klein, nicht das hineinzulegende Objekt. Das Szenario zeigt den Konflikt zwischen einer naiven Nähe-Heuristik und einer kontextuellen Fit-Logik.",
       "phase_0_tokenization": {
         "tokens": [
           {
             "id": 10,
             "text": "<s>",
-            "explanation": "Start-of-Sequence Token: markiert den Beginn der Sequenz und dient als globaler Sammelpunkt für Kontext (in vielen Modellen als Anker für frühe Repräsentationen)."
+            "explanation": "Start-of-Sequence Token: Beginn der Sequenz; dient als globaler Kontextanker."
           },
           {
             "id": 11,
-            "text": "Der",
-            "explanation": "Bestimmter Artikel (Maskulin, Nominativ): syntaktischer Marker, der ein nachfolgendes Nomen als Subjekt-Kandidat ankündigt."
+            "text": "Die",
+            "explanation": "Bestimmter Artikel (Feminin, Nominativ): kündigt ein feminines Subjekt an."
           },
           {
             "id": 12,
-            "text": "Pokal",
-            "explanation": "Kern-Nomen 1: physisches Objekt; typischerweise \"hineinpassend\" oder \"zu groß\". Kandidat für Pronomen-Referenz."
+            "text": "Troph",
+            "explanation": "Subword 1 von 'Trophäe' (BPE-Demo): seltenes/aus dem Französischen stammendes Wort wird oft segmentiert."
           },
           {
             "id": 13,
-            "text": "passte",
-            "explanation": "Finites Verb (Präteritum): beschreibt das Fit/Containment-Ereignis; verlangt semantisch ein Objekt, das in etwas hineinpasst."
+            "text": "##äe",
+            "explanation": "Subword 2 von 'Trophäe' (BPE-Demo): vervollständigt das Nomen; zusammen bilden 12+13 die Entität 'Trophäe'."
           },
           {
             "id": 14,
-            "text": "nicht",
-            "explanation": "Negationspartikel: kippt das Ereignis in ein Scheitern (\"passte nicht\") und aktiviert alternative Erklärungen im Kausalschema."
+            "text": "passte",
+            "explanation": "Finites Verb (Präteritum): aktiviert den Fit/Containment-Frame (Objekt in Container)."
           },
           {
             "id": 15,
-            "text": "in",
-            "explanation": "Präposition: eröffnet eine Lokations-/Containment-Relation; sucht ein Zielobjekt (Container)."
+            "text": "nicht",
+            "explanation": "Negationspartikel: markiert das Fit-Ereignis als Fehlschlag und erhöht den Bedarf an Erklärung."
           },
           {
             "id": 16,
-            "text": "den",
-            "explanation": "Bestimmter Artikel (Maskulin, Akkusativ): markiert das folgende Nomen als Objekt der Präposition und damit als Container-Kandidat."
+            "text": "in",
+            "explanation": "Präposition: eröffnet die Containment-Relation; sucht ein Zielobjekt (Container)."
           },
           {
             "id": 17,
-            "text": "Koffer",
-            "explanation": "Kern-Nomen 2: typischer Container; konkurriert als Pronomen-Referenz (Heuristik: zuletzt erwähnt)."
+            "text": "die",
+            "explanation": "Bestimmter Artikel (Feminin, Akkusativ): leitet das Objekt der Präposition ein; typischer Container-Kandidat."
           },
           {
             "id": 18,
-            "text": "weil",
-            "explanation": "Subjunktion: leitet einen Kausalsatz ein und signalisiert, dass der folgende Satzteil eine Begründung für das Scheitern liefert."
+            "text": "braun",
+            "explanation": "Adjektiv-Stamm von 'braune' (BPE-Demo): Adjektivflexion wird häufig als Subword abgebildet."
           },
           {
             "id": 19,
-            "text": "er",
-            "explanation": "Personalpronomen (3. Person Singular Maskulin): Referenz muss auf ein maskulines Nomen im Kontext gebunden werden (Pokal oder Koffer)."
+            "text": "##e",
+            "explanation": "Flexionssuffix (Adj.-Endung): zeigt die feminine Endung in 'braune' als separate Einheit."
           },
           {
             "id": 20,
-            "text": "zu",
-            "explanation": "Gradpartikel: verstärkt ein Adjektiv (\"zu groß\") und impliziert eine Überschreitung einer passenden Grenze."
+            "text": "Tasche",
+            "explanation": "Nomen (feminin): Container-Entität; zentraler Kandidat für die Eigenschaft 'zu klein'."
           },
           {
             "id": 21,
-            "text": "groß",
-            "explanation": "Adjektiv: Größe/Dimension; semantischer Trigger für Fit-Fehler (Objekt zu groß für Container)."
+            "text": "weil",
+            "explanation": "Subjunktion: leitet den Kausalsatz ein; signalisiert eine Begründung für das Nicht-Passen."
           },
           {
             "id": 22,
+            "text": "sie",
+            "explanation": "Personalpronomen (3. Person Singular Feminin): Referenz muss auf eine feminine Entität gebunden werden (Trophäe oder Tasche)."
+          },
+          {
+            "id": 23,
+            "text": "zu",
+            "explanation": "Gradpartikel: markiert eine Überschreitung/Unterschreitung einer passenden Schwelle (hier: zu klein)."
+          },
+          {
+            "id": 24,
+            "text": "klein",
+            "explanation": "Adjektiv: Größen-/Kapazitätsmerkmal; im Fit-Frame typischerweise Eigenschaft des Containers (zu klein)."
+          },
+          {
+            "id": 25,
             "text": "war",
-            "explanation": "Kopulaverb (Präteritum): verbindet das Pronomen-Subjekt mit dem Prädikativ \"groß\"; liefert die Begründungs-Eigenschaft."
+            "explanation": "Kopulaverb (Präteritum): verbindet das Pronomen-Subjekt mit dem Prädikativ 'klein'."
           }
         ]
       },
@@ -332,158 +347,194 @@
           {
             "token_index": 10,
             "base_vector": [
-              0.02,
-              0.60
+              0.05,
+              0.05
             ],
             "positional_vector": [
               0.00,
               0.00
             ],
-            "information": "X (Struktur↔Welt): sehr niedrig, da <s> keine Weltentität bezeichnet. Y (Eigenständig↔Kontextabhängig): mittel-hoch, weil <s> als globaler Kontextanker nur im Zusammenspiel mit der Sequenz Sinn ergibt."
+            "information": "Sequenzstart ist semantisch neutral und positionsmäßig am Ursprung."
           },
           {
             "token_index": 11,
             "base_vector": [
-              0.05,
-              0.88
+              0.15,
+              0.85
             ],
             "positional_vector": [
               0.02,
               0.10
             ],
-            "information": "Artikel sind stark strukturgetrieben (X sehr niedrig) und ohne Bezugsnomen kaum eigenständig (Y hoch). Früh im Satz => niedrige Positions-Y."
+            "information": "Artikel: geringe Objektsemantik, aber starke syntaktische Funktion (Subjekt-Ankündigung)."
           },
           {
             "token_index": 12,
             "base_vector": [
-              0.92,
-              0.22
+              0.82,
+              0.28
             ],
             "positional_vector": [
               0.04,
               0.18
             ],
-            "information": "\"Pokal\" ist eine klare Weltentität (X sehr hoch) und relativ eigenständig interpretierbar (Y niedrig). Es ist ein Kandidat für Eigenschaftszuschreibung (\"zu groß\") im Fit-Frame."
+            "information": "Subword von 'Trophäe': inhaltlich als physisches Objekt nahe bei anderen Dingen, aber leicht markiert als spezielles Lexem (Preis/Auszeichnung)."
           },
           {
             "token_index": 13,
             "base_vector": [
-              0.55,
-              0.78
+              0.82,
+              0.28
             ],
             "positional_vector": [
               0.06,
               0.26
             ],
-            "information": "\"passte\" ist relational: Es beschreibt eine Beziehung zwischen Entitäten (X mittel), aber ohne Subjekt/Objekt bleibt es kontextabhängig (Y hoch)."
+            "information": "Polysemie-Regel greift hier nicht; 12 und 13 teilen sich denselben base_vector, weil sie zusammen EIN Nomen bilden. Positionsvektor unterscheidet die Reihenfolge."
           },
           {
             "token_index": 14,
             "base_vector": [
-              0.10,
-              0.82
+              0.45,
+              0.55
             ],
             "positional_vector": [
               0.08,
               0.34
             ],
-            "information": "Negation ist ein struktureller Operator (X sehr niedrig) und stark vom Ereigniskontext abhängig (Y hoch): \"nicht\" braucht ein Ziel (was wird negiert?)."
+            "information": "'passte' aktiviert den Fit-Frame; semantisch relational (X mittel) und syntaktisch tragend (Y mittel)."
           },
           {
             "token_index": 15,
             "base_vector": [
-              0.08,
-              0.86
+              0.10,
+              0.60
             ],
             "positional_vector": [
               0.10,
               0.42
             ],
-            "information": "Präpositionen sind Strukturmarker (X sehr niedrig) und ohne ihr Objekt unvollständig (Y hoch). \"in\" öffnet die Container-Relation, entscheidet aber noch nichts."
+            "information": "Negation ist semantisch leicht, aber entscheidend für die Schlussfolgerung: es MUSS eine Begründung folgen."
           },
           {
             "token_index": 16,
             "base_vector": [
-              0.05,
-              0.90
+              0.20,
+              0.80
             ],
             "positional_vector": [
               0.12,
               0.50
             ],
-            "information": "Akkusativ-Artikel ist maximal strukturgetrieben (X sehr niedrig) und stark kontextabhängig (Y sehr hoch): Er kündigt ein Bezugsnomen an, trägt aber keine Weltentität."
+            "information": "Präposition 'in' ist Struktur (Containment) und lenkt die Suche auf ein Container-Nomen."
           },
           {
             "token_index": 17,
             "base_vector": [
-              0.88,
-              0.26
+              0.15,
+              0.85
             ],
             "positional_vector": [
               0.14,
               0.58
             ],
-            "information": "\"Koffer\" ist ebenfalls eine Weltentität (X hoch) und relativ eigenständig (Y niedrig). Nahe bei \"Pokal\" (beide physisch), aber mit Container-Schema (in Phase 2 relevant)."
+            "information": "Artikel (Objekt der Präposition): syntaktischer Fingerzeig auf den Container-Kandidaten."
           },
           {
             "token_index": 18,
             "base_vector": [
-              0.06,
-              0.94
+              0.55,
+              0.45
             ],
             "positional_vector": [
               0.16,
               0.66
             ],
-            "information": "\"weil\" ist ein reiner Diskurs-/Strukturmarker (X extrem niedrig) und maximal kontextabhängig (Y extrem hoch): Es verknüpft Sachverhalte, hat aber keine Weltreferenz."
+            "information": "Adjektivstamm 'braun' liegt semantisch im Eigenschaftsraum (Material/Farbe), weniger im Objekt-Raum."
           },
           {
             "token_index": 19,
             "base_vector": [
-              0.18,
-              0.90
+              0.55,
+              0.45
             ],
             "positional_vector": [
               0.18,
               0.74
             ],
-            "information": "Pronomen sind semantisch unterbestimmt (X niedrig-mittel) und stark kontextabhängig (Y sehr hoch): Die Referenz entsteht erst durch Attention, nicht durch den Basisvektor."
+            "information": "Flexionssuffix: teilt base_vector mit dem Adjektivstamm (gleiche Eigenschaftseinheit), aber andere Position."
           },
           {
             "token_index": 20,
             "base_vector": [
-              0.10,
-              0.88
+              0.76,
+              0.32
             ],
             "positional_vector": [
               0.20,
               0.82
             ],
-            "information": "\"zu\" ist kompositionell/strukturell (X sehr niedrig) und stark kontextabhängig (Y sehr hoch): Es braucht ein Adjektiv und aktiviert eine Überschreitungslogik (zu + Eigenschaft)."
+            "information": "'Tasche' ist physischer Container: semantisch nah an 'Trophäe' (beides Dinge), aber mit Container-Schema (Fit-Relevanz)."
           },
           {
             "token_index": 21,
             "base_vector": [
-              0.78,
-              0.48
+              0.25,
+              0.90
             ],
             "positional_vector": [
               0.22,
               0.90
             ],
-            "information": "\"groß\" ist weltbezogen (X hoch), aber als Eigenschaft weniger eigenständig als ein Nomen (Y mittel): Es braucht typischerweise einen Träger (Pokal oder Koffer), der erst später gebunden wird."
+            "information": "'weil' ist Diskurs-/Kausalanker: hoher Strukturanteil, positionell spät im Satz -> hoher Positions-Y."
           },
           {
             "token_index": 22,
             "base_vector": [
-              0.48,
-              0.82
+              0.30,
+              0.70
             ],
             "positional_vector": [
               0.24,
               0.98
             ],
-            "information": "Kopulaverb ist relational (X mittel) und stark kontextabhängig (Y hoch): \"war\" verbindet Subjekt (Pronomen) und Prädikativ (groß). Satzende => höchstes Positions-Y."
+            "information": "Pronomen ist semantisch unterbestimmt (X mittel). Als Femininum konkurriert es zwischen 'Trophäe' und 'Tasche'."
+          },
+          {
+            "token_index": 23,
+            "base_vector": [
+              0.20,
+              0.75
+            ],
+            "positional_vector": [
+              0.26,
+              1.06
+            ],
+            "information": "Gradpartikel 'zu' verstärkt das Adjektiv und deutet eine Schwellenverletzung an (zu klein)."
+          },
+          {
+            "token_index": 24,
+            "base_vector": [
+              0.68,
+              0.38
+            ],
+            "positional_vector": [
+              0.28,
+              1.14
+            ],
+            "information": "'klein' ist Eigenschaft mit starker Fit-Interpretation: in diesem Satz eher Container-Eigenschaft (Kapazität), nicht Objekt-Eigenschaft."
+          },
+          {
+            "token_index": 25,
+            "base_vector": [
+              0.35,
+              0.60
+            ],
+            "positional_vector": [
+              0.30,
+              1.22
+            ],
+            "information": "Kopula 'war' koppelt Pronomen und Eigenschaft. Am Satzende => höchster Positions-Y."
           }
         ]
       },
@@ -491,391 +542,419 @@
         "attention_profiles": [
           {
             "id": "recency-literal",
-            "label": "Wörtlich/Naiv (Recency-Heuristik)",
+            "label": "Wörtlich/Naiv (Nähe + Subjekt-Fokus)",
             "rules": [
               {
                 "head": 2,
                 "source": 11,
                 "target": 12,
-                "strength": 0.95,
-                "explanation": "H2 fragt: \"Welches Nomen gehört zu meinem Artikel 'Der'?\" -> 'Pokal'."
+                "strength": 0.78,
+                "explanation": "H2 fragt: \"Welches Nomen gehört zu meinem Artikel 'Die'?\" -> 'Troph' (Beginn des Nomens)."
               },
               {
                 "head": 2,
                 "source": 12,
                 "target": 11,
-                "strength": 0.75,
-                "explanation": "H2 fragt: \"Welcher Artikel markiert mich als Subjektkandidat?\" -> 'Der'."
-              },
-              {
-                "head": 3,
-                "source": 12,
-                "target": 13,
-                "strength": 0.90,
-                "explanation": "H3 fragt: \"Welches Verb beschreibt meine Handlung/Zustandsänderung?\" -> 'passte'."
-              },
-              {
-                "head": 3,
-                "source": 13,
-                "target": 12,
-                "strength": 0.85,
-                "explanation": "H3 fragt: \"Wer ist das Subjekt des Fit-Ereignisses?\" -> 'Pokal'."
-              },
-              {
-                "head": 3,
-                "source": 13,
-                "target": 17,
-                "strength": 0.70,
-                "explanation": "H3 fragt: \"Worauf bezieht sich das Fit-Ziel/Container-Schema im Satz?\" -> 'Koffer'."
-              },
-              {
-                "head": 3,
-                "source": 17,
-                "target": 13,
                 "strength": 0.55,
-                "explanation": "H3 fragt: \"In welchem Ereignis spiele ich als Container eine Rolle?\" -> 'passte'."
+                "explanation": "H2 fragt: \"Welcher Artikel kündigt meine Nominalphrase an?\" -> 'Die'."
               },
               {
                 "head": 1,
                 "source": 12,
-                "target": 17,
-                "strength": 0.55,
-                "explanation": "H1 fragt: \"Welche zweite Sache steht im gleichen Objekt-Feld (physische Dinge)?\" -> 'Koffer'."
-              },
-              {
-                "head": 1,
-                "source": 17,
-                "target": 12,
-                "strength": 0.55,
-                "explanation": "H1 fragt: \"Welche andere physische Einheit steht mit mir im Fit-Kontrast?\" -> 'Pokal'."
-              },
-              {
-                "head": 2,
-                "source": 15,
-                "target": 17,
-                "strength": 0.92,
-                "explanation": "H2 fragt: \"Welches Objekt komplet­tiert die Präposition 'in'?\" -> 'Koffer'."
-              },
-              {
-                "head": 2,
-                "source": 17,
-                "target": 15,
-                "strength": 0.65,
-                "explanation": "H2 fragt: \"Welche Präposition bindet mich als Ziel/Container ein?\" -> 'in'."
-              },
-              {
-                "head": 2,
-                "source": 16,
-                "target": 17,
+                "target": 13,
                 "strength": 0.96,
-                "explanation": "H2 fragt: \"Welches Nomen steht in meinem Akkusativ-Rahmen 'den'?\" -> 'Koffer'."
+                "explanation": "H1 fragt: \"Welches Subword vervollständigt meine Entität?\" -> '##äe'."
               },
               {
-                "head": 2,
-                "source": 17,
-                "target": 16,
-                "strength": 0.70,
-                "explanation": "H2 fragt: \"Welcher Artikel markiert meinen Kasus/Objektstatus?\" -> 'den'."
+                "head": 1,
+                "source": 13,
+                "target": 12,
+                "strength": 0.96,
+                "explanation": "H1 fragt: \"Zu welchem Stamm gehöre ich?\" -> 'Troph'."
               },
               {
                 "head": 3,
                 "source": 14,
-                "target": 13,
+                "target": 12,
+                "strength": 0.72,
+                "explanation": "H3 fragt: \"Wer ist das Subjekt des Fit-Ereignisses?\" -> 'Troph' (Trophäe als Ganzes)."
+              },
+              {
+                "head": 3,
+                "source": 12,
+                "target": 14,
+                "strength": 0.72,
+                "explanation": "H3 fragt: \"Welches Verb beschreibt meinen Zustand/Meine Relation?\" -> 'passte'."
+              },
+              {
+                "head": 3,
+                "source": 15,
+                "target": 14,
                 "strength": 0.90,
                 "explanation": "H3 fragt: \"Welches Ereignis negiere ich?\" -> 'passte'."
               },
               {
                 "head": 3,
-                "source": 13,
-                "target": 14,
-                "strength": 0.80,
-                "explanation": "H3 fragt: \"Warum ist dieses Ereignis als Fehlschlag markiert?\" -> 'nicht'."
-              },
-              {
-                "head": 2,
-                "source": 18,
-                "target": 13,
-                "strength": 0.65,
-                "explanation": "H2 fragt: \"Welchen Hauptsatz begründe ich mit 'weil'?\" -> 'passte'."
-              },
-              {
-                "head": 2,
-                "source": 13,
-                "target": 18,
-                "strength": 0.55,
-                "explanation": "H2 fragt: \"Welcher Marker leitet meine Begründung ein?\" -> 'weil'."
-              },
-              {
-                "head": 4,
-                "source": 19,
-                "target": 17,
-                "strength": 0.72,
-                "explanation": "H4 fragt (naiv): \"Welches maskuline Nomen ist am nächsten zuvor erwähnt?\" -> 'Koffer'."
-              },
-              {
-                "head": 4,
-                "source": 17,
-                "target": 19,
-                "strength": 0.45,
-                "explanation": "H4 fragt: \"Welches Pronomen könnte mich rückverweisen?\" -> 'er'."
-              },
-              {
-                "head": 2,
-                "source": 19,
-                "target": 22,
+                "source": 14,
+                "target": 15,
                 "strength": 0.70,
-                "explanation": "H2 fragt: \"Mit welchem Kopulaverb werde ich verknüpft?\" -> 'war'."
+                "explanation": "H3 fragt: \"Warum ist mein Ereignis als Fehlschlag markiert?\" -> 'nicht'."
               },
               {
                 "head": 2,
-                "source": 22,
-                "target": 19,
-                "strength": 0.70,
-                "explanation": "H2 fragt: \"Welches Subjekt trage ich im 'war'-Frame?\" -> 'er'."
-              },
-              {
-                "head": 3,
-                "source": 22,
-                "target": 21,
-                "strength": 0.88,
-                "explanation": "H3 fragt: \"Welche Eigenschaft prädiziere ich?\" -> 'groß'."
-              },
-              {
-                "head": 3,
-                "source": 21,
-                "target": 22,
-                "strength": 0.78,
-                "explanation": "H3 fragt: \"Welche Kopula macht mich zur Aussage?\" -> 'war'."
+                "source": 16,
+                "target": 20,
+                "strength": 0.86,
+                "explanation": "H2 fragt: \"Welches Nomen ist mein Zielobjekt (Containment)?\" -> 'Tasche'."
               },
               {
                 "head": 2,
                 "source": 20,
-                "target": 21,
+                "target": 16,
+                "strength": 0.55,
+                "explanation": "H2 fragt: \"Welche Präposition bindet mich als Ziel ein?\" -> 'in'."
+              },
+              {
+                "head": 2,
+                "source": 17,
+                "target": 20,
                 "strength": 0.92,
-                "explanation": "H2 fragt: \"Welches Adjektiv verstärke ich als Gradpartikel 'zu'?\" -> 'groß'."
+                "explanation": "H2 fragt: \"Welches Nomen folgt auf meinen Artikel 'die'?\" -> 'Tasche'."
+              },
+              {
+                "head": 2,
+                "source": 20,
+                "target": 17,
+                "strength": 0.68,
+                "explanation": "H2 fragt: \"Welcher Artikel markiert mich als Objekt der Präposition?\" -> 'die'."
+              },
+              {
+                "head": 1,
+                "source": 18,
+                "target": 20,
+                "strength": 0.70,
+                "explanation": "H1 fragt: \"Welche Entität trage ich als Eigenschaft (Farbe)?\" -> 'Tasche'."
+              },
+              {
+                "head": 1,
+                "source": 20,
+                "target": 18,
+                "strength": 0.55,
+                "explanation": "H1 fragt: \"Welche Eigenschaft modifiziert mich?\" -> 'braun'."
+              },
+              {
+                "head": 2,
+                "source": 18,
+                "target": 19,
+                "strength": 0.90,
+                "explanation": "H2 fragt: \"Welche Flexionsendung komplettiert das Adjektiv?\" -> '##e'."
+              },
+              {
+                "head": 2,
+                "source": 19,
+                "target": 18,
+                "strength": 0.90,
+                "explanation": "H2 fragt: \"Zu welchem Adjektivstamm gehöre ich?\" -> 'braun'."
               },
               {
                 "head": 2,
                 "source": 21,
+                "target": 14,
+                "strength": 0.62,
+                "explanation": "H2 fragt: \"Welchen Hauptsatz begründe ich mit 'weil'?\" -> 'passte'."
+              },
+              {
+                "head": 2,
+                "source": 14,
+                "target": 21,
+                "strength": 0.45,
+                "explanation": "H2 fragt: \"Welcher Marker leitet meine Begründung ein?\" -> 'weil'."
+              },
+              {
+                "head": 4,
+                "source": 22,
                 "target": 20,
+                "strength": 0.74,
+                "explanation": "H4 fragt (naiv): \"Welche feminine Entität ist am nächsten zuvor erwähnt?\" -> 'Tasche'."
+              },
+              {
+                "head": 4,
+                "source": 20,
+                "target": 22,
+                "strength": 0.40,
+                "explanation": "H4 fragt: \"Welches Pronomen könnte auf mich zurückverweisen?\" -> 'sie'."
+              },
+              {
+                "head": 2,
+                "source": 22,
+                "target": 25,
+                "strength": 0.78,
+                "explanation": "H2 fragt: \"Mit welchem Kopulaverb bin ich verbunden?\" -> 'war'."
+              },
+              {
+                "head": 2,
+                "source": 25,
+                "target": 22,
+                "strength": 0.78,
+                "explanation": "H2 fragt: \"Welches Subjekt trage ich im Kopulasatz?\" -> 'sie'."
+              },
+              {
+                "head": 3,
+                "source": 25,
+                "target": 24,
+                "strength": 0.86,
+                "explanation": "H3 fragt: \"Welche Eigenschaft prädiziere ich?\" -> 'klein'."
+              },
+              {
+                "head": 3,
+                "source": 24,
+                "target": 25,
+                "strength": 0.68,
+                "explanation": "H3 fragt: \"Welche Kopula macht mich zur Aussage?\" -> 'war'."
+              },
+              {
+                "head": 2,
+                "source": 23,
+                "target": 24,
+                "strength": 0.92,
+                "explanation": "H2 fragt: \"Welches Adjektiv verstärke ich als 'zu'?\" -> 'klein'."
+              },
+              {
+                "head": 2,
+                "source": 24,
+                "target": 23,
                 "strength": 0.60,
                 "explanation": "H2 fragt: \"Welcher Gradmarker modifiziert mich?\" -> 'zu'."
               },
               {
                 "head": 1,
                 "source": 10,
-                "target": 13,
-                "strength": 0.40,
-                "explanation": "H1 fragt: \"Welches zentrale Ereignis strukturiert die Sequenz?\" -> 'passte'."
+                "target": 14,
+                "strength": 0.35,
+                "explanation": "H1 fragt: \"Welches zentrale Ereignis strukturiert den Satz?\" -> 'passte'."
               },
               {
                 "head": 1,
-                "source": 13,
+                "source": 14,
                 "target": 10,
-                "strength": 0.30,
+                "strength": 0.25,
                 "explanation": "H1 fragt: \"Wo ist der globale Kontextanker?\" -> '<s>'."
               }
             ]
           },
           {
-            "id": "contextual-causal",
-            "label": "Kontextuell/Kausal (Größenlogik)",
+            "id": "contextual-fit",
+            "label": "Kontextuell/Fit-Logik (Container-zu-klein)",
             "rules": [
               {
                 "head": 2,
                 "source": 11,
                 "target": 12,
-                "strength": 0.95,
-                "explanation": "H2 fragt: \"Welches Nomen gehört zu meinem Artikel 'Der'?\" -> 'Pokal'."
+                "strength": 0.78,
+                "explanation": "H2 fragt: \"Welches Nomen gehört zu meinem Artikel 'Die'?\" -> 'Troph' (Beginn der Entität)."
               },
               {
                 "head": 2,
                 "source": 12,
                 "target": 11,
-                "strength": 0.75,
-                "explanation": "H2 fragt: \"Welcher Artikel markiert mich als Subjektkandidat?\" -> 'Der'."
+                "strength": 0.55,
+                "explanation": "H2 fragt: \"Welcher Artikel kündigt meine Nominalphrase an?\" -> 'Die'."
               },
               {
-                "head": 3,
+                "head": 1,
                 "source": 12,
                 "target": 13,
-                "strength": 0.92,
-                "explanation": "H3 fragt: \"Welches Fit-Ereignis betrifft mich als bewegtes Objekt?\" -> 'passte'."
+                "strength": 0.96,
+                "explanation": "H1 fragt: \"Welches Subword vervollständigt mich als Entität?\" -> '##äe'."
               },
               {
-                "head": 3,
+                "head": 1,
                 "source": 13,
                 "target": 12,
-                "strength": 0.88,
-                "explanation": "H3 fragt: \"Wer ist das Subjekt im Fit-Frame?\" -> 'Pokal'."
-              },
-              {
-                "head": 2,
-                "source": 15,
-                "target": 17,
-                "strength": 0.95,
-                "explanation": "H2 fragt: \"Welches Objekt komplet­tiert die Präposition 'in'?\" -> 'Koffer'."
-              },
-              {
-                "head": 2,
-                "source": 17,
-                "target": 15,
-                "strength": 0.65,
-                "explanation": "H2 fragt: \"Welche Präposition bindet mich als Container ein?\" -> 'in'."
-              },
-              {
-                "head": 2,
-                "source": 16,
-                "target": 17,
                 "strength": 0.96,
-                "explanation": "H2 fragt: \"Welches Nomen steht in meinem Akkusativ-Rahmen 'den'?\" -> 'Koffer'."
-              },
-              {
-                "head": 2,
-                "source": 17,
-                "target": 16,
-                "strength": 0.70,
-                "explanation": "H2 fragt: \"Welcher Artikel markiert meinen Kasus/Objektstatus?\" -> 'den'."
+                "explanation": "H1 fragt: \"Zu welchem Stamm gehöre ich?\" -> 'Troph'."
               },
               {
                 "head": 3,
                 "source": 14,
-                "target": 13,
+                "target": 12,
+                "strength": 0.74,
+                "explanation": "H3 fragt: \"Wer ist das Subjekt des Fit-Ereignisses?\" -> 'Trophäe' (12+13)."
+              },
+              {
+                "head": 3,
+                "source": 12,
+                "target": 14,
+                "strength": 0.74,
+                "explanation": "H3 fragt: \"Welches Verb stellt meine Fit-Relation her?\" -> 'passte'."
+              },
+              {
+                "head": 2,
+                "source": 16,
+                "target": 20,
+                "strength": 0.92,
+                "explanation": "H2 fragt: \"Welches Zielobjekt bildet den Container der Präposition 'in'?\" -> 'Tasche'."
+              },
+              {
+                "head": 2,
+                "source": 20,
+                "target": 16,
+                "strength": 0.60,
+                "explanation": "H2 fragt: \"Welche Präposition bindet mich als Container ein?\" -> 'in'."
+              },
+              {
+                "head": 3,
+                "source": 14,
+                "target": 20,
+                "strength": 0.84,
+                "explanation": "H3 fragt: \"Worin sollte das Subjekt hineinpassen (Container)?\" -> 'Tasche'."
+              },
+              {
+                "head": 3,
+                "source": 20,
+                "target": 14,
+                "strength": 0.62,
+                "explanation": "H3 fragt: \"In welchem Ereignis bin ich als Container beteiligt?\" -> 'passte'."
+              },
+              {
+                "head": 3,
+                "source": 15,
+                "target": 14,
                 "strength": 0.92,
                 "explanation": "H3 fragt: \"Welches Ereignis negiere ich?\" -> 'passte'."
               },
               {
                 "head": 3,
-                "source": 13,
-                "target": 14,
-                "strength": 0.82,
-                "explanation": "H3 fragt: \"Warum ist das Fit-Ereignis als Fehlschlag markiert?\" -> 'nicht'."
+                "source": 14,
+                "target": 15,
+                "strength": 0.72,
+                "explanation": "H3 fragt: \"Warum ist das Fit-Ereignis ein Fehlschlag?\" -> 'nicht'."
               },
               {
                 "head": 2,
-                "source": 18,
-                "target": 13,
-                "strength": 0.75,
+                "source": 21,
+                "target": 14,
+                "strength": 0.70,
                 "explanation": "H2 fragt: \"Welchen Sachverhalt begründe ich im Kausalsatz?\" -> 'passte nicht'."
               },
               {
                 "head": 2,
-                "source": 13,
-                "target": 18,
-                "strength": 0.60,
-                "explanation": "H2 fragt: \"Welcher Marker leitet die Begründung ein?\" -> 'weil'."
-              },
-              {
-                "head": 4,
-                "source": 19,
-                "target": 12,
-                "strength": 0.93,
-                "explanation": "H4 fragt (kausal): \"Welcher Kandidat erklärt 'passt nicht' zusammen mit 'zu groß'?\" -> 'Pokal' (Objekt ist zu groß für Container)."
-              },
-              {
-                "head": 4,
-                "source": 12,
-                "target": 19,
-                "strength": 0.70,
-                "explanation": "H4 fragt: \"Welches Pronomen verweist auf mich als Fit-Subjekt?\" -> 'er'."
-              },
-              {
-                "head": 3,
-                "source": 22,
+                "source": 14,
                 "target": 21,
-                "strength": 0.90,
-                "explanation": "H3 fragt: \"Welche Eigenschaft prädiziere ich?\" -> 'groß'."
+                "strength": 0.50,
+                "explanation": "H2 fragt: \"Welcher Diskursmarker leitet die Begründung ein?\" -> 'weil'."
               },
               {
-                "head": 3,
-                "source": 21,
+                "head": 1,
+                "source": 24,
+                "target": 20,
+                "strength": 0.82,
+                "explanation": "H1 fragt: \"Welche Entität trägt plausibel die Eigenschaft 'klein' im Fit-Kontext?\" -> 'Tasche' (Container-Kapazität)."
+              },
+              {
+                "head": 1,
+                "source": 20,
+                "target": 24,
+                "strength": 0.82,
+                "explanation": "H1 fragt: \"Welche Eigenschaft erklärt mein Container-Versagen?\" -> 'klein'."
+              },
+              {
+                "head": 4,
+                "source": 22,
+                "target": 20,
+                "strength": 0.88,
+                "explanation": "H4 fragt (fit-basiert): \"Welche feminine Entität erklärt 'passt nicht' + 'zu klein'?\" -> 'Tasche' (Container ist zu klein)."
+              },
+              {
+                "head": 4,
+                "source": 20,
+                "target": 22,
+                "strength": 0.55,
+                "explanation": "H4 fragt: \"Welches Pronomen verweist auf mich als Container-Referent?\" -> 'sie'."
+              },
+              {
+                "head": 2,
+                "source": 22,
+                "target": 25,
+                "strength": 0.80,
+                "explanation": "H2 fragt: \"Mit welchem Verb bin ich im Kausalsatz verbunden?\" -> 'war'."
+              },
+              {
+                "head": 2,
+                "source": 25,
                 "target": 22,
                 "strength": 0.80,
+                "explanation": "H2 fragt: \"Welches Subjekt trage ich im Kopulasatz?\" -> 'sie'."
+              },
+              {
+                "head": 3,
+                "source": 25,
+                "target": 24,
+                "strength": 0.90,
+                "explanation": "H3 fragt: \"Welche Eigenschaft prädiziere ich als Begründung?\" -> 'klein'."
+              },
+              {
+                "head": 3,
+                "source": 24,
+                "target": 25,
+                "strength": 0.72,
                 "explanation": "H3 fragt: \"Welche Kopula macht mich zur Aussage?\" -> 'war'."
               },
               {
                 "head": 2,
-                "source": 20,
-                "target": 21,
+                "source": 23,
+                "target": 24,
                 "strength": 0.94,
-                "explanation": "H2 fragt: \"Welches Adjektiv verstärke ich als 'zu'?\" -> 'groß'."
+                "explanation": "H2 fragt: \"Welches Adjektiv verstärke ich als 'zu'?\" -> 'klein'."
               },
               {
                 "head": 2,
-                "source": 21,
-                "target": 20,
+                "source": 24,
+                "target": 23,
                 "strength": 0.62,
                 "explanation": "H2 fragt: \"Welcher Gradmarker modifiziert mich?\" -> 'zu'."
               },
               {
                 "head": 1,
-                "source": 21,
-                "target": 12,
-                "strength": 0.78,
-                "explanation": "H1 fragt: \"Welche Entität trägt plausibel die Eigenschaft 'groß' im Fit-Frame?\" -> 'Pokal'."
+                "source": 18,
+                "target": 20,
+                "strength": 0.70,
+                "explanation": "H1 fragt: \"Welche Entität modifiziere ich als Farbe?\" -> 'Tasche'."
               },
               {
                 "head": 1,
-                "source": 12,
-                "target": 21,
-                "strength": 0.78,
-                "explanation": "H1 fragt: \"Welche Eigenschaft wird mir im Kausalsatz zugeschrieben?\" -> 'groß'."
+                "source": 20,
+                "target": 18,
+                "strength": 0.55,
+                "explanation": "H1 fragt: \"Welche Eigenschaft (Farbe) trage ich?\" -> 'braun'."
               },
               {
-                "head": 3,
-                "source": 13,
-                "target": 17,
-                "strength": 0.85,
-                "explanation": "H3 fragt: \"Worin sollte das Subjekt hineinpassen (Container)?\" -> 'Koffer'."
-              },
-              {
-                "head": 3,
-                "source": 17,
-                "target": 13,
-                "strength": 0.60,
-                "explanation": "H3 fragt: \"In welchem Ereignis bin ich als Container beteiligt?\" -> 'passte'."
-              },
-              {
-                "head": 1,
-                "source": 12,
-                "target": 17,
-                "strength": 0.60,
-                "explanation": "H1 fragt: \"Welche zweite Entität steht in einer Container-Relation zu mir?\" -> 'Koffer'."
-              },
-              {
-                "head": 1,
-                "source": 17,
-                "target": 12,
-                "strength": 0.60,
-                "explanation": "H1 fragt: \"Welche Entität soll in mich hinein?\" -> 'Pokal'."
+                "head": 2,
+                "source": 18,
+                "target": 19,
+                "strength": 0.90,
+                "explanation": "H2 fragt: \"Welche Endung komplettiert mein Adjektiv?\" -> '##e'."
               },
               {
                 "head": 2,
                 "source": 19,
-                "target": 22,
-                "strength": 0.74,
-                "explanation": "H2 fragt: \"Mit welchem Verb bin ich als Subjekt verbunden?\" -> 'war'."
-              },
-              {
-                "head": 2,
-                "source": 22,
-                "target": 19,
-                "strength": 0.74,
-                "explanation": "H2 fragt: \"Welches Subjekt trage ich im Kopulasatz?\" -> 'er'."
+                "target": 18,
+                "strength": 0.90,
+                "explanation": "H2 fragt: \"Zu welchem Stamm gehöre ich?\" -> 'braun'."
               },
               {
                 "head": 1,
                 "source": 10,
-                "target": 18,
-                "strength": 0.35,
-                "explanation": "H1 fragt: \"Wo ist der Diskurs-Knoten für Begründungen?\" -> 'weil'."
+                "target": 21,
+                "strength": 0.30,
+                "explanation": "H1 fragt: \"Welcher Token ist der Kausal-Knoten?\" -> 'weil'."
               },
               {
                 "head": 1,
-                "source": 18,
+                "source": 21,
                 "target": 10,
-                "strength": 0.25,
-                "explanation": "H1 fragt: \"Wo sammelt sich der globale Kontext, an den ich andocke?\" -> '<s>'."
+                "strength": 0.22,
+                "explanation": "H1 fragt: \"Wo docke ich an den globalen Satzkontext an?\" -> '<s>'."
               }
             ]
           }
@@ -887,41 +966,41 @@
             "ref_profile_id": "recency-literal",
             "activations": [
               {
-                "label": "Recency-Bias: letztes Nomen als Referent",
-                "activation": 0.86
+                "label": "Nähe-Heuristik: letztes feminines Nomen als Referent",
+                "activation": 0.84
               },
               {
-                "label": "Container-Fokus: Koffer als zentrale Entität",
-                "activation": 0.72
+                "label": "Fit-Frame (unscharf): irgendetwas passt nicht",
+                "activation": 0.62
               },
               {
-                "label": "Eigenschaft: Größe (unspezifisch gebunden)",
-                "activation": 0.58
+                "label": "Eigenschaft: Kleinheit (schwach gebunden)",
+                "activation": 0.56
               },
               {
-                "label": "Unterdrückt: Fit-Logik (Objekt-zu-groß-für-Container)",
-                "activation": 0.18
+                "label": "Unterdrückt: Container-Kapazität als Ursache",
+                "activation": 0.22
               }
             ]
           },
           {
-            "ref_profile_id": "contextual-causal",
+            "ref_profile_id": "contextual-fit",
             "activations": [
               {
-                "label": "Fit-Frame: Objekt-zu-groß-für-Container",
-                "activation": 0.94
+                "label": "Container-Kapazität: Tasche ist zu klein",
+                "activation": 0.93
               },
               {
-                "label": "Entität-Bindung: 'er' -> Pokal",
-                "activation": 0.90
+                "label": "Fit-Logik: Objekt vs. Container Rollen",
+                "activation": 0.88
               },
               {
-                "label": "Kausalität: weil-Satz erklärt Scheitern",
-                "activation": 0.82
+                "label": "Kausalität: weil-Satz erklärt den Fehlschlag",
+                "activation": 0.80
               },
               {
-                "label": "Unterdrückt: Alternative Bindung 'er' -> Koffer",
-                "activation": 0.12
+                "label": "Unterdrückt: Alternative Bindung 'sie' -> Trophäe",
+                "activation": 0.14
               }
             ]
           }
@@ -930,36 +1009,36 @@
       "phase_4_decoding": {
         "outputs": [
           {
-            "label": "‘er’ bezieht sich auf den Pokal (der Pokal ist zu groß)",
-            "logit": 11.4,
+            "label": "‘sie’ bezieht sich auf die Tasche (die Tasche ist zu klein)",
+            "logit": 11.2,
             "type": "Korrekte Pronomen-Auflösung",
-            "hallucination_risk_percent": 6,
-            "causality_trace": "Da Head 4 im Profil 'contextual-causal' das Pronomen (Token 19) stark auf 'Pokal' (Token 12) bindet (19->12, Stärke 0.93) und Head 1 zusätzlich die Eigenschaft 'groß' (Token 21) an 'Pokal' koppelt (21<->12, Stärke 0.78), wird im FFN das Fit-Frame-Cluster aktiviert (0.94) und die falsche Alternative 'er'->'Koffer' unterdrückt (0.12). Wenn die Begründung 'zu groß' als Eigenschaft des Subjekts des Fit-Ereignisses verstanden wird, dann ist das Subjekt der Pokal."
+            "hallucination_risk_percent": 7,
+            "causality_trace": "Ergebnis basiert auf dem Profil 'contextual-fit': Head 4 bindet das Pronomen 'sie' (Token 22) an 'Tasche' (Token 20) mit hoher Stärke (22->20, 0.88). Zusätzlich koppelt Head 1 die Eigenschaft 'klein' (Token 24) an den Container 'Tasche' (20<->24, 0.82). Da Head 3 den Fit-Frame stabilisiert (Verb 'passte' Token 14 -> Container 'Tasche' Token 20, 0.84) und der Kausalsatz durch Head 2 (Token 21 'weil' -> Token 14, 0.70) als Erklärung markiert wird, aktiviert das FFN das Cluster 'Container-Kapazität' (0.93) und unterdrückt die Alternative 'sie'->'Trophäe' (0.14). Wenn der Container zu klein ist, dann passt das Objekt nicht hinein."
           },
           {
-            "label": "Naive Lesart: ‘er’ bezieht sich auf den Koffer",
-            "logit": 8.7,
-            "type": "Fehlinterpretation durch Nähe-Heuristik",
-            "hallucination_risk_percent": 38,
-            "causality_trace": "Im Profil 'recency-literal' dominiert Head 4 die Nähe-Heuristik: Pronomen (Token 19) bindet an das zuletzt genannte maskuline Nomen 'Koffer' (Token 17) mit Stärke 0.72. Dadurch aktiviert das FFN stärker 'Recency-Bias' (0.86) und 'Container-Fokus' (0.72), während die Fit-Logik (Objekt-zu-groß-für-Container) unterdrückt bleibt (0.18). Wenn das Modell nur lokale Hinweise nutzt, dann wählt es den nächsten Kandidaten, auch wenn die Kausalität schwächer passt."
+            "label": "Alternative Fehlspur: ‘sie’ bezieht sich auf die Trophäe",
+            "logit": 9.0,
+            "type": "Fehlinterpretation (Objekt-Attribut statt Container-Attribut)",
+            "hallucination_risk_percent": 33,
+            "causality_trace": "In einem wörtlich-naiven Lesemodus kann ein Modell 'klein' fälschlich als Eigenschaft des Subjekts (Trophäe) interpretieren, weil Head 3 das Subjekt stark an das Verb koppelt (14->12, 0.72) und die Bindung der Eigenschaft an den Container schwach bleibt (Unterdrückt: Container-Kapazität, 0.22). Wenn die Fit-Rollen nicht sauber getrennt werden, dann wird 'zu klein' irrtümlich als Beschreibung des Objekts gelesen."
           },
           {
-            "label": "Begründungsstruktur erkannt: Kausalsatz erklärt das Nicht-Passen",
-            "logit": 10.2,
-            "type": "Diskurs-/Kohärenzsignal",
+            "label": "Diskurs-Signal: Der weil-Satz ist die Begründung für das Nicht-Passen",
+            "logit": 10.1,
+            "type": "Kohärenz/Struktur",
             "hallucination_risk_percent": 12,
-            "causality_trace": "Head 2 koppelt 'weil' (Token 18) an den Hauptsatzkern (Token 13) (18->13, Stärke 0.75) und stabilisiert damit, dass der zweite Satzteil eine Erklärung liefert. In Kombination mit Head 3 (22->21, 0.90) entsteht ein klares Prädikat 'war groß'. Wenn der Kausalsatz als Begründung für den Fit-Fehler aktiviert ist, dann werden Kandidaten bevorzugt, die diesen Fehler semantisch erklären."
+            "causality_trace": "Head 2 verknüpft die Subjunktion 'weil' (Token 21) mit dem Hauptsatzkern 'passte' (Token 14) (21->14, 0.70) und stabilisiert damit die kausale Struktur. In Kombination mit Head 2/3 (22<->25, 0.80 und 25->24, 0.90) entsteht die Begründungseinheit 'sie war zu klein'. Wenn der Kausalsatz als Erklärung erkannt ist, dann werden semantisch passende Referenzen (Container-Kapazität) bevorzugt."
           }
         ]
       },
       "phase_5_analysis": {
-        "storyline": "Das Modell startet mit einem Fit-Ereignis (Pokal passte nicht in den Koffer). Der Kausalsatz liefert eine Eigenschaft (er war zu groß), aber das Pronomen ist mehrdeutig. In einem naiven Profil gewinnt die Nähe-Heuristik (Koffer als letzter Kandidat). Im kontextuellen Profil greifen spezialisierte Heads: Syntax-Heads verankern Subjekt/Container, Semantik-Head verbindet 'groß' mit der plausiblen Entität im Fit-Frame, und der Referenz-Head (Head 4) bindet 'er' an 'Pokal'. Dadurch wird im FFN das richtige Wissenscluster (Objekt-zu-groß-für-Container) dominant, und das Decoding produziert die korrekte Auflösung.",
+        "storyline": "Das Modell sieht ein Fit-Ereignis (Trophäe passt nicht in Tasche) und sucht eine Ursache. Der Kausalsatz liefert 'sie war zu klein', aber 'sie' ist ambig, weil beide Kandidaten feminin sind. In einem naiven Profil kann die Nähe-Heuristik oder ein Subjekt-Bias die falsche Spur öffnen. Im kontextuellen Profil setzt die Fit-Logik ein: Head 3 stabilisiert die Rollen (Objekt vs. Container), Head 1 verbindet die Eigenschaft 'klein' mit dem Container, und Head 4 bindet das Pronomen an die Tasche. Dadurch wird im FFN das Kapazitätswissen aktiviert und die korrekte Auflösung decodiert.",
         "summary_points": [
-          "Technische Ebene: Head 4 ist der Held, weil er die Referenz (Token 19 -> Token 12) im kausalen Profil stark bindet und damit die Fehlspur der Recency-Heuristik überstimmt.",
-          "Linguistische Ebene: Gelöst wird die Pronomen-Referenz in einem Kausalsatz, bei dem grammatische Nähe (Koffer zuletzt) gegen Weltwissen/Frame-Logik (Objekt zu groß für Container) ausgespielt wird.",
-          "Metapher: Attention ist hier wie ein Ermittlerteam – ein Ermittler (Recency) zeigt auf den Nächsten am Tatort, aber der forensische Experte (Kausal-Head/Referenz-Head) findet die Spur, die wirklich erklärt, warum das \"Nicht-Passen\" passiert ist."
+          "Technische Ebene: Head 1 und Head 4 arbeiten als Team – Head 1 koppelt 'klein' an den Container 'Tasche', Head 4 bindet das Pronomen 'sie' stabil an Token 20.",
+          "Linguistische Ebene: Gelöst wird eine Pronomen-Referenz bei gleichgrammatischer Konkurrenz (beide feminin) durch semantische Rollen im Fit-Frame (Container-zu-klein statt Objekt-zu-klein).",
+          "Metapher: Attention ist wie ein Logistik-Team – einer prüft die Fracht (Trophäe), ein anderer misst die Öffnung (Tasche). Erst wenn der Maßband-Checker sagt 'Öffnung zu klein', weiß man, worauf sich 'sie' wirklich bezieht."
         ],
-        "didactic_outlook": "Was passiert, wenn du im Simulator das Profil auf 'Wörtlich/Naiv' stellst und gleichzeitig die Temperatur erhöhst? Beobachte, ob die falsche Bindung ('er'->Koffer) häufiger durchrutscht – und ob stärkere Semantik- oder Referenz-Gewichte (Heads 1/4) die Entscheidung wieder stabilisieren."
+        "didactic_outlook": "Was passiert, wenn du im Simulator die Profile wechselst und die Temperatur erhöhst: kippt das Modell häufiger zur falschen Lesart ('sie' = Trophäe)? Und welche Head-Gewichtung müsste steigen, damit die Container-Kapazitätslogik (Head 1/3) die Entscheidung wieder stabilisiert?"
       }
     },
     {
