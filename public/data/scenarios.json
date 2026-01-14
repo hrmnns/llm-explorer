@@ -1,6 +1,6 @@
 {
   "project": "LLM-Explorer",
-  "version": "3.3",
+  "version": "3.31",
   "scenarios": [
     {
       "id": "was-ist-ein-hund",
@@ -1042,8 +1042,8 @@
       }
     },
     {
-      "id": "winograd-trophaee-tasche-klein",
-      "name": "Winograd-Schema: Pronomen-Auflösung durch Größenlogik (zu klein)",
+      "id": "winograd-trophaee-tasche-klein2",
+      "name": "Winograd-Schema: Pronomen-Auflösung durch Größenlogik (zu klein2)",
       "input_prompt": "Die Trophäe passte nicht in die braune Tasche, weil sie zu klein war.",
       "explanation": "Dieses Szenario ist ein klassisches Winograd-ähnliches Rätsel: Das Pronomen \"sie\" kann sich grammatisch auf \"Trophäe\" oder \"Tasche\" beziehen (beides feminin). Der entscheidende Hinweis liegt in der Kausalität: Wenn etwas nicht hineinpasst, weil \"sie zu klein\" ist, dann ist der Container (die Tasche) zu klein, nicht das hineinzulegende Objekt. Das Szenario zeigt den Konflikt zwischen einer naiven Nähe-Heuristik und einer kontextuellen Fit-Logik.",
       "phase_0_tokenization": {
@@ -1830,618 +1830,612 @@
       }
     },
     {
-      "project": "cher-llm-simulator",
-      "version": "vX.Y.Z",
-      "scenarios": [
-        {
-          "id": "winograd-paul-markus-verletzt",
-          "name": "Winograd-Schema: Pronomen-Auflösung durch Kausalität (verletzt)",
-          "input_prompt": "Paul konnte Markus nicht helfen, weil er verletzt war.",
-          "explanation": "Dieses Szenario zeigt eine klassische Pronomen-Mehrdeutigkeit (Winograd-Schema). Das Pronomen \"er\" kann sich formal auf Paul oder Markus beziehen. Eine naive Recency-Heuristik (\"er\" = zuletzt genanntes maskulines Nomen) führt schnell zu Markus. Eine kontextuelle Lesart koppelt jedoch \"nicht helfen\" + \"weil\" + \"verletzt\" zu einem Kausal-Frame: Meist ist der Helfer (Paul) verhindert, weil er verletzt ist. Der Simulator demonstriert, wie Syntax (Subjekt/Objekt), Semantik (Hilfe-Frame) und Kausalität zusammenwirken, um die Referenz zu stabilisieren.",
-          "phase_0_tokenization": {
-            "tokens": [
-              {
-                "id": 10,
-                "text": "<s>",
-                "explanation": "Start-of-Sequence Token: markiert den Beginn der Sequenz und dient als globaler Kontextanker."
-              },
-              {
-                "id": 11,
-                "text": "Paul",
-                "explanation": "Eigenname, Nomen (Subjektkandidat): typischer Agens im Hilfe-Frame."
-              },
-              {
-                "id": 12,
-                "text": "konnte",
-                "explanation": "Finites Modalverb (Präteritum): markiert Fähigkeit/Möglichkeit; trägt eine Negationsanfälligkeit (konnte nicht)."
-              },
-              {
-                "id": 13,
-                "text": "Markus",
-                "explanation": "Eigenname, Nomen (Objektkandidat): typischer Benefiziat/Empfänger im Hilfe-Frame."
-              },
-              {
-                "id": 14,
-                "text": "nicht",
-                "explanation": "Negationspartikel: kippt die Hilfehandlung in ein Scheitern (konnte nicht helfen) und öffnet Raum für Begründungen."
-              },
-              {
-                "id": 15,
-                "text": "helfen",
-                "explanation": "Infinitivverb: Kern der Handlung (Hilfe-Frame), verbindet Agens (Paul) und Benefiziat (Markus)."
-              },
-              {
-                "id": 16,
-                "text": ",",
-                "explanation": "Interpunktion: trennt Hauptsatz und Begründungsteil, strukturiert den Diskurs."
-              },
-              {
-                "id": 17,
-                "text": "weil",
-                "explanation": "Subjunktion: leitet Kausalsatz ein und signalisiert eine Begründung für das Nicht-Helfen."
-              },
-              {
-                "id": 18,
-                "text": "er",
-                "explanation": "Personalpronomen (3. Person Singular Maskulin): muss auf ein maskulines Nomen im Kontext gebunden werden (Paul oder Markus)."
-              },
-              {
-                "id": 19,
-                "text": "verletzt",
-                "explanation": "Partizip/Adjektiv: Zustands-Eigenschaft, die typischerweise Handlungsfähigkeit einschränkt."
-              },
-              {
-                "id": 20,
-                "text": "war",
-                "explanation": "Kopulaverb (Präteritum): verbindet das Pronomen-Subjekt mit dem Prädikativ \"verletzt\"."
-              }
-            ]
+      "id": "winograd-paul-markus-verletzt",
+      "name": "Winograd-Schema: Pronomen-Auflösung durch Kausalität (verletzt)",
+      "input_prompt": "Paul konnte Markus nicht helfen, weil er verletzt war.",
+      "explanation": "Dieses Szenario zeigt eine klassische Pronomen-Mehrdeutigkeit (Winograd-Schema). Das Pronomen \"er\" kann sich formal auf Paul oder Markus beziehen. Eine naive Recency-Heuristik (\"er\" = zuletzt genanntes maskulines Nomen) führt schnell zu Markus. Eine kontextuelle Lesart koppelt jedoch \"nicht helfen\" + \"weil\" + \"verletzt\" zu einem Kausal-Frame: Meist ist der Helfer (Paul) verhindert, weil er verletzt ist. Der Simulator demonstriert, wie Syntax (Subjekt/Objekt), Semantik (Hilfe-Frame) und Kausalität zusammenwirken, um die Referenz zu stabilisieren.",
+      "phase_0_tokenization": {
+        "tokens": [
+          {
+            "id": 10,
+            "text": "<s>",
+            "explanation": "Start-of-Sequence Token: markiert den Beginn der Sequenz und dient als globaler Kontextanker."
           },
-          "phase_1_embedding": {
-            "token_vectors": [
-              {
-                "token_index": 10,
-                "base_vector": [
-                  0.02,
-                  0.70
-                ],
-                "positional_vector": [
-                  0.00,
-                  0.00
-                ],
-                "information": "<s> ist kein Weltbegriff (X stark links) und als reiner Kontextanker stark kontextgebunden (Y mittel-hoch)."
-              },
-              {
-                "token_index": 11,
-                "base_vector": [
-                  0.95,
-                  0.20
-                ],
-                "positional_vector": [
-                  0.02,
-                  0.10
-                ],
-                "information": "Eigenname als klare Entität: hoher Weltbezug (X rechts) und relativ eigenständig (Y niedrig)."
-              },
-              {
-                "token_index": 12,
-                "base_vector": [
-                  0.55,
-                  0.82
-                ],
-                "positional_vector": [
-                  0.04,
-                  0.20
-                ],
-                "information": "Modalverb ist relational und ohne Kontext nicht vollständig (X mittel, Y hoch): es braucht ein Vollverb und hängt stark an Negation/Frame."
-              },
-              {
-                "token_index": 13,
-                "base_vector": [
-                  0.93,
-                  0.22
-                ],
-                "positional_vector": [
-                  0.06,
-                  0.30
-                ],
-                "information": "Zweite Entität: ebenfalls weltbezogen und eigenständig (X rechts, Y niedrig), nahe bei Paul (beide Personen)."
-              },
-              {
-                "token_index": 14,
-                "base_vector": [
-                  0.08,
-                  0.90
-                ],
-                "positional_vector": [
-                  0.08,
-                  0.40
-                ],
-                "information": "Negation ist ein struktureller Operator (X links) und stark kontextabhängig (Y hoch), da sie ein Ereignis braucht, das sie negiert."
-              },
-              {
-                "token_index": 15,
-                "base_vector": [
-                  0.52,
-                  0.80
-                ],
-                "positional_vector": [
-                  0.10,
-                  0.50
-                ],
-                "information": "Handlungsverb ist relational (X mittel) und benötigt Rollen (Agens/Benefiziat), daher kontextabhängig (Y hoch)."
-              },
-              {
-                "token_index": 16,
-                "base_vector": [
-                  0.03,
-                  0.85
-                ],
-                "positional_vector": [
-                  0.12,
-                  0.60
-                ],
-                "information": "Komma ist reine Struktur (X ganz links) und nur im Satzbau sinnvoll (Y hoch): markiert Diskurs-/Satzgrenze."
-              },
-              {
-                "token_index": 17,
-                "base_vector": [
-                  0.05,
-                  0.95
-                ],
-                "positional_vector": [
-                  0.14,
-                  0.70
-                ],
-                "information": "\"weil\" ist Diskurs-/Kausalmarker (X extrem links) und maximal kontextabhängig (Y extrem hoch), da es Sachverhalte verknüpft."
-              },
-              {
-                "token_index": 18,
-                "base_vector": [
-                  0.22,
-                  0.92
-                ],
-                "positional_vector": [
-                  0.16,
-                  0.80
-                ],
-                "information": "Pronomen ist unterbestimmt: wenig Weltbezug ohne Referent (X links-mittig) und stark kontextabhängig (Y sehr hoch)."
-              },
-              {
-                "token_index": 19,
-                "base_vector": [
-                  0.78,
-                  0.52
-                ],
-                "positional_vector": [
-                  0.18,
-                  0.90
-                ],
-                "information": "\"verletzt\" ist eine Eigenschaft (X rechts), aber weniger eigenständig als eine Entität (Y mittel), da sie typischerweise einem Träger zugeschrieben wird."
-              },
-              {
-                "token_index": 20,
-                "base_vector": [
-                  0.50,
-                  0.86
-                ],
-                "positional_vector": [
-                  0.20,
-                  0.98
-                ],
-                "information": "Kopula ist relational (X mittel) und stark kontextabhängig (Y hoch), da sie Subjekt und Prädikativ verbindet. Satzende => höchstes Positions-Y."
-              }
-            ]
+          {
+            "id": 11,
+            "text": "Paul",
+            "explanation": "Eigenname, Nomen (Subjektkandidat): typischer Agens im Hilfe-Frame."
           },
-          "phase_2_attention": {
-            "attention_profiles": [
-              {
-                "id": "recency-literal",
-                "label": "Wörtlich/Naiv (Recency-Heuristik: letzter Name)",
-                "rules": [
-                  {
-                    "head": 1,
-                    "source": 11,
-                    "target": 13,
-                    "strength": 0.72,
-                    "explanation": "H1 fragt: \"Welche andere Person steht im selben Personenraum wie ich?\" -> 'Markus'."
-                  },
-                  {
-                    "head": 1,
-                    "source": 13,
-                    "target": 11,
-                    "strength": 0.72,
-                    "explanation": "H1 fragt: \"Welche zweite Person ist mein Handlungspartner im Satz?\" -> 'Paul'."
-                  },
-                  {
-                    "head": 3,
-                    "source": 11,
-                    "target": 15,
-                    "strength": 0.88,
-                    "explanation": "H3 fragt: \"Welche Handlung führe ich (als Agens) aus?\" -> 'helfen'."
-                  },
-                  {
-                    "head": 3,
-                    "source": 15,
-                    "target": 11,
-                    "strength": 0.80,
-                    "explanation": "H3 fragt: \"Wer ist mein typischer Agens im Hilfe-Frame?\" -> 'Paul'."
-                  },
-                  {
-                    "head": 3,
-                    "source": 15,
-                    "target": 13,
-                    "strength": 0.78,
-                    "explanation": "H3 fragt: \"Wem gilt die Hilfe als Benefiziat?\" -> 'Markus'."
-                  },
-                  {
-                    "head": 3,
-                    "source": 13,
-                    "target": 15,
-                    "strength": 0.65,
-                    "explanation": "H3 fragt: \"Welche Handlung betrifft mich als Empfänger?\" -> 'helfen'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 12,
-                    "target": 15,
-                    "strength": 0.90,
-                    "explanation": "H2 fragt: \"Welches Verb komplet­tiert mich als Modal (konnte ...)?\" -> 'helfen'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 15,
-                    "target": 12,
-                    "strength": 0.72,
-                    "explanation": "H2 fragt: \"Welches Modal rahmt mich syntaktisch?\" -> 'konnte'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 14,
-                    "target": 12,
-                    "strength": 0.86,
-                    "explanation": "H2 fragt: \"Welches Hilfs-/Modal-Element negiere ich (konnte nicht)?\" -> 'konnte'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 12,
-                    "target": 14,
-                    "strength": 0.70,
-                    "explanation": "H2 fragt: \"Welcher Operator macht meine Möglichkeit negativ?\" -> 'nicht'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 17,
-                    "target": 15,
-                    "strength": 0.70,
-                    "explanation": "H2 fragt: \"Welchen Hauptsatz begründe ich mit 'weil'?\" -> 'helfen' (als Kernhandlung)."
-                  },
-                  {
-                    "head": 2,
-                    "source": 15,
-                    "target": 17,
-                    "strength": 0.55,
-                    "explanation": "H2 fragt: \"Welcher Marker leitet die Begründung für mein Scheitern ein?\" -> 'weil'."
-                  },
-                  {
-                    "head": 4,
-                    "source": 18,
-                    "target": 13,
-                    "strength": 0.78,
-                    "explanation": "H4 fragt (naiv): \"Welches maskuline Nomen steht am nächsten vor mir?\" -> 'Markus'."
-                  },
-                  {
-                    "head": 4,
-                    "source": 13,
-                    "target": 18,
-                    "strength": 0.48,
-                    "explanation": "H4 fragt: \"Welches Pronomen könnte auf mich zurückverweisen?\" -> 'er'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 18,
-                    "target": 20,
-                    "strength": 0.82,
-                    "explanation": "H2 fragt: \"Mit welchem Kopulaverb bin ich als Subjekt verbunden?\" -> 'war'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 20,
-                    "target": 18,
-                    "strength": 0.70,
-                    "explanation": "H2 fragt: \"Welches Subjekt trage ich im Kopulasatz?\" -> 'er'."
-                  },
-                  {
-                    "head": 3,
-                    "source": 20,
-                    "target": 19,
-                    "strength": 0.88,
-                    "explanation": "H3 fragt: \"Welche Eigenschaft prädiziere ich?\" -> 'verletzt'."
-                  },
-                  {
-                    "head": 3,
-                    "source": 19,
-                    "target": 20,
-                    "strength": 0.74,
-                    "explanation": "H3 fragt: \"Welche Kopula macht mich zur Aussage?\" -> 'war'."
-                  },
-                  {
-                    "head": 1,
-                    "source": 10,
-                    "target": 17,
-                    "strength": 0.35,
-                    "explanation": "H1 fragt: \"Wo ist der strukturelle Knoten für Begründungen im Satz?\" -> 'weil'."
-                  },
-                  {
-                    "head": 1,
-                    "source": 17,
-                    "target": 10,
-                    "strength": 0.25,
-                    "explanation": "H1 fragt: \"Wo sammelt sich globaler Kontext, an den ich andocke?\" -> '<s>'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 16,
-                    "target": 15,
-                    "strength": 0.60,
-                    "explanation": "H2 fragt: \"Welche Strukturgrenze/Gliederung markiere ich?\" -> 'helfen' als Ende des Hauptsatzkerns."
-                  }
-                ]
-              },
-              {
-                "id": "contextual-causal",
-                "label": "Kontextuell/Kausal (Verletzung verhindert Helfen)",
-                "rules": [
-                  {
-                    "head": 1,
-                    "source": 11,
-                    "target": 13,
-                    "strength": 0.72,
-                    "explanation": "H1 fragt: \"Welche andere Person steht im selben Personenraum wie ich?\" -> 'Markus'."
-                  },
-                  {
-                    "head": 1,
-                    "source": 13,
-                    "target": 11,
-                    "strength": 0.72,
-                    "explanation": "H1 fragt: \"Welche zweite Person ist mein Handlungspartner im Satz?\" -> 'Paul'."
-                  },
-                  {
-                    "head": 3,
-                    "source": 11,
-                    "target": 15,
-                    "strength": 0.90,
-                    "explanation": "H3 fragt: \"Welche Handlung ist mein agierender Frame (Helfen)?\" -> 'helfen'."
-                  },
-                  {
-                    "head": 3,
-                    "source": 15,
-                    "target": 11,
-                    "strength": 0.82,
-                    "explanation": "H3 fragt: \"Wer ist der Agens, der helfen würde?\" -> 'Paul'."
-                  },
-                  {
-                    "head": 3,
-                    "source": 15,
-                    "target": 13,
-                    "strength": 0.78,
-                    "explanation": "H3 fragt: \"Wer ist der Benefiziat der Hilfe?\" -> 'Markus'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 12,
-                    "target": 15,
-                    "strength": 0.92,
-                    "explanation": "H2 fragt: \"Welches Verb komplet­tiert mein Modal (konnte ...)?\" -> 'helfen'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 15,
-                    "target": 12,
-                    "strength": 0.74,
-                    "explanation": "H2 fragt: \"Welches Modal rahmt mich syntaktisch?\" -> 'konnte'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 14,
-                    "target": 12,
-                    "strength": 0.88,
-                    "explanation": "H2 fragt: \"Welche Möglichkeit negiere ich (konnte nicht)?\" -> 'konnte'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 12,
-                    "target": 14,
-                    "strength": 0.72,
-                    "explanation": "H2 fragt: \"Welcher Operator macht meine Fähigkeit negativ?\" -> 'nicht'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 17,
-                    "target": 12,
-                    "strength": 0.78,
-                    "explanation": "H2 fragt: \"Welchen negierten Fähigkeitskern begründe ich?\" -> 'konnte nicht'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 12,
-                    "target": 17,
-                    "strength": 0.60,
-                    "explanation": "H2 fragt: \"Welcher Marker leitet die Begründung für mein Scheitern ein?\" -> 'weil'."
-                  },
-                  {
-                    "head": 4,
-                    "source": 18,
-                    "target": 11,
-                    "strength": 0.90,
-                    "explanation": "H4 fragt (kausal): \"Wessen Verletzung erklärt, warum geholfen werden konnte oder nicht?\" -> 'Paul' (Agens ist verhindert)."
-                  },
-                  {
-                    "head": 4,
-                    "source": 11,
-                    "target": 18,
-                    "strength": 0.68,
-                    "explanation": "H4 fragt: \"Welches Pronomen verweist auf mich als Agens im Hauptsatz?\" -> 'er'."
-                  },
-                  {
-                    "head": 1,
-                    "source": 19,
-                    "target": 11,
-                    "strength": 0.84,
-                    "explanation": "H1 fragt: \"Wer ist der plausibelste Träger der Eigenschaft 'verletzt' im Kausal-Frame (Handlungsfähigkeit)?\" -> 'Paul'."
-                  },
-                  {
-                    "head": 1,
-                    "source": 11,
-                    "target": 19,
-                    "strength": 0.84,
-                    "explanation": "H1 fragt: \"Welche Begründungs-Eigenschaft wird mir zugeschrieben?\" -> 'verletzt'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 18,
-                    "target": 20,
-                    "strength": 0.84,
-                    "explanation": "H2 fragt: \"Mit welchem Kopulaverb bin ich verbunden?\" -> 'war'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 20,
-                    "target": 18,
-                    "strength": 0.72,
-                    "explanation": "H2 fragt: \"Welches Subjekt trage ich im Kopulasatz?\" -> 'er'."
-                  },
-                  {
-                    "head": 3,
-                    "source": 20,
-                    "target": 19,
-                    "strength": 0.90,
-                    "explanation": "H3 fragt: \"Welche Eigenschaft prädiziere ich als Ursache?\" -> 'verletzt'."
-                  },
-                  {
-                    "head": 3,
-                    "source": 19,
-                    "target": 20,
-                    "strength": 0.76,
-                    "explanation": "H3 fragt: \"Welche Kopula macht mich zur Ursache-Aussage?\" -> 'war'."
-                  },
-                  {
-                    "head": 1,
-                    "source": 13,
-                    "target": 18,
-                    "strength": 0.28,
-                    "explanation": "H1 fragt (schwach): \"Könnte das Pronomen auch auf mich zeigen?\" -> 'er' (Alternative, aber weniger kausal passend)."
-                  },
-                  {
-                    "head": 1,
-                    "source": 10,
-                    "target": 17,
-                    "strength": 0.35,
-                    "explanation": "H1 fragt: \"Wo ist der Diskurs-Knoten für Begründungen?\" -> 'weil'."
-                  },
-                  {
-                    "head": 1,
-                    "source": 17,
-                    "target": 10,
-                    "strength": 0.25,
-                    "explanation": "H1 fragt: \"Wo sammelt sich globaler Kontext, an den ich andocke?\" -> '<s>'."
-                  },
-                  {
-                    "head": 2,
-                    "source": 16,
-                    "target": 17,
-                    "strength": 0.70,
-                    "explanation": "H2 fragt: \"Welche Grenze trennt Hauptsatz und Begründung?\" -> Komma als Übergang zu 'weil'."
-                  }
-                ]
-              }
-            ]
+          {
+            "id": 12,
+            "text": "konnte",
+            "explanation": "Finites Modalverb (Präteritum): markiert Fähigkeit/Möglichkeit; trägt eine Negationsanfälligkeit (konnte nicht)."
           },
-          "phase_3_ffn": {
-            "activation_profiles": [
-              {
-                "ref_profile_id": "recency-literal",
-                "activations": [
-                  {
-                    "label": "Recency-Bias: letzter Name als Referent",
-                    "activation": 0.88
-                  },
-                  {
-                    "label": "Benefiziat-Fokus: Empfänger im Vordergrund",
-                    "activation": 0.62
-                  },
-                  {
-                    "label": "Eigenschaft: verletzt (unspezifisch gebunden)",
-                    "activation": 0.55
-                  },
-                  {
-                    "label": "Unterdrückt: Agens-verhindert-Frame (Helfer ist verletzt)",
-                    "activation": 0.18
-                  }
-                ]
-              },
-              {
-                "ref_profile_id": "contextual-causal",
-                "activations": [
-                  {
-                    "label": "Kausal-Frame: Verletzung verhindert Handlung",
-                    "activation": 0.92
-                  },
-                  {
-                    "label": "Entität-Bindung: 'er' -> Paul (Agens)",
-                    "activation": 0.90
-                  },
-                  {
-                    "label": "Hilfe-Frame: Agens/Benefiziat-Rollen stabil",
-                    "activation": 0.80
-                  },
-                  {
-                    "label": "Unterdrückt: Alternative Bindung 'er' -> Markus",
-                    "activation": 0.14
-                  }
-                ]
-              }
-            ]
+          {
+            "id": 13,
+            "text": "Markus",
+            "explanation": "Eigenname, Nomen (Objektkandidat): typischer Benefiziat/Empfänger im Hilfe-Frame."
           },
-          "phase_4_decoding": {
-            "outputs": [
-              {
-                "label": "Korrekte Lesart: 'er' bezieht sich auf Paul (Paul ist verletzt)",
-                "logit": 11.2,
-                "type": "Korrekte Pronomen-Auflösung",
-                "hallucination_risk": 0.07,
-                "hallucination_risk_percent": 7,
-                "causality_trace": "Da Head 4 im Profil 'contextual-causal' das Pronomen (Token 18) stark an 'Paul' (Token 11) bindet (18->11, 0.90) und Head 1 zusätzlich die Eigenschaft 'verletzt' (Token 19) an 'Paul' koppelt (19->11 und 11->19, jeweils 0.84), wird im FFN der Kausal-Frame (Verletzung verhindert Handlung) aktiviert (0.92) und die Alternative 'er'->'Markus' unterdrückt (0.14). Wenn die Ursache im weil-Satz die Handlungsunfähigkeit erklärt, dann muss der Agens aus dem Hauptsatz der Verletzte sein."
-              },
-              {
-                "label": "Naive Lesart: 'er' bezieht sich auf Markus (Markus ist verletzt)",
-                "logit": 8.9,
-                "type": "Fehlinterpretation durch Nähe-Heuristik",
-                "hallucination_risk": 0.34,
-                "hallucination_risk_percent": 34,
-                "causality_trace": "Im Profil 'recency-literal' dominiert Head 4 die Recency-Heuristik: Pronomen (Token 18) bindet an das zuletzt genannte maskuline Nomen 'Markus' (Token 13) mit Stärke 0.78. Dadurch aktiviert das FFN stark den Recency-Bias (0.88) und fokussiert den Benefiziaten (0.62), während der Agens-verhindert-Frame (Helfer ist verletzt) unterdrückt bleibt (0.18). Wenn das Modell nur lokale Nähe nutzt, wählt es den letzten Kandidaten, auch wenn die Kausalität schwächer passt."
-              },
-              {
-                "label": "Diskursstruktur: weil-Satz liefert Ursache für 'konnte nicht helfen'",
-                "logit": 10.1,
-                "type": "Diskurs-/Kohärenzsignal",
-                "hallucination_risk": 0.12,
-                "hallucination_risk_percent": 12,
-                "causality_trace": "Head 2 koppelt 'weil' (Token 17) an den negierten Fähigkeitskern (Token 12) (17->12, 0.78) und stabilisiert damit, dass der zweite Satzteil eine Erklärung liefert. Zusammen mit Head 3 (20->19, 0.90) entsteht ein klares Prädikat 'war verletzt'. Wenn der Kausalsatz als Ursache für das Scheitern aktiviert ist, bevorzugt das Modell Referenten, deren Zustand die Handlung plausibel verhindert."
-              }
-            ]
+          {
+            "id": 14,
+            "text": "nicht",
+            "explanation": "Negationspartikel: kippt die Hilfehandlung in ein Scheitern (konnte nicht helfen) und öffnet Raum für Begründungen."
           },
-          "phase_5_analysis": {
-            "summary_points": [
-              "Technische Ebene: Head 4 ist der Held, weil er die Referenz ('er' -> Paul) im kausalen Profil stark bindet und damit die Recency-Heuristik überstimmt.",
-              "Linguistische Ebene: Gelöst wird die Pronomen-Referenz in einem Kausalsatz, bei dem grammatische Nähe (Markus zuletzt) gegen Frame-Logik (Helfer kann nicht, weil er verletzt ist) ausgespielt wird.",
-              "Metapher: Attention ist wie ein Ermittlerteam – ein Ermittler zeigt auf den Nächsten (Recency), aber der forensische Experte findet die Ursache, die wirklich erklärt, warum die Hilfe ausfällt."
-            ],
-            "storyline": "Der Hauptsatz etabliert einen Hilfe-Frame: Paul (Agens) kann Markus (Benefiziat) nicht helfen. Der Kausalsatz liefert eine Ursache (er war verletzt), aber das Pronomen ist mehrdeutig. Im naiven Profil gewinnt die Nähe-Heuristik und bindet 'er' an Markus. Im kontextuellen Profil verknüpfen Syntax- und Logik-Heads den negierten Fähigkeitskern mit dem Kausalsatz, Semantik-Heads koppeln 'verletzt' an den plausiblen Handlungsträger, und Head 4 bindet das Pronomen an Paul. Das FFN aktiviert dadurch das passende Kausalwissen (Verletzung verhindert Handlung) und unterdrückt die alternative Referenz.",
-            "didactic_outlook": "Was passiert, wenn du im Simulator das Profil auf 'Wörtlich/Naiv' stellst und gleichzeitig die Temperatur erhöhst? Beobachte, ob die falsche Bindung ('er'->Markus) häufiger entsteht – und ob stärkere Gewichte für Head 4 (Referenz) oder Head 3 (Frame-Logik) die Entscheidung wieder stabilisieren."
+          {
+            "id": 15,
+            "text": "helfen",
+            "explanation": "Infinitivverb: Kern der Handlung (Hilfe-Frame), verbindet Agens (Paul) und Benefiziat (Markus)."
+          },
+          {
+            "id": 16,
+            "text": ",",
+            "explanation": "Interpunktion: trennt Hauptsatz und Begründungsteil, strukturiert den Diskurs."
+          },
+          {
+            "id": 17,
+            "text": "weil",
+            "explanation": "Subjunktion: leitet Kausalsatz ein und signalisiert eine Begründung für das Nicht-Helfen."
+          },
+          {
+            "id": 18,
+            "text": "er",
+            "explanation": "Personalpronomen (3. Person Singular Maskulin): muss auf ein maskulines Nomen im Kontext gebunden werden (Paul oder Markus)."
+          },
+          {
+            "id": 19,
+            "text": "verletzt",
+            "explanation": "Partizip/Adjektiv: Zustands-Eigenschaft, die typischerweise Handlungsfähigkeit einschränkt."
+          },
+          {
+            "id": 20,
+            "text": "war",
+            "explanation": "Kopulaverb (Präteritum): verbindet das Pronomen-Subjekt mit dem Prädikativ \"verletzt\"."
           }
-        }
-      ]
+        ]
+      },
+      "phase_1_embedding": {
+        "token_vectors": [
+          {
+            "token_index": 10,
+            "base_vector": [
+              0.02,
+              0.70
+            ],
+            "positional_vector": [
+              0.00,
+              0.00
+            ],
+            "information": "<s> ist kein Weltbegriff (X stark links) und als reiner Kontextanker stark kontextgebunden (Y mittel-hoch)."
+          },
+          {
+            "token_index": 11,
+            "base_vector": [
+              0.95,
+              0.20
+            ],
+            "positional_vector": [
+              0.02,
+              0.10
+            ],
+            "information": "Eigenname als klare Entität: hoher Weltbezug (X rechts) und relativ eigenständig (Y niedrig)."
+          },
+          {
+            "token_index": 12,
+            "base_vector": [
+              0.55,
+              0.82
+            ],
+            "positional_vector": [
+              0.04,
+              0.20
+            ],
+            "information": "Modalverb ist relational und ohne Kontext nicht vollständig (X mittel, Y hoch): es braucht ein Vollverb und hängt stark an Negation/Frame."
+          },
+          {
+            "token_index": 13,
+            "base_vector": [
+              0.93,
+              0.22
+            ],
+            "positional_vector": [
+              0.06,
+              0.30
+            ],
+            "information": "Zweite Entität: ebenfalls weltbezogen und eigenständig (X rechts, Y niedrig), nahe bei Paul (beide Personen)."
+          },
+          {
+            "token_index": 14,
+            "base_vector": [
+              0.08,
+              0.90
+            ],
+            "positional_vector": [
+              0.08,
+              0.40
+            ],
+            "information": "Negation ist ein struktureller Operator (X links) und stark kontextabhängig (Y hoch), da sie ein Ereignis braucht, das sie negiert."
+          },
+          {
+            "token_index": 15,
+            "base_vector": [
+              0.52,
+              0.80
+            ],
+            "positional_vector": [
+              0.10,
+              0.50
+            ],
+            "information": "Handlungsverb ist relational (X mittel) und benötigt Rollen (Agens/Benefiziat), daher kontextabhängig (Y hoch)."
+          },
+          {
+            "token_index": 16,
+            "base_vector": [
+              0.03,
+              0.85
+            ],
+            "positional_vector": [
+              0.12,
+              0.60
+            ],
+            "information": "Komma ist reine Struktur (X ganz links) und nur im Satzbau sinnvoll (Y hoch): markiert Diskurs-/Satzgrenze."
+          },
+          {
+            "token_index": 17,
+            "base_vector": [
+              0.05,
+              0.95
+            ],
+            "positional_vector": [
+              0.14,
+              0.70
+            ],
+            "information": "\"weil\" ist Diskurs-/Kausalmarker (X extrem links) und maximal kontextabhängig (Y extrem hoch), da es Sachverhalte verknüpft."
+          },
+          {
+            "token_index": 18,
+            "base_vector": [
+              0.22,
+              0.92
+            ],
+            "positional_vector": [
+              0.16,
+              0.80
+            ],
+            "information": "Pronomen ist unterbestimmt: wenig Weltbezug ohne Referent (X links-mittig) und stark kontextabhängig (Y sehr hoch)."
+          },
+          {
+            "token_index": 19,
+            "base_vector": [
+              0.78,
+              0.52
+            ],
+            "positional_vector": [
+              0.18,
+              0.90
+            ],
+            "information": "\"verletzt\" ist eine Eigenschaft (X rechts), aber weniger eigenständig als eine Entität (Y mittel), da sie typischerweise einem Träger zugeschrieben wird."
+          },
+          {
+            "token_index": 20,
+            "base_vector": [
+              0.50,
+              0.86
+            ],
+            "positional_vector": [
+              0.20,
+              0.98
+            ],
+            "information": "Kopula ist relational (X mittel) und stark kontextabhängig (Y hoch), da sie Subjekt und Prädikativ verbindet. Satzende => höchstes Positions-Y."
+          }
+        ]
+      },
+      "phase_2_attention": {
+        "attention_profiles": [
+          {
+            "id": "recency-literal",
+            "label": "Wörtlich/Naiv (Recency-Heuristik: letzter Name)",
+            "rules": [
+              {
+                "head": 1,
+                "source": 11,
+                "target": 13,
+                "strength": 0.72,
+                "explanation": "H1 fragt: \"Welche andere Person steht im selben Personenraum wie ich?\" -> 'Markus'."
+              },
+              {
+                "head": 1,
+                "source": 13,
+                "target": 11,
+                "strength": 0.72,
+                "explanation": "H1 fragt: \"Welche zweite Person ist mein Handlungspartner im Satz?\" -> 'Paul'."
+              },
+              {
+                "head": 3,
+                "source": 11,
+                "target": 15,
+                "strength": 0.88,
+                "explanation": "H3 fragt: \"Welche Handlung führe ich (als Agens) aus?\" -> 'helfen'."
+              },
+              {
+                "head": 3,
+                "source": 15,
+                "target": 11,
+                "strength": 0.80,
+                "explanation": "H3 fragt: \"Wer ist mein typischer Agens im Hilfe-Frame?\" -> 'Paul'."
+              },
+              {
+                "head": 3,
+                "source": 15,
+                "target": 13,
+                "strength": 0.78,
+                "explanation": "H3 fragt: \"Wem gilt die Hilfe als Benefiziat?\" -> 'Markus'."
+              },
+              {
+                "head": 3,
+                "source": 13,
+                "target": 15,
+                "strength": 0.65,
+                "explanation": "H3 fragt: \"Welche Handlung betrifft mich als Empfänger?\" -> 'helfen'."
+              },
+              {
+                "head": 2,
+                "source": 12,
+                "target": 15,
+                "strength": 0.90,
+                "explanation": "H2 fragt: \"Welches Verb komplet­tiert mich als Modal (konnte ...)?\" -> 'helfen'."
+              },
+              {
+                "head": 2,
+                "source": 15,
+                "target": 12,
+                "strength": 0.72,
+                "explanation": "H2 fragt: \"Welches Modal rahmt mich syntaktisch?\" -> 'konnte'."
+              },
+              {
+                "head": 2,
+                "source": 14,
+                "target": 12,
+                "strength": 0.86,
+                "explanation": "H2 fragt: \"Welches Hilfs-/Modal-Element negiere ich (konnte nicht)?\" -> 'konnte'."
+              },
+              {
+                "head": 2,
+                "source": 12,
+                "target": 14,
+                "strength": 0.70,
+                "explanation": "H2 fragt: \"Welcher Operator macht meine Möglichkeit negativ?\" -> 'nicht'."
+              },
+              {
+                "head": 2,
+                "source": 17,
+                "target": 15,
+                "strength": 0.70,
+                "explanation": "H2 fragt: \"Welchen Hauptsatz begründe ich mit 'weil'?\" -> 'helfen' (als Kernhandlung)."
+              },
+              {
+                "head": 2,
+                "source": 15,
+                "target": 17,
+                "strength": 0.55,
+                "explanation": "H2 fragt: \"Welcher Marker leitet die Begründung für mein Scheitern ein?\" -> 'weil'."
+              },
+              {
+                "head": 4,
+                "source": 18,
+                "target": 13,
+                "strength": 0.78,
+                "explanation": "H4 fragt (naiv): \"Welches maskuline Nomen steht am nächsten vor mir?\" -> 'Markus'."
+              },
+              {
+                "head": 4,
+                "source": 13,
+                "target": 18,
+                "strength": 0.48,
+                "explanation": "H4 fragt: \"Welches Pronomen könnte auf mich zurückverweisen?\" -> 'er'."
+              },
+              {
+                "head": 2,
+                "source": 18,
+                "target": 20,
+                "strength": 0.82,
+                "explanation": "H2 fragt: \"Mit welchem Kopulaverb bin ich als Subjekt verbunden?\" -> 'war'."
+              },
+              {
+                "head": 2,
+                "source": 20,
+                "target": 18,
+                "strength": 0.70,
+                "explanation": "H2 fragt: \"Welches Subjekt trage ich im Kopulasatz?\" -> 'er'."
+              },
+              {
+                "head": 3,
+                "source": 20,
+                "target": 19,
+                "strength": 0.88,
+                "explanation": "H3 fragt: \"Welche Eigenschaft prädiziere ich?\" -> 'verletzt'."
+              },
+              {
+                "head": 3,
+                "source": 19,
+                "target": 20,
+                "strength": 0.74,
+                "explanation": "H3 fragt: \"Welche Kopula macht mich zur Aussage?\" -> 'war'."
+              },
+              {
+                "head": 1,
+                "source": 10,
+                "target": 17,
+                "strength": 0.35,
+                "explanation": "H1 fragt: \"Wo ist der strukturelle Knoten für Begründungen im Satz?\" -> 'weil'."
+              },
+              {
+                "head": 1,
+                "source": 17,
+                "target": 10,
+                "strength": 0.25,
+                "explanation": "H1 fragt: \"Wo sammelt sich globaler Kontext, an den ich andocke?\" -> '<s>'."
+              },
+              {
+                "head": 2,
+                "source": 16,
+                "target": 15,
+                "strength": 0.60,
+                "explanation": "H2 fragt: \"Welche Strukturgrenze/Gliederung markiere ich?\" -> 'helfen' als Ende des Hauptsatzkerns."
+              }
+            ]
+          },
+          {
+            "id": "contextual-causal",
+            "label": "Kontextuell/Kausal (Verletzung verhindert Helfen)",
+            "rules": [
+              {
+                "head": 1,
+                "source": 11,
+                "target": 13,
+                "strength": 0.72,
+                "explanation": "H1 fragt: \"Welche andere Person steht im selben Personenraum wie ich?\" -> 'Markus'."
+              },
+              {
+                "head": 1,
+                "source": 13,
+                "target": 11,
+                "strength": 0.72,
+                "explanation": "H1 fragt: \"Welche zweite Person ist mein Handlungspartner im Satz?\" -> 'Paul'."
+              },
+              {
+                "head": 3,
+                "source": 11,
+                "target": 15,
+                "strength": 0.90,
+                "explanation": "H3 fragt: \"Welche Handlung ist mein agierender Frame (Helfen)?\" -> 'helfen'."
+              },
+              {
+                "head": 3,
+                "source": 15,
+                "target": 11,
+                "strength": 0.82,
+                "explanation": "H3 fragt: \"Wer ist der Agens, der helfen würde?\" -> 'Paul'."
+              },
+              {
+                "head": 3,
+                "source": 15,
+                "target": 13,
+                "strength": 0.78,
+                "explanation": "H3 fragt: \"Wer ist der Benefiziat der Hilfe?\" -> 'Markus'."
+              },
+              {
+                "head": 2,
+                "source": 12,
+                "target": 15,
+                "strength": 0.92,
+                "explanation": "H2 fragt: \"Welches Verb komplet­tiert mein Modal (konnte ...)?\" -> 'helfen'."
+              },
+              {
+                "head": 2,
+                "source": 15,
+                "target": 12,
+                "strength": 0.74,
+                "explanation": "H2 fragt: \"Welches Modal rahmt mich syntaktisch?\" -> 'konnte'."
+              },
+              {
+                "head": 2,
+                "source": 14,
+                "target": 12,
+                "strength": 0.88,
+                "explanation": "H2 fragt: \"Welche Möglichkeit negiere ich (konnte nicht)?\" -> 'konnte'."
+              },
+              {
+                "head": 2,
+                "source": 12,
+                "target": 14,
+                "strength": 0.72,
+                "explanation": "H2 fragt: \"Welcher Operator macht meine Fähigkeit negativ?\" -> 'nicht'."
+              },
+              {
+                "head": 2,
+                "source": 17,
+                "target": 12,
+                "strength": 0.78,
+                "explanation": "H2 fragt: \"Welchen negierten Fähigkeitskern begründe ich?\" -> 'konnte nicht'."
+              },
+              {
+                "head": 2,
+                "source": 12,
+                "target": 17,
+                "strength": 0.60,
+                "explanation": "H2 fragt: \"Welcher Marker leitet die Begründung für mein Scheitern ein?\" -> 'weil'."
+              },
+              {
+                "head": 4,
+                "source": 18,
+                "target": 11,
+                "strength": 0.90,
+                "explanation": "H4 fragt (kausal): \"Wessen Verletzung erklärt, warum geholfen werden konnte oder nicht?\" -> 'Paul' (Agens ist verhindert)."
+              },
+              {
+                "head": 4,
+                "source": 11,
+                "target": 18,
+                "strength": 0.68,
+                "explanation": "H4 fragt: \"Welches Pronomen verweist auf mich als Agens im Hauptsatz?\" -> 'er'."
+              },
+              {
+                "head": 1,
+                "source": 19,
+                "target": 11,
+                "strength": 0.84,
+                "explanation": "H1 fragt: \"Wer ist der plausibelste Träger der Eigenschaft 'verletzt' im Kausal-Frame (Handlungsfähigkeit)?\" -> 'Paul'."
+              },
+              {
+                "head": 1,
+                "source": 11,
+                "target": 19,
+                "strength": 0.84,
+                "explanation": "H1 fragt: \"Welche Begründungs-Eigenschaft wird mir zugeschrieben?\" -> 'verletzt'."
+              },
+              {
+                "head": 2,
+                "source": 18,
+                "target": 20,
+                "strength": 0.84,
+                "explanation": "H2 fragt: \"Mit welchem Kopulaverb bin ich verbunden?\" -> 'war'."
+              },
+              {
+                "head": 2,
+                "source": 20,
+                "target": 18,
+                "strength": 0.72,
+                "explanation": "H2 fragt: \"Welches Subjekt trage ich im Kopulasatz?\" -> 'er'."
+              },
+              {
+                "head": 3,
+                "source": 20,
+                "target": 19,
+                "strength": 0.90,
+                "explanation": "H3 fragt: \"Welche Eigenschaft prädiziere ich als Ursache?\" -> 'verletzt'."
+              },
+              {
+                "head": 3,
+                "source": 19,
+                "target": 20,
+                "strength": 0.76,
+                "explanation": "H3 fragt: \"Welche Kopula macht mich zur Ursache-Aussage?\" -> 'war'."
+              },
+              {
+                "head": 1,
+                "source": 13,
+                "target": 18,
+                "strength": 0.28,
+                "explanation": "H1 fragt (schwach): \"Könnte das Pronomen auch auf mich zeigen?\" -> 'er' (Alternative, aber weniger kausal passend)."
+              },
+              {
+                "head": 1,
+                "source": 10,
+                "target": 17,
+                "strength": 0.35,
+                "explanation": "H1 fragt: \"Wo ist der Diskurs-Knoten für Begründungen?\" -> 'weil'."
+              },
+              {
+                "head": 1,
+                "source": 17,
+                "target": 10,
+                "strength": 0.25,
+                "explanation": "H1 fragt: \"Wo sammelt sich globaler Kontext, an den ich andocke?\" -> '<s>'."
+              },
+              {
+                "head": 2,
+                "source": 16,
+                "target": 17,
+                "strength": 0.70,
+                "explanation": "H2 fragt: \"Welche Grenze trennt Hauptsatz und Begründung?\" -> Komma als Übergang zu 'weil'."
+              }
+            ]
+          }
+        ]
+      },
+      "phase_3_ffn": {
+        "activation_profiles": [
+          {
+            "ref_profile_id": "recency-literal",
+            "activations": [
+              {
+                "label": "Recency-Bias: letzter Name als Referent",
+                "activation": 0.88
+              },
+              {
+                "label": "Benefiziat-Fokus: Empfänger im Vordergrund",
+                "activation": 0.62
+              },
+              {
+                "label": "Eigenschaft: verletzt (unspezifisch gebunden)",
+                "activation": 0.55
+              },
+              {
+                "label": "Unterdrückt: Agens-verhindert-Frame (Helfer ist verletzt)",
+                "activation": 0.18
+              }
+            ]
+          },
+          {
+            "ref_profile_id": "contextual-causal",
+            "activations": [
+              {
+                "label": "Kausal-Frame: Verletzung verhindert Handlung",
+                "activation": 0.92
+              },
+              {
+                "label": "Entität-Bindung: 'er' -> Paul (Agens)",
+                "activation": 0.90
+              },
+              {
+                "label": "Hilfe-Frame: Agens/Benefiziat-Rollen stabil",
+                "activation": 0.80
+              },
+              {
+                "label": "Unterdrückt: Alternative Bindung 'er' -> Markus",
+                "activation": 0.14
+              }
+            ]
+          }
+        ]
+      },
+      "phase_4_decoding": {
+        "outputs": [
+          {
+            "label": "Korrekte Lesart: 'er' bezieht sich auf Paul (Paul ist verletzt)",
+            "logit": 11.2,
+            "type": "Korrekte Pronomen-Auflösung",
+            "hallucination_risk": 0.07,
+            "hallucination_risk_percent": 7,
+            "causality_trace": "Da Head 4 im Profil 'contextual-causal' das Pronomen (Token 18) stark an 'Paul' (Token 11) bindet (18->11, 0.90) und Head 1 zusätzlich die Eigenschaft 'verletzt' (Token 19) an 'Paul' koppelt (19->11 und 11->19, jeweils 0.84), wird im FFN der Kausal-Frame (Verletzung verhindert Handlung) aktiviert (0.92) und die Alternative 'er'->'Markus' unterdrückt (0.14). Wenn die Ursache im weil-Satz die Handlungsunfähigkeit erklärt, dann muss der Agens aus dem Hauptsatz der Verletzte sein."
+          },
+          {
+            "label": "Naive Lesart: 'er' bezieht sich auf Markus (Markus ist verletzt)",
+            "logit": 8.9,
+            "type": "Fehlinterpretation durch Nähe-Heuristik",
+            "hallucination_risk": 0.34,
+            "hallucination_risk_percent": 34,
+            "causality_trace": "Im Profil 'recency-literal' dominiert Head 4 die Recency-Heuristik: Pronomen (Token 18) bindet an das zuletzt genannte maskuline Nomen 'Markus' (Token 13) mit Stärke 0.78. Dadurch aktiviert das FFN stark den Recency-Bias (0.88) und fokussiert den Benefiziaten (0.62), während der Agens-verhindert-Frame (Helfer ist verletzt) unterdrückt bleibt (0.18). Wenn das Modell nur lokale Nähe nutzt, wählt es den letzten Kandidaten, auch wenn die Kausalität schwächer passt."
+          },
+          {
+            "label": "Diskursstruktur: weil-Satz liefert Ursache für 'konnte nicht helfen'",
+            "logit": 10.1,
+            "type": "Diskurs-/Kohärenzsignal",
+            "hallucination_risk": 0.12,
+            "hallucination_risk_percent": 12,
+            "causality_trace": "Head 2 koppelt 'weil' (Token 17) an den negierten Fähigkeitskern (Token 12) (17->12, 0.78) und stabilisiert damit, dass der zweite Satzteil eine Erklärung liefert. Zusammen mit Head 3 (20->19, 0.90) entsteht ein klares Prädikat 'war verletzt'. Wenn der Kausalsatz als Ursache für das Scheitern aktiviert ist, bevorzugt das Modell Referenten, deren Zustand die Handlung plausibel verhindert."
+          }
+        ]
+      },
+      "phase_5_analysis": {
+        "summary_points": [
+          "Technische Ebene: Head 4 ist der Held, weil er die Referenz ('er' -> Paul) im kausalen Profil stark bindet und damit die Recency-Heuristik überstimmt.",
+          "Linguistische Ebene: Gelöst wird die Pronomen-Referenz in einem Kausalsatz, bei dem grammatische Nähe (Markus zuletzt) gegen Frame-Logik (Helfer kann nicht, weil er verletzt ist) ausgespielt wird.",
+          "Metapher: Attention ist wie ein Ermittlerteam – ein Ermittler zeigt auf den Nächsten (Recency), aber der forensische Experte findet die Ursache, die wirklich erklärt, warum die Hilfe ausfällt."
+        ],
+        "storyline": "Der Hauptsatz etabliert einen Hilfe-Frame: Paul (Agens) kann Markus (Benefiziat) nicht helfen. Der Kausalsatz liefert eine Ursache (er war verletzt), aber das Pronomen ist mehrdeutig. Im naiven Profil gewinnt die Nähe-Heuristik und bindet 'er' an Markus. Im kontextuellen Profil verknüpfen Syntax- und Logik-Heads den negierten Fähigkeitskern mit dem Kausalsatz, Semantik-Heads koppeln 'verletzt' an den plausiblen Handlungsträger, und Head 4 bindet das Pronomen an Paul. Das FFN aktiviert dadurch das passende Kausalwissen (Verletzung verhindert Handlung) und unterdrückt die alternative Referenz.",
+        "didactic_outlook": "Was passiert, wenn du im Simulator das Profil auf 'Wörtlich/Naiv' stellst und gleichzeitig die Temperatur erhöhst? Beobachte, ob die falsche Bindung ('er'->Markus) häufiger entsteht – und ob stärkere Gewichte für Head 4 (Referenz) oder Head 3 (Frame-Logik) die Entscheidung wieder stabilisieren."
+      }
     },
     {
       "id": "bank-polysemie",

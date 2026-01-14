@@ -10,29 +10,29 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
         { title: "FFN & Wissen", details: "Aktivierung gespeicherten Wissens in Kategorien wie 'Wissenschaft' oder 'Poesie'." },
         { title: "Decoding", details: "Berechnung der Wahrscheinlichkeiten. Hier entscheidet die 'Temperature' über Präzision oder Kreativität." },
         { title: "Analyse", details: "Interpretation der finalen Ergebnisse und des gewählten Pfades." },
-        { title: "Layout Debug", details: "Vorschau der standardisierten UI-Komponenten und Layout-Stabilität." }
     ];
 
-    const currentPhaseIndex = activePhase === 99 ? 6 : activePhase;
+    const currentPhaseIndex = activePhase === 99 ? 5 : activePhase;
 
-    // --- MINIMIERTER ZUSTAND ---
+    // --- PIPELINE LOGIK ---
+    // Wir nutzen das neue avgSignal aus dem simulator, um die Integrität anzuzeigen
+    const pipelineSignal = simulator?.activeAttention?.avgSignal || 1.0;
+    const isDegraded = pipelineSignal < 0.7;
+    const isCritical = pipelineSignal < 0.4;
+
     if (!isExpanded) return (
         <div className="w-full h-full flex items-center justify-center bg-slate-900/20 backdrop-blur-md rounded-2xl border border-slate-800">
             <button
                 onClick={() => setIsExpanded(true)}
-                className={`
-                    group relative flex flex-row lg:flex-col items-center justify-center
-                    w-full lg:w-12 h-16 lg:h-64 rounded-xl border transition-all duration-500 gap-4
-                    ${theme === 'dark'
-                        ? 'bg-slate-900/60 border-slate-700 hover:bg-blue-600/20 hover:border-blue-500/50'
-                        : 'bg-white border-slate-200 hover:bg-blue-50 shadow-sm'}
+                className={`group relative flex flex-row lg:flex-col items-center justify-center w-full lg:w-12 h-16 lg:h-64 rounded-xl border transition-all duration-500 gap-4
+                    ${theme === 'dark' ? 'bg-slate-900/60 border-slate-700 hover:bg-blue-600/20' : 'bg-white border-slate-200 hover:bg-blue-50'}
                 `}
             >
-                <div className="absolute top-0 lg:top-auto lg:left-0 w-full lg:w-[2px] h-[2px] lg:h-3/4 bg-blue-500 rounded-full opacity-40 group-hover:opacity-100 transition-opacity" />
-                <span className="lg:rotate-180 lg:[writing-mode:vertical-lr] text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/70 group-hover:text-blue-500">
-                    System Details
-                </span>
-                <div className="text-blue-500/40 group-hover:text-blue-500 text-base lg:rotate-0 rotate-90">«</div>
+                <div className={`absolute top-0 lg:top-auto lg:left-0 w-full lg:w-[2px] h-[2px] lg:h-3/4 rounded-full transition-all duration-500
+                    ${isCritical ? 'bg-red-500 shadow-[0_0_8px_red]' : isDegraded ? 'bg-orange-500' : 'bg-blue-500'}
+                `} />
+                <span className="lg:rotate-180 lg:[writing-mode:vertical-lr] text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/70">System Details</span>
+                <div className="text-blue-500/40 text-base lg:rotate-0 rotate-90">«</div>
             </button>
         </div>
     );
@@ -53,78 +53,55 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
             <div className="flex justify-between items-start mb-5 shrink-0">
                 <div>
                     <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-500 mb-0.5">System Monitor</h3>
-                    <h4 className="text-sm font-bold uppercase tracking-tighter opacity-90">
-                        {phaseContent[currentPhaseIndex]?.title}
-                    </h4>
+                    <h4 className="text-sm font-bold uppercase tracking-tighter opacity-90">{phaseContent[currentPhaseIndex]?.title}</h4>
                 </div>
-                <button 
-                    onClick={() => setIsExpanded(false)} 
-                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors opacity-30 hover:opacity-100 text-xl"
-                >
-                    ×
-                </button>
+                <button onClick={() => setIsExpanded(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors opacity-30 hover:opacity-100 text-xl">×</button>
             </div>
 
-            {/* 2. SCROLL-CONTENT */}
             <div className="flex-1 space-y-6 overflow-y-auto pr-1 custom-scrollbar">
-
-                {/* Definition Box */}
-                <section>
-                    <div className="p-4 rounded-lg bg-blue-600/5 border border-blue-500/10 border-l-2 border-l-blue-500 shadow-inner">
-                        <p className="text-[10px] leading-relaxed opacity-70 italic font-medium">
-                            {phaseContent[currentPhaseIndex]?.details}
-                        </p>
+                
+                {/* GLOBAL PIPELINE INTEGRITY */}
+                <section className="animate-in fade-in slide-in-from-top-2 duration-700">
+                    <div className={`p-3 rounded-xl border transition-all duration-500 ${
+                        isCritical ? 'bg-red-500/10 border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 
+                        isDegraded ? 'bg-orange-500/10 border-orange-500/40' : 'bg-blue-500/5 border-blue-500/20'
+                    }`}>
+                        <div className="flex justify-between items-center mb-2">
+                            <span className={`text-[8px] font-black uppercase tracking-widest ${isCritical ? 'text-red-400' : isDegraded ? 'text-orange-400' : 'text-blue-400'}`}>
+                                {isCritical ? '⚠️ Signal Critical' : isDegraded ? '⚡ Signal Degraded' : '💎 Signal Clear'}
+                            </span>
+                            <span className="text-[10px] font-mono font-bold">{(pipelineSignal * 100).toFixed(0)}%</span>
+                        </div>
+                        <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div className={`h-full transition-all duration-1000 ease-out ${isCritical ? 'bg-red-500' : isDegraded ? 'bg-orange-500' : 'bg-blue-500'}`} style={{ width: `${pipelineSignal * 100}%` }} />
+                        </div>
                     </div>
                 </section>
 
-                {/* Live Parameter Telemetrie */}
                 <section>
-                    <button
-                        onClick={() => setShowTech(!showTech)}
-                        className="w-full flex justify-between items-center text-[9px] font-black text-slate-500 mb-3 uppercase tracking-widest hover:text-white transition-colors"
-                    >
+                    <div className="p-4 rounded-lg bg-blue-600/5 border border-blue-500/10 border-l-2 border-l-blue-500 shadow-inner">
+                        <p className="text-[10px] leading-relaxed opacity-70 italic font-medium">{phaseContent[currentPhaseIndex]?.details}</p>
+                    </div>
+                </section>
+
+                {/* TELEMETRIE */}
+                <section>
+                    <button onClick={() => setShowTech(!showTech)} className="w-full flex justify-between items-center text-[9px] font-black text-slate-500 mb-3 uppercase tracking-widest hover:text-white transition-colors">
                         Live Telemetrie {showTech ? '▼' : '▲'}
                     </button>
 
                     {showTech && (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 animate-in fade-in duration-300">
-                            <div className="col-span-2 sm:col-span-4 lg:col-span-2">
-                                <MetricBox label="Active Scenario" value={activeScenario?.name || "None"} />
-                            </div>
-
-                            {(activePhase === 1 || activePhase === 2) && (
-                                <>
-                                    <MetricBox label="Noise" value={(simulator.noise * 100).toFixed(0)} unit="%" />
-                                    <MetricBox label="Pos. Weight" value={simulator.positionWeight?.toFixed(2)} />
-                                </>
-                            )}
-                            
-                            {activePhase === 3 && (
-                                <>
-                                    <MetricBox label="FFN Filter" value={simulator.mlpThreshold?.toFixed(2)} />
-                                    <MetricBox label="Cluster ID" value={simulator.activeProfileId} color="text-green-500" />
-                                </>
-                            )}
-
-                            {activePhase === 4 && (
-                                <>
-                                    <MetricBox
-                                        label="Temperature"
-                                        value={simulator.temperature?.toFixed(2)}
-                                        color={simulator.temperature > 1.2 ? "text-orange-500" : "text-blue-500"}
-                                    />
-                                    <MetricBox
-                                        label="Min-P Rank"
-                                        value={simulator.temperature > 1.5 ? "Volatile" : "Stable"}
-                                        color={simulator.temperature > 1.5 ? "text-red-500" : "text-green-500"}
-                                    />
-                                </>
-                            )}
+                        <div className="grid grid-cols-2 gap-2 animate-in fade-in duration-300">
+                            <div className="col-span-2"><MetricBox label="Active Scenario" value={activeScenario?.name || "None"} /></div>
+                            <MetricBox label="Noise" value={(simulator.noise * 100).toFixed(0)} unit="%" color={isCritical ? "text-red-500" : isDegraded ? "text-orange-500" : "text-blue-500"} />
+                            <MetricBox label="Pos. Weight" value={simulator.positionWeight?.toFixed(2)} />
+                            {activePhase >= 3 && <MetricBox label="FFN Activation" value={(pipelineSignal * 100).toFixed(1)} unit="%" color="text-green-400" />}
+                            {activePhase >= 4 && <MetricBox label="Temperature" value={simulator.temperature?.toFixed(2)} color={simulator.temperature > 1.2 ? "text-orange-500" : "text-blue-500"} />}
                         </div>
                     )}
                 </section>
 
-                {/* PIPELINE INSPECTOR (Optimierte Version) */}
+                {/* PIPELINE INSPECTOR */}
                 <section className="flex flex-col border-t border-white/5 pt-5 pb-4">
                     <p className="text-[9px] font-black text-blue-400 mb-4 uppercase tracking-[0.2em] flex items-center gap-2">
                         <span className={`w-1.5 h-1.5 rounded-full ${hoveredItem ? 'bg-blue-500 animate-pulse' : 'bg-slate-700'}`}></span>
@@ -141,75 +118,38 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                                     <span>{hoveredItem.title}</span>
                                     {hoveredItem.subtitle && <span className="opacity-40 font-normal lowercase tracking-normal italic">{hoveredItem.subtitle}</span>}
                                 </h6>
-
                                 <div className="space-y-4">
                                     {Object.entries(hoveredItem.data || {}).map(([key, value]) => {
-                                        
-                                        // 1. KATEGORIE-HEADER
                                         if (!value || value.toString().includes('---')) {
-                                            return (
-                                                <div key={key} className="pt-3 border-t border-white/5 first:pt-0 first:border-0">
-                                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-500/80">
-                                                        {key.replace(/-/g, '').trim()}
-                                                    </span>
-                                                </div>
-                                            );
+                                            return <div key={key} className="pt-3 border-t border-white/5 first:pt-0 first:border-0"><span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-500/80">{key.replace(/-/g, '').trim()}</span></div>;
                                         }
-
-                                        // 2. LONG TEXT BOX (Information / Explanation / Trace)
-                                        const isLongText = key === "Information" || key === "Kontext" || key === "Transfer-Value" || key.toLowerCase().includes("trace") || key === "Erkenntnis";
-                                        
+                                        const isLongText = ["Information", "Kontext", "Transfer-Value", "Erkenntnis"].some(k => key.includes(k));
                                         if (isLongText) {
-                                            return (
-                                                <div key={key} className="flex flex-col gap-1.5">
-                                                    <span className="text-[7px] uppercase font-black text-slate-500/60 tracking-widest">{key}</span>
-                                                    <p className="text-[10px] leading-relaxed italic text-blue-100/90 font-medium bg-blue-500/5 p-2.5 rounded-lg border border-blue-500/10 shadow-inner">
-                                                        {value}
-                                                    </p>
-                                                </div>
-                                            );
+                                            return <div key={key} className="flex flex-col gap-1.5"><span className="text-[7px] uppercase font-black text-slate-500/60 tracking-widest">{key}</span><p className="text-[10px] leading-relaxed italic text-blue-100/90 font-medium bg-blue-500/5 p-2.5 rounded-lg border border-blue-500/10 shadow-inner">{value}</p></div>;
                                         }
-
-                                        // 3. STANDARD STACK (Label über Wert) mit Progress-Bar Logik
-                                        const isNumeric = !isNaN(parseFloat(value)) && (value.toString().includes('%') || key.toLowerCase().includes('score') || key.toLowerCase().includes('logit'));
-                                        const numericValue = isNumeric ? parseFloat(value.toString().replace('%', '')) : 0;
-
                                         return (
                                             <div key={key} className="flex flex-col gap-1">
                                                 <div className="flex justify-between items-end">
                                                     <span className="text-[7px] uppercase font-black text-slate-500/80 tracking-tighter">{key}</span>
                                                     <span className="text-[10px] font-bold text-blue-400 font-mono tracking-tight">{value}</span>
                                                 </div>
-                                                {isNumeric && (
-                                                    <div className="w-full h-[3px] bg-slate-800/50 rounded-full mt-1 overflow-hidden">
-                                                        <div 
-                                                            className="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.6)] transition-all duration-1000 ease-out"
-                                                            style={{ width: `${Math.min(numericValue, 100)}%` }}
-                                                        />
-                                                    </div>
-                                                )}
                                             </div>
                                         );
                                     })}
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-center group">
-                                <div className="text-[8px] uppercase font-black tracking-[0.3em] opacity-10 group-hover:opacity-30 transition-all duration-700">
-                                    System Standby<br/>
-                                    <span className="font-normal lowercase tracking-normal">Select token to probe pipeline</span>
-                                </div>
-                            </div>
+                            <div className="text-center group"><div className="text-[8px] uppercase font-black tracking-[0.3em] opacity-10 group-hover:opacity-30 transition-all duration-700">System Standby<br/><span className="font-normal lowercase tracking-normal">Select token to probe pipeline</span></div></div>
                         )}
                     </div>
                 </section>
             </div>
 
-            {/* 3. FOOTER */}
+            {/* FOOTER */}
             <div className="mt-3 pt-3 border-t border-white/5 shrink-0">
                 <div className="flex justify-between items-center opacity-20 text-[7px] font-black uppercase tracking-[0.2em]">
                     <span>Neural Analysis Engine</span>
-                    <span className="font-mono tracking-tighter">v1.4.2_STABLE</span>
+                    <span className="font-mono tracking-tighter">v1.5.0_PIPELINE</span>
                 </div>
             </div>
         </div>

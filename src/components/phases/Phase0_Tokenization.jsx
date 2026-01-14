@@ -15,22 +15,38 @@ const Phase0_Tokenization = ({ simulator, theme, setHoveredItem }) => {
 
   if (!tokens.length) return <div className="p-10 text-center opacity-50">Warte auf Token-Daten...</div>;
 
+  // NEU: Hilfsfunktion zum Finden des Basis-Vektors für den Inspektor
+  const getBaseVectorForToken = (tokenId) => {
+    const vectorData = scenario?.phase_1_embedding?.token_vectors?.find(v => v.token_index === tokenId || v.id === tokenId);
+    return vectorData?.base_vector;
+  };
+
   // Optimierte Datenstruktur für den Inspektor
-  const getInspectorData = (token) => ({
-    title: `Token-Analyse: ${token.text}`,
-    subtitle: "Preprocessing (BPE)",
-    data: {
-      "--- Spezifikationen": "---",
-      "Token-ID": `#${token.id}`,
-      "Inhalt": `"${token.text}"`,
-      "Länge": token.text.length + " Zeichen",
-      "Typ": token.id === 10 ? "Start-of-Sequence" : "Content-Token",
-      
-      "--- Linguistik": "---",
-      // Wir nutzen "Information", damit die Sidebar die große Textbox rendert
-      "Information": token.explanation || "Dieses Token wurde erfolgreich durch Byte-Pair-Encoding segmentiert und der Vokabular-ID zugewiesen."
-    }
-  });
+  const getInspectorData = (token) => {
+    const baseVec = getBaseVectorForToken(token.id);
+
+    return {
+      title: `Token-Analyse: ${token.text}`,
+      subtitle: "Preprocessing (BPE)",
+      data: {
+        "--- Spezifikationen": "---",
+        "Token-ID": `#${token.id}`,
+        "Inhalt": `"${token.text}"`,
+        "Länge": token.text.length + " Zeichen",
+        "Typ": token.id === 10 ? "Start-of-Sequence" : "Content-Token",
+        
+        // NEU: Dezent eingefügte Vektor-Basisdaten als Ausblick auf Phase 1
+        ...(baseVec ? {
+          "--- Embedding-Vorschau": "---",
+          "Base Vector X": baseVec[0].toFixed(3),
+          "Base Vector Y": baseVec[1].toFixed(3),
+        } : {}),
+
+        "--- Linguistik": "---",
+        "Information": token.explanation || "Dieses Token wurde erfolgreich durch Byte-Pair-Encoding segmentiert."
+      }
+    };
+  };
 
   useEffect(() => {
     if (selectedTokenId) {

@@ -23,6 +23,7 @@ import Phase5_Analysis from './components/phases/Phase5_Analysis';
 // --- HAUPT APP CONTENT ---
 
 function AppContent() {
+  // 1. STATES (Immer ganz oben)
   const [activePhase, setActivePhase] = useState(-1);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -30,20 +31,21 @@ function AppContent() {
   const [glossaryData, setGlossaryData] = useState(null);
   const [hoveredItem, setHoveredItem] = useState(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-
-  // States für das Onboarding-System
   const [showBriefing, setShowBriefing] = useState(false);
   const [briefings, setBriefings] = useState({});
 
-  // State für die automatische Anzeige (Initialisierung aus LocalStorage)
+  // Initialisierung aus LocalStorage
   const [autoShowBriefing, setAutoShowBriefing] = useState(() => {
     const saved = localStorage.getItem('llm_explorer_auto_briefing');
     return saved !== null ? JSON.parse(saved) : true;
   });
 
+  // 2. CONTEXT & SIMULATOR
+  // Diese Hooks müssen bei JEDEM Render aufgerufen werden
   const { scenarios, activeScenario, handleScenarioChange } = useScenarios();
   const simulator = useLLMSimulator(activeScenario);
 
+  // 3. EFFECTS
   // Daten laden
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data/glossary.json`)
@@ -64,37 +66,45 @@ function AppContent() {
     if (mainElement) mainElement.scrollTo({ top: 0, behavior: 'smooth' });
   }, [activePhase]);
 
-  // Briefing automatisch einblenden, wenn autoShowBriefing true ist
+  // Briefing automatisch einblenden
   useEffect(() => {
     if (activePhase >= 0 && autoShowBriefing) {
       setShowBriefing(true);
     }
   }, [activePhase, autoShowBriefing]);
 
-  // Handler für das Umschalten der Auto-Anzeige
-  const toggleAutoShowBriefing = (value) => {
-    setAutoShowBriefing(value);
-    localStorage.setItem('llm_explorer_auto_briefing', JSON.stringify(value));
-  };
-
   // Inspektor bei Phasenwechsel leeren
   useEffect(() => {
     setHoveredItem(null);
   }, [activePhase]);
 
+  // 4. HANDLER
+  const toggleAutoShowBriefing = (value) => {
+    setAutoShowBriefing(value);
+    localStorage.setItem('llm_explorer_auto_briefing', JSON.stringify(value));
+  };
+
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
+  // 5. EARLY RETURNS (Erst nachdem alle Hooks initialisiert wurden!)
   if (!scenarios || scenarios.length === 0) {
-    return <div className="bg-slate-950 min-h-screen flex items-center justify-center text-blue-500 font-mono uppercase text-xs">Loading Data...</div>;
+    return (
+      <div className="bg-slate-950 min-h-screen flex items-center justify-center text-blue-500 font-mono uppercase text-xs">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+          <span>Loading Neural Scenarios...</span>
+        </div>
+      </div>
+    );
   }
 
+  // 6. RENDER LOGIK
   return (
     <div className={`min-h-screen lg:h-screen flex flex-col transition-colors duration-700 ${
       theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
-    } font-sans`}>
+    } font-sans overflow-hidden`}>
 
-      {/* NEU: GLOBALER BRIEFING-DIALOG
-          Hier platziert, damit er absolut JEDES andere Element überlagert. */}
+      {/* GLOBALER BRIEFING-DIALOG */}
       {showBriefing && briefings[activePhase] && (
         <PhaseBriefing
           data={briefings[activePhase]}
@@ -115,6 +125,7 @@ function AppContent() {
         onScenarioChange={(id) => {
           setActivePhase(0);
           handleScenarioChange(id);
+          if (simulator?.resetParameters) simulator.resetParameters();
         }}
         onRestart={() => {
           setActivePhase(-1);
@@ -146,17 +157,18 @@ function AppContent() {
           <main className="flex-1 flex flex-col items-center pt-4 pb-4 px-4 overflow-y-auto lg:overflow-hidden min-h-0">
             <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-4 h-auto lg:h-full min-h-0">
 
-              {/* LINKES PANEL */}
-              <div className={`w-full lg:flex-1 relative border rounded-2xl shadow-2xl overflow-hidden backdrop-blur-md transition-all duration-500 flex flex-col min-h-[500px] lg:min-h-0 ${
+              {/* VISUALISIERUNGS-PANEL */}
+              <div className={`w-full lg:flex-[2.5] relative border rounded-[2rem] shadow-2xl overflow-hidden backdrop-blur-md transition-all duration-500 flex flex-col min-h-[500px] lg:min-h-0 ${
                 theme === 'dark' ? 'bg-slate-900/40 border-slate-800' : 'bg-white/80 border-slate-200'
               }`}>
 
                 {(!activeScenario || !simulator) ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/50 backdrop-blur-sm z-50">
+                    <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+                    <span className="text-[10px] font-mono uppercase text-blue-400 tracking-widest">Reconfiguring Pipeline...</span>
                   </div>
                 ) : (
-                  <div key={activeScenario.id} className="flex-1 flex flex-col min-h-0">
+                  <div key={activeScenario.id} className="flex-1 flex flex-col min-h-0 animate-in fade-in duration-700">
                     {activePhase === 0 && <Phase0_Tokenization simulator={simulator} theme={theme} setHoveredItem={setHoveredItem} />}
                     {activePhase === 1 && <Phase1_Embedding simulator={simulator} theme={theme} setHoveredItem={setHoveredItem} />}
                     {activePhase === 2 && <Phase2_Attention simulator={simulator} theme={theme} setHoveredItem={setHoveredItem} />}
@@ -167,8 +179,8 @@ function AppContent() {
                 )}
               </div>
 
-              {/* RECHTES PANEL */}
-              <aside className="w-full lg:w-[340px] h-auto lg:h-full flex-none overflow-hidden rounded-2xl border border-white/5 shadow-xl">
+              {/* INSPEKTOR / SIDEBAR */}
+              <aside className={`w-full lg:w-[360px] h-auto lg:h-full flex-none transition-all duration-500 ${isSidebarExpanded ? 'opacity-100' : 'lg:w-16'}`}>
                 <PhaseSidebar
                   activePhase={activePhase}
                   activeScenario={activeScenario}
@@ -180,13 +192,14 @@ function AppContent() {
                 />
               </aside>
 
-              <div className="lg:hidden h-36 w-full shrink-0 pointer-events-none" />
             </div>
           </main>
         </>
       )}
 
       <Footer className="shrink-0" />
+      
+      {/* MODALS */}
       <GlossaryModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} data={glossaryData} />
       <InfoModal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} theme={theme} />
     </div>
