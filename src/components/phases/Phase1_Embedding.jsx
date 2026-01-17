@@ -4,7 +4,12 @@ import { useScenarios } from '../../context/ScenarioContext';
 
 const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
   const { activeScenario } = useScenarios();
-  const { noise, setNoise, positionWeight, setPositionWeight, processedVectors } = simulator;
+  const { 
+    noise, setNoise, 
+    positionWeight, setPositionWeight, 
+    processedVectors,
+    activeAttention 
+  } = simulator;
 
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -20,6 +25,8 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
   
   // WICHTIG: GRID_SCALE 150 entspricht 1.0 Einheiten im Simulator
   const GRID_SCALE = 150; 
+
+  const pipelineSignal = simulator?.activeAttention?.avgSignal || 1.0;
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -42,7 +49,7 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
     return `${horizontal} / ${vertical}`;
   };
 
- const getInspectorData = useCallback((id) => {
+  const getInspectorData = useCallback((id) => {
     if (!id) return null;
     const vec = processedVectors.find(v => Number(v.id) === Number(id) || Number(v.token_index) === Number(id));
     const token = tokens.find(t => Number(t.id) === Number(id));
@@ -53,8 +60,6 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
 
     if (vec && token) {
       const stabilityValue = Math.max(5, 100 - (noise * 16));
-
-      // Wir rechnen jetzt die tatsächliche Position aus dem Simulator zurück in logische Einheiten
       const currentXWithNoise = vec.displayX / GRID_SCALE;
       const currentYWithNoise = vec.displayY / GRID_SCALE;
 
@@ -64,16 +69,15 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
         data: {
           "--- Base-Vector (Original)": "---",
           "Base X (Semantik)": baseVec[0].toFixed(3),
-          "Base Y (Kontext)": baseVec[1].toFixed(3),
+          "Base Y (Vektor)": baseVec[1].toFixed(3), // Umbenannt, um langes Textfeld zu vermeiden
           
           "--- Arbeits-Vector (Live)": "---",
-          // Zeigt nun die exakten Koordinaten inkl. Rauschen an
           "Current X (Total)": currentXWithNoise.toFixed(3),
           "Current Y (Total)": currentYWithNoise.toFixed(3),
           "Positional Shift": `+${(posVec[0] * positionWeight).toFixed(3)} / +${(posVec[1] * positionWeight).toFixed(3)}`,
           
           "--- Simulator-Status": "---",
-          "Fokus": getSemanticPosition(vec.displayX, vec.displayY),
+          "Fokus-Ausrichtung": getSemanticPosition(vec.displayX, vec.displayY),
           "Rauschen (Einfluss)": noise > 0 ? `±${(noise * 0.08).toFixed(3)}` : "Keines",
           "Stabilität": stabilityValue.toFixed(0) + "%",
 
@@ -93,7 +97,7 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
     setTransform({ x: 0, y: 0, scale: 1 });
   }, []);
 
-  useEffect(() => { handleAutoFit(); }, [activeScenario?.id]);
+  useEffect(() => { handleAutoFit(); }, [activeScenario?.id, handleAutoFit]);
 
   const move = (dx, dy) => {
     const step = 60 / transform.scale;
@@ -132,7 +136,6 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
             zoom(scaleAmount);
           }}
         >
-          {/* DIDAKTISCHE BESCHRIFTUNG (STATISCH) */}
           <div className="absolute inset-0 pointer-events-none z-50">
             <div className="absolute top-4 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-widest text-slate-500 flex flex-col items-center">
               <span className="mb-1 text-blue-400">↑ Hohe Kontextbindung</span>
@@ -148,7 +151,6 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
             </div>
           </div>
 
-          {/* ZOOM BUTTONS IM VIEWPORT */}
           <div className="absolute top-4 right-4 flex flex-col gap-2 z-[60]">
              <button onClick={() => zoom(0.2)} className="w-8 h-8 rounded-lg bg-slate-900 border border-white/10 flex items-center justify-center text-white hover:bg-blue-600 transition-colors shadow-lg">+</button>
              <button onClick={() => zoom(-0.2)} className="w-8 h-8 rounded-lg bg-slate-900 border border-white/10 flex items-center justify-center text-white hover:bg-blue-600 transition-colors shadow-lg">−</button>

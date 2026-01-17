@@ -14,8 +14,6 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
 
     const currentPhaseIndex = activePhase === 99 ? 5 : activePhase;
 
-    // --- PIPELINE LOGIK ---
-    // Wir nutzen das neue avgSignal aus dem simulator, um die Integrität anzuzeigen
     const pipelineSignal = simulator?.activeAttention?.avgSignal || 1.0;
     const isDegraded = pipelineSignal < 0.7;
     const isCritical = pipelineSignal < 0.4;
@@ -49,7 +47,6 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
             theme === 'dark' ? 'bg-slate-900/60 border-slate-800 backdrop-blur-md' : 'bg-white border-slate-200 text-slate-900'
         }`}>
 
-            {/* 1. HEADER */}
             <div className="flex justify-between items-start mb-5 shrink-0">
                 <div>
                     <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-500 mb-0.5">System Monitor</h3>
@@ -60,7 +57,6 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
 
             <div className="flex-1 space-y-6 overflow-y-auto pr-1 custom-scrollbar">
                 
-                {/* GLOBAL PIPELINE INTEGRITY */}
                 <section className="animate-in fade-in slide-in-from-top-2 duration-700">
                     <div className={`p-3 rounded-xl border transition-all duration-500 ${
                         isCritical ? 'bg-red-500/10 border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 
@@ -93,15 +89,24 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                     {showTech && (
                         <div className="grid grid-cols-2 gap-2 animate-in fade-in duration-300">
                             <div className="col-span-2"><MetricBox label="Active Scenario" value={activeScenario?.name || "None"} /></div>
-                            <MetricBox label="Noise" value={(simulator.noise * 100).toFixed(0)} unit="%" color={isCritical ? "text-red-500" : isDegraded ? "text-orange-500" : "text-blue-500"} />
+                            <MetricBox label="Noise" value={(simulator.noise * 100).toFixed(0)} unit="%" color={isCritical ? "text-red-500" : isDegraded ? "text-orange-400" : "text-blue-500"} />
                             <MetricBox label="Pos. Weight" value={simulator.positionWeight?.toFixed(2)} />
+                            
+                            {/* NEU: Hinweistext nur für Phase 1 */}
+                            {activePhase === 1 && (
+                                <div className="col-span-2 mt-1 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10 border-dashed animate-pulse">
+                                    <p className="text-[9px] leading-snug text-blue-400/80 italic font-medium">
+                                        Vektor-Basis stabil. Konfiguration der Fokus-Köpfe erfolgt in Phase 2
+                                    </p>
+                                </div>
+                            )}
+
                             {activePhase >= 3 && <MetricBox label="FFN Activation" value={(pipelineSignal * 100).toFixed(1)} unit="%" color="text-green-400" />}
                             {activePhase >= 4 && <MetricBox label="Temperature" value={simulator.temperature?.toFixed(2)} color={simulator.temperature > 1.2 ? "text-orange-500" : "text-blue-500"} />}
                         </div>
                     )}
                 </section>
 
-                {/* PIPELINE INSPECTOR */}
                 <section className="flex flex-col border-t border-white/5 pt-5 pb-4">
                     <p className="text-[9px] font-black text-blue-400 mb-4 uppercase tracking-[0.2em] flex items-center gap-2">
                         <span className={`w-1.5 h-1.5 rounded-full ${hoveredItem ? 'bg-blue-500 animate-pulse' : 'bg-slate-700'}`}></span>
@@ -145,7 +150,6 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                 </section>
             </div>
 
-            {/* FOOTER */}
             <div className="mt-3 pt-3 border-t border-white/5 shrink-0">
                 <div className="flex justify-between items-center opacity-20 text-[7px] font-black uppercase tracking-[0.2em]">
                     <span>Neural Analysis Engine</span>

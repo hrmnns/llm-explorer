@@ -1,38 +1,341 @@
 {
   "project": "LLM-Explorer",
-  "version": "3.31",
+  "version": "3.37",
   "scenarios": [
     {
-      "id": "was-ist-ein-hund",
-      "name": "1. Begriffs-Definition: Hund",
+      "id": "counting-reasoning_GEM",
+      "name": "Logik: Die Zahlenreihe",
+      "input_prompt": "Eins, zwei, drei, vier,",
+      "explanation": "Testet die Fähigkeit, eine lineare Sequenz fortzusetzen (Reasoning) vs. bloße Assoziation (Reime).",
+      "phase_0_tokenization": {
+        "tokens": [
+          {
+            "id": 30,
+            "text": "Eins",
+            "explanation": "Startwert"
+          },
+          {
+            "id": 31,
+            "text": ",",
+            "explanation": "Trennzeichen"
+          },
+          {
+            "id": 32,
+            "text": "zwei",
+            "explanation": "Inkrement +1"
+          },
+          {
+            "id": 33,
+            "text": ",",
+            "explanation": "Trennzeichen"
+          },
+          {
+            "id": 34,
+            "text": "drei",
+            "explanation": "Inkrement +1"
+          },
+          {
+            "id": 35,
+            "text": ",",
+            "explanation": "Trennzeichen"
+          },
+          {
+            "id": 36,
+            "text": "vier",
+            "explanation": "Aktueller Fokus (n)"
+          },
+          {
+            "id": 37,
+            "text": ",",
+            "explanation": "Trigger für Next-Token"
+          }
+        ]
+      },
+      "phase_1_embedding": {
+        "token_vectors": [
+          {
+            "token_index": 30,
+            "base_vector": [
+              0.1,
+              0.8
+            ],
+            "positional_vector": [
+              0.05,
+              0.0
+            ]
+          },
+          {
+            "token_index": 31,
+            "base_vector": [
+              0.5,
+              0.1
+            ],
+            "positional_vector": [
+              0.1,
+              0.0
+            ]
+          },
+          {
+            "token_index": 32,
+            "base_vector": [
+              0.3,
+              0.8
+            ],
+            "positional_vector": [
+              0.15,
+              0.0
+            ]
+          },
+          {
+            "token_index": 33,
+            "base_vector": [
+              0.5,
+              0.1
+            ],
+            "positional_vector": [
+              0.2,
+              0.0
+            ]
+          },
+          {
+            "token_index": 34,
+            "base_vector": [
+              0.5,
+              0.8
+            ],
+            "positional_vector": [
+              0.25,
+              0.0
+            ]
+          },
+          {
+            "token_index": 35,
+            "base_vector": [
+              0.5,
+              0.1
+            ],
+            "positional_vector": [
+              0.3,
+              0.0
+            ]
+          },
+          {
+            "token_index": 36,
+            "base_vector": [
+              0.7,
+              0.8
+            ],
+            "positional_vector": [
+              0.35,
+              0.0
+            ]
+          },
+          {
+            "token_index": 37,
+            "base_vector": [
+              0.5,
+              0.1
+            ],
+            "positional_vector": [
+              0.4,
+              0.0
+            ]
+          }
+        ]
+      },
+      "phase_2_attention": {
+        "attention_profiles": [
+          {
+            "id": "mathematical",
+            "label": "Strikte Logik (Induktion)",
+            "rules": [
+              {
+                "head": 1,
+                "source": 36,
+                "target": 34,
+                "strength": 0.95,
+                "explanation": "H1 (Induction): Starker Blick zurück auf n-1 ('drei') um Schrittweite zu prüfen."
+              },
+              {
+                "head": 1,
+                "source": 36,
+                "target": 32,
+                "strength": 0.6,
+                "explanation": "H1 (Check): Schwächerer Blick auf n-2 ('zwei') zur Bestätigung."
+              },
+              {
+                "head": 2,
+                "source": 36,
+                "target": 30,
+                "strength": 0.8,
+                "explanation": "H2 (Range): Prüft den Startwert 'Eins', um die Skala zu definieren."
+              },
+              {
+                "head": 2,
+                "source": 36,
+                "target": 36,
+                "strength": 0.2,
+                "explanation": "H2: Geringe Selbst-Attention."
+              },
+              {
+                "head": 3,
+                "source": 36,
+                "target": 35,
+                "strength": 0.9,
+                "explanation": "H3 (Format): Achtet strikt auf das Komma-Muster."
+              },
+              {
+                "head": 4,
+                "source": 36,
+                "target": 36,
+                "strength": 0.95,
+                "explanation": "H4 (Identity): Starke Selbst-Identifikation 'Ich bin die 4' (Halo)."
+              }
+            ]
+          },
+          {
+            "id": "associative",
+            "label": "Assoziatives Gedächtnis (Reim)",
+            "rules": [
+              {
+                "head": 1,
+                "source": 36,
+                "target": 30,
+                "strength": 0.95,
+                "explanation": "H1 (Lied): Verknüpft 'vier' direkt mit 'Eins' (Kinderlied-Start)."
+              },
+              {
+                "head": 1,
+                "source": 36,
+                "target": 34,
+                "strength": 0.1,
+                "explanation": "H1: Ignoriert den direkten mathematischen Vorgänger."
+              },
+              {
+                "head": 2,
+                "source": 36,
+                "target": 32,
+                "strength": 0.4,
+                "explanation": "H2 (Klang): Sucht diffuse Klangähnlichkeit/Rhythmus bei 'zwei'."
+              },
+              {
+                "head": 3,
+                "source": 36,
+                "target": 36,
+                "strength": 0.1,
+                "explanation": "H3: Kaum Fokus auf eigene Identität."
+              },
+              {
+                "head": 4,
+                "source": 36,
+                "target": 37,
+                "strength": 0.8,
+                "explanation": "H4 (Flow): Blick nach vorne/auf Trigger."
+              }
+            ]
+          }
+        ]
+      },
+      "phase_3_ffn": {
+        "activation_profiles": [
+          {
+            "ref_profile_id": "mathematical",
+            "activations": [
+              {
+                "label": "Arithmetik (+1)",
+                "activation": 0.99,
+                "color": "#3b82f6"
+              },
+              {
+                "label": "Zahlenreihe",
+                "activation": 0.95,
+                "color": "#22c55e"
+              }
+            ]
+          },
+          {
+            "ref_profile_id": "associative",
+            "activations": [
+              {
+                "label": "Kinderlieder",
+                "activation": 0.85,
+                "color": "#f472b6"
+              },
+              {
+                "label": "Versteckspiel",
+                "activation": 0.70,
+                "color": "#f97316"
+              }
+            ]
+          }
+        ]
+      },
+      "phase_4_decoding": {
+        "outputs": [
+          {
+            "label": "fünf",
+            "logit": 12.5,
+            "type": "Logik (Mathematik)",
+            "noise_sensitivity": 1.5,
+            "hallucination_risk": 0.1,
+            "causality_trace": "Ergebnis der Induktions-Heads 1 & 2. Das Muster (+1) wurde erkannt und fortgesetzt."
+          },
+          {
+            "label": "Eckstein",
+            "logit": 8.2,
+            "type": "Assoziation",
+            "noise_sensitivity": 0.0,
+            "hallucination_risk": 0.05,
+            "causality_trace": "Getriggert durch das assoziative Profil. 'Eins, zwei, drei, vier, Eckstein, alles muss versteckt sein.'"
+          },
+          {
+            "label": "null",
+            "logit": 4.1,
+            "type": "Fehler",
+            "noise_sensitivity": 1.0,
+            "hallucination_risk": 0.3,
+            "causality_trace": "Zufällige Zahl im semantischen Umfeld, aber falsche Richtung."
+          }
+        ]
+      },
+      "phase_5_analysis": {
+        "summary_points": [
+          "Induktions-Heads (Head 1) schauen auf den Vorgänger (n-1), um die Regel abzuleiten.",
+          "Assoziative Heads schauen auf den Start der Sequenz (Eins), um den Kontext 'Lied' zu aktivieren."
+        ]
+      }
+    },
+    {
+      "id": "was-ist-ein-hund-2",
+      "name": "Begriffs-Definition: Hund 2",
       "input_prompt": "Was ist ein Hund?",
-      "explanation": "Dieses Szenario illustriert, wie verschiedene Attention-Heads biologische Fakten von sozialen Rollen trennen und wie diese Gewichtung die Antwort determiniert.",
+      "explanation": "Dieses Szenario illustriert, wie verschiedene Attention-Heads biologische Fakten von sozialen Rollen trennen.",
       "phase_0_tokenization": {
         "tokens": [
           {
             "id": 1,
             "text": "Was",
-            "explanation": "Interrogativ-Token (Fragestellung)."
+            "explanation": "Fragestellung"
           },
           {
             "id": 2,
             "text": "ist",
-            "explanation": "Kopula-Verb (Identitäts-Zuweisung)."
+            "explanation": "Kopula-Verb"
           },
           {
             "id": 3,
             "text": "ein",
-            "explanation": "Indefiniter Artikel (Objekt-Bezug)."
+            "explanation": "Artikel"
           },
           {
             "id": 4,
             "text": "Hund",
-            "explanation": "Zentrales Nomen (Semantischer Anker)."
+            "explanation": "Nomen (Fokus)"
           },
           {
             "id": 5,
             "text": "?",
-            "explanation": "Satzabschluss (Interrogations-Signal)."
+            "explanation": "Satzende"
           }
         ]
       },
@@ -106,48 +409,90 @@
                 "source": 4,
                 "target": 1,
                 "strength": 0.9,
-                "explanation": "Head 1 (Syntax): Verknüpft das Subjekt 'Hund' mit dem Fragewort 'Was', um den Definitions-Modus zu aktivieren."
+                "explanation": "Semantik: Verbindet 'Hund' mit Frage 'Was'"
               },
               {
                 "head": 1,
                 "source": 4,
                 "target": 2,
-                "strength": 0.85,
-                "explanation": "Head 1 (Syntax): Bestimmt die 'ist'-Relation für eine faktische Identitätsprüfung."
+                "strength": 0.7,
+                "explanation": "Semantik: Kopula-Verb Verbindung"
+              },
+              {
+                "head": 2,
+                "source": 4,
+                "target": 3,
+                "strength": 0.95,
+                "explanation": "Syntax: Harte Bindung an Artikel 'ein'"
+              },
+              {
+                "head": 2,
+                "source": 4,
+                "target": 2,
+                "strength": 0.6,
+                "explanation": "Syntax: Grammatische Struktur"
               },
               {
                 "head": 2,
                 "source": 4,
                 "target": 4,
-                "strength": 0.95,
-                "explanation": "Head 2 (Semantik): Extrahiert biologische Merkmale aus dem Vektorraum (Säugetier, Canis Lupus)."
-              }
-            ]
-          },
-          {
-            "id": "emotional",
-            "label": "Poetisch/Sozial (Fokus: Beziehung)",
-            "rules": [
-              {
-                "head": 1,
-                "source": 4,
-                "target": 3,
-                "strength": 0.92,
-                "explanation": "Head 1 (Bezug): Fokus auf 'ein Hund' als individuelles Gegenüber/Gefährte statt einer Gattung."
+                "strength": 0.1,
+                "explanation": "Syntax: Schwache Selbst-Referenz"
               },
               {
-                "head": 2,
+                "head": 3,
                 "source": 4,
-                "target": 1,
-                "strength": 0.3,
-                "explanation": "Head 2 (Kontext): Geringere Gewichtung der harten Definition zugunsten assoziativer Merkmale."
+                "target": 5,
+                "strength": 0.5,
+                "explanation": "Logik: Satzende-Check"
               },
               {
                 "head": 3,
                 "source": 4,
                 "target": 4,
-                "strength": 0.8,
-                "explanation": "Head 3 (Emotion): Aktiviert Cluster für 'Treue' und 'Freundschaft' im latenten Raum."
+                "strength": 0.2,
+                "explanation": "Logik: Interne Konsistenz"
+              },
+              {
+                "head": 4,
+                "source": 4,
+                "target": 3,
+                "strength": 0.2,
+                "explanation": "Struktur: Nachbar-Check"
+              }
+            ]
+          },
+          {
+            "id": "emotional",
+            "label": "Emotional (Fokus: Beziehung)",
+            "rules": [
+              {
+                "head": 1,
+                "source": 4,
+                "target": 3,
+                "strength": 0.9,
+                "explanation": "Semantik: Fokus auf 'ein' (Individuum)"
+              },
+              {
+                "head": 2,
+                "source": 4,
+                "target": 2,
+                "strength": 0.1,
+                "explanation": "Syntax: Ignoriert Grammatik weitgehend"
+              },
+              {
+                "head": 3,
+                "source": 4,
+                "target": 4,
+                "strength": 0.95,
+                "explanation": "Emotion: Starke innere Resonanz (Halo)"
+              },
+              {
+                "head": 4,
+                "source": 4,
+                "target": 1,
+                "strength": 0.4,
+                "explanation": "Struktur: Weiter Kontext"
               }
             ]
           }
@@ -160,19 +505,23 @@
             "activations": [
               {
                 "label": "Wissenschaftlich",
-                "activation": 0.95
+                "activation": 0.95,
+                "color": "#3b82f6"
+              },
+              {
+                "label": "Funktional",
+                "activation": 0.70,
+                "color": "#10b981"
               },
               {
                 "label": "Sozial",
-                "activation": 0.25
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.1
+                "activation": 0.20,
+                "color": "#f472b6"
               },
               {
                 "label": "Evolutionär",
-                "activation": 0.75
+                "activation": 0.85,
+                "color": "#f59e0b"
               }
             ]
           },
@@ -181,19 +530,23 @@
             "activations": [
               {
                 "label": "Wissenschaftlich",
-                "activation": 0.15
+                "activation": 0.15,
+                "color": "#3b82f6"
+              },
+              {
+                "label": "Funktional",
+                "activation": 0.40,
+                "color": "#10b981"
               },
               {
                 "label": "Sozial",
-                "activation": 0.88
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.92
+                "activation": 0.92,
+                "color": "#f472b6"
               },
               {
                 "label": "Evolutionär",
-                "activation": 0.05
+                "activation": 0.10,
+                "color": "#f59e0b"
               }
             ]
           }
@@ -205,842 +558,132 @@
             "label": "Säugetier",
             "logit": 8.5,
             "type": "Wissenschaftlich",
-            "hallucination_risk": 0.02,
-            "causality_trace": "Dominantes Resultat aus Head 1 & 2 (Scientific). Die starke Koppelung von 'Hund' an 'Was ist' triggert im FFN das Cluster für biologische Taxonomie."
+            "causality_trace": "Gesteuert durch Semantik-Head. FFN aktiviert taxonomisches Wissen."
           },
           {
-            "label": "Gefährte",
+            "label": "Begleiter",
             "logit": 7.9,
             "type": "Sozial",
-            "hallucination_risk": 0.05,
-            "causality_trace": "Primäres Resultat bei emotionalem Profil. Head 1 (Bezug auf 'ein') verschiebt die Bedeutung weg von der Biologie hin zur sozialen Rolle."
+            "causality_trace": "Gesteuert durch Sozial-Head. FFN aktiviert Beziehungs-Cluster."
           },
           {
             "label": "Wolfserbe",
             "logit": 6.8,
             "type": "Evolutionär",
-            "hallucination_risk": 0.08,
-            "causality_trace": "Aktiviert durch Head 2 (Semantik) im scientific-Profil. Die KI erkennt die evolutionäre Kette, da 'Hund' im Embedding-Raum nahe bei 'Wolf' liegt."
+            "causality_trace": "Gesteuert durch Struktur/Logik-Head. FFN aktiviert evolutionäre Pfade."
           },
           {
             "label": "Vierbeiner",
             "logit": 6.2,
-            "type": "Wissenschaftlich",
-            "hallucination_risk": 0.12,
-            "causality_trace": "Ein deskriptives Backup-Token. Wird gewählt, wenn die Aufmerksamkeit auf morphologische Merkmale (Körperbau) im Vektorraum fällt."
-          },
-          {
-            "label": "Freund",
-            "logit": 5.9,
-            "type": "Poetisch",
-            "hallucination_risk": 0.15,
-            "causality_trace": "Resultiert aus Head 3 (Emotion). Die Koppelung 'Hund' + 'emotionales Profil' aktiviert kulturelle Assoziationsketten im FFN."
-          },
-          {
-            "label": "Haustier",
-            "logit": 5.1,
-            "type": "Sozial",
-            "hallucination_risk": 0.05,
-            "causality_trace": "Eine funktionale Definition. Entsteht durch die moderate Aktivierung des sozialen Clusters in beiden Profilen."
+            "type": "Funktional",
+            "causality_trace": "Gesteuert durch Syntax-Head. Fokus auf Morphologie und Körperbau."
           }
         ]
       },
       "phase_5_analysis": {
-        "summary_points": [
-          "Die Multi-Head Attention erlaubt es dem Modell, gleichzeitig die Syntax (Was ist...) und die Semantik (Hund) zu analysieren.",
-          "Im wissenschaftlichen Profil dominiert die Query-Key-Relation zur Identitätsfrage, was zu biologischen Antworten führt.",
-          "Das emotionale Profil nutzt relationale Heads, die den Fokus auf die Beziehung zwischen Mensch und Tier lenken."
-        ]
+        "summary_points": []
       }
     },
-    {
-      "id": "winograd-trophaee-tasche-klein",
-      "name": "Winograd-Schema: Pronomen-Auflösung durch Größenlogik (zu klein)",
-      "input_prompt": "Die Trophäe passte nicht in die braune Tasche, weil sie zu klein war.",
-      "explanation": "Dieses Szenario ist ein klassisches Winograd-ähnliches Rätsel: Das Pronomen \"sie\" kann sich grammatisch auf \"Trophäe\" oder \"Tasche\" beziehen (beides feminin). Der entscheidende Hinweis liegt in der Kausalität: Wenn etwas nicht hineinpasst, weil \"sie zu klein\" ist, dann ist der Container (die Tasche) zu klein, nicht das hineinzulegende Objekt. Das Szenario zeigt den Konflikt zwischen einer naiven Nähe-Heuristik und einer kontextuellen Fit-Logik.",
-      "phase_0_tokenization": {
-        "tokens": [
-          {
-            "id": 10,
-            "text": "<s>",
-            "explanation": "Start-of-Sequence Token: Beginn der Sequenz; dient als globaler Kontextanker."
-          },
-          {
-            "id": 11,
-            "text": "Die",
-            "explanation": "Bestimmter Artikel (Feminin, Nominativ): kündigt ein feminines Subjekt an."
-          },
-          {
-            "id": 12,
-            "text": "Troph",
-            "explanation": "Subword 1 von 'Trophäe' (BPE-Demo): seltenes/aus dem Französischen stammendes Wort wird oft segmentiert."
-          },
-          {
-            "id": 13,
-            "text": "##äe",
-            "explanation": "Subword 2 von 'Trophäe' (BPE-Demo): vervollständigt das Nomen; zusammen bilden 12+13 die Entität 'Trophäe'."
-          },
-          {
-            "id": 14,
-            "text": "passte",
-            "explanation": "Finites Verb (Präteritum): aktiviert den Fit/Containment-Frame (Objekt in Container)."
-          },
-          {
-            "id": 15,
-            "text": "nicht",
-            "explanation": "Negationspartikel: markiert das Fit-Ereignis als Fehlschlag und erhöht den Bedarf an Erklärung."
-          },
-          {
-            "id": 16,
-            "text": "in",
-            "explanation": "Präposition: eröffnet die Containment-Relation; sucht ein Zielobjekt (Container)."
-          },
-          {
-            "id": 17,
-            "text": "die",
-            "explanation": "Bestimmter Artikel (Feminin, Akkusativ): leitet das Objekt der Präposition ein; typischer Container-Kandidat."
-          },
-          {
-            "id": 18,
-            "text": "braun",
-            "explanation": "Adjektiv-Stamm von 'braune' (BPE-Demo): Adjektivflexion wird häufig als Subword abgebildet."
-          },
-          {
-            "id": 19,
-            "text": "##e",
-            "explanation": "Flexionssuffix (Adj.-Endung): zeigt die feminine Endung in 'braune' als separate Einheit."
-          },
-          {
-            "id": 20,
-            "text": "Tasche",
-            "explanation": "Nomen (feminin): Container-Entität; zentraler Kandidat für die Eigenschaft 'zu klein'."
-          },
-          {
-            "id": 21,
-            "text": "weil",
-            "explanation": "Subjunktion: leitet den Kausalsatz ein; signalisiert eine Begründung für das Nicht-Passen."
-          },
-          {
-            "id": 22,
-            "text": "sie",
-            "explanation": "Personalpronomen (3. Person Singular Feminin): Referenz muss auf eine feminine Entität gebunden werden (Trophäe oder Tasche)."
-          },
-          {
-            "id": 23,
-            "text": "zu",
-            "explanation": "Gradpartikel: markiert eine Überschreitung/Unterschreitung einer passenden Schwelle (hier: zu klein)."
-          },
-          {
-            "id": 24,
-            "text": "klein",
-            "explanation": "Adjektiv: Größen-/Kapazitätsmerkmal; im Fit-Frame typischerweise Eigenschaft des Containers (zu klein)."
-          },
-          {
-            "id": 25,
-            "text": "war",
-            "explanation": "Kopulaverb (Präteritum): verbindet das Pronomen-Subjekt mit dem Prädikativ 'klein'."
-          }
+{
+  "id": "winograd-final-2026",
+  "name": "Winograd: Trophäe vs. Tasche",
+  "input_prompt": "Die Trophäe passt nicht in die Tasche, weil sie zu klein ist.",
+  "explanation": "Ein logisches Rätsel: Die Aufmerksamkeit entscheidet, ob 'sie' die Trophäe oder die Tasche ist.",
+  "phase_0_tokenization": {
+    "tokens": [
+      { "id": 1, "text": "Die", "explanation": "Artikel" },
+      { "id": 2, "text": "Trophäe", "explanation": "Objekt A (Inhalt)" },
+      { "id": 3, "text": "passt", "explanation": "Verb" },
+      { "id": 4, "text": "nicht", "explanation": "Negation" },
+      { "id": 5, "text": "in", "explanation": "Präposition" },
+      { "id": 6, "text": "die", "explanation": "Artikel" },
+      { "id": 7, "text": "Tasche", "explanation": "Objekt B (Behälter)" },
+      { "id": 8, "text": ",", "explanation": "Satzbau" },
+      { "id": 9, "text": "weil", "explanation": "Konnektor" },
+      { "id": 10, "text": "sie", "explanation": "Pronomen (Fokus)" },
+      { "id": 11, "text": "zu", "explanation": "Adverb" },
+      { "id": 12, "text": "klein", "explanation": "Eigenschaft" },
+      { "id": 13, "text": "ist", "explanation": "Verb" }
+    ]
+  },
+  "phase_1_embedding": {
+    "token_vectors": [
+      { "token_index": 0, "base_vector": [0.1, 0.1], "positional_vector": [0.0, 0.0] },
+      { "token_index": 1, "base_vector": [0.8, 0.4], "positional_vector": [0.1, 0.0] },
+      { "token_index": 2, "base_vector": [0.3, 0.5], "positional_vector": [0.2, 0.0] },
+      { "token_index": 3, "base_vector": [0.1, 0.1], "positional_vector": [0.3, 0.0] },
+      { "token_index": 4, "base_vector": [0.1, 0.1], "positional_vector": [0.4, 0.0] },
+      { "token_index": 5, "base_vector": [0.2, 0.1], "positional_vector": [0.5, 0.0] },
+      { "token_index": 6, "base_vector": [0.7, 0.4], "positional_vector": [0.6, 0.0] },
+      { "token_index": 7, "base_vector": [0.1, 0.1], "positional_vector": [0.7, 0.0] },
+      { "token_index": 8, "base_vector": [0.5, 0.5], "positional_vector": [0.8, 0.0] },
+      { "token_index": 9, "base_vector": [0.1, 0.1], "positional_vector": [0.9, 0.0] },
+      { "token_index": 10, "base_vector": [0.1, 0.1], "positional_vector": [1.0, 0.0] },
+      { "token_index": 11, "base_vector": [0.9, 0.2], "positional_vector": [1.1, 0.0] },
+      { "token_index": 12, "base_vector": [0.1, 0.1], "positional_vector": [1.2, 0.0] }
+    ]
+  },
+  "phase_2_attention": {
+    "attention_profiles": [
+      {
+        "id": "scientific",
+        "label": "Logik-Modus (Korrekt)",
+        "rules": [
+          { "head": 1, "source": 10, "target": 7, "strength": 0.90, "explanation": "Semantik: Fokus auf Behälter." },
+          { "head": 1, "source": 10, "target": 2, "strength": 0.40, "explanation": "Semantik: Alternative Referenz." },
+          { "head": 2, "source": 10, "target": 6, "strength": 0.95, "explanation": "Syntax: Genus-Match (die Tasche)." },
+          { "head": 2, "source": 10, "target": 1, "strength": 0.60, "explanation": "Syntax: Genus-Match (Die Trophäe)." },
+          { "head": 3, "source": 10, "target": 12, "strength": 0.98, "explanation": "Logik: 'sie' ist 'klein'." },
+          { "head": 3, "source": 12, "target": 7, "strength": 0.85, "explanation": "Logik: Schlussfolgerung auf Tasche." },
+          { "head": 4, "source": 10, "target": 7, "strength": 0.70, "explanation": "Struktur: Lokaler Bezug." },
+          { "head": 4, "source": 10, "target": 9, "strength": 0.50, "explanation": "Struktur: Kausal-Check." }
         ]
       },
-      "phase_1_embedding": {
-        "token_vectors": [
-          {
-            "token_index": 10,
-            "base_vector": [
-              0.05,
-              0.05
-            ],
-            "positional_vector": [
-              0.00,
-              0.00
-            ],
-            "information": "Sequenzstart ist semantisch neutral und positionsmäßig am Ursprung."
-          },
-          {
-            "token_index": 11,
-            "base_vector": [
-              0.15,
-              0.85
-            ],
-            "positional_vector": [
-              0.02,
-              0.10
-            ],
-            "information": "Artikel: geringe Objektsemantik, aber starke syntaktische Funktion (Subjekt-Ankündigung)."
-          },
-          {
-            "token_index": 12,
-            "base_vector": [
-              0.82,
-              0.28
-            ],
-            "positional_vector": [
-              0.04,
-              0.18
-            ],
-            "information": "Subword von 'Trophäe': inhaltlich als physisches Objekt nahe bei anderen Dingen, aber leicht markiert als spezielles Lexem (Preis/Auszeichnung)."
-          },
-          {
-            "token_index": 13,
-            "base_vector": [
-              0.82,
-              0.28
-            ],
-            "positional_vector": [
-              0.06,
-              0.26
-            ],
-            "information": "Polysemie-Regel greift hier nicht; 12 und 13 teilen sich denselben base_vector, weil sie zusammen EIN Nomen bilden. Positionsvektor unterscheidet die Reihenfolge."
-          },
-          {
-            "token_index": 14,
-            "base_vector": [
-              0.45,
-              0.55
-            ],
-            "positional_vector": [
-              0.08,
-              0.34
-            ],
-            "information": "'passte' aktiviert den Fit-Frame; semantisch relational (X mittel) und syntaktisch tragend (Y mittel)."
-          },
-          {
-            "token_index": 15,
-            "base_vector": [
-              0.10,
-              0.60
-            ],
-            "positional_vector": [
-              0.10,
-              0.42
-            ],
-            "information": "Negation ist semantisch leicht, aber entscheidend für die Schlussfolgerung: es MUSS eine Begründung folgen."
-          },
-          {
-            "token_index": 16,
-            "base_vector": [
-              0.20,
-              0.80
-            ],
-            "positional_vector": [
-              0.12,
-              0.50
-            ],
-            "information": "Präposition 'in' ist Struktur (Containment) und lenkt die Suche auf ein Container-Nomen."
-          },
-          {
-            "token_index": 17,
-            "base_vector": [
-              0.15,
-              0.85
-            ],
-            "positional_vector": [
-              0.14,
-              0.58
-            ],
-            "information": "Artikel (Objekt der Präposition): syntaktischer Fingerzeig auf den Container-Kandidaten."
-          },
-          {
-            "token_index": 18,
-            "base_vector": [
-              0.55,
-              0.45
-            ],
-            "positional_vector": [
-              0.16,
-              0.66
-            ],
-            "information": "Adjektivstamm 'braun' liegt semantisch im Eigenschaftsraum (Material/Farbe), weniger im Objekt-Raum."
-          },
-          {
-            "token_index": 19,
-            "base_vector": [
-              0.55,
-              0.45
-            ],
-            "positional_vector": [
-              0.18,
-              0.74
-            ],
-            "information": "Flexionssuffix: teilt base_vector mit dem Adjektivstamm (gleiche Eigenschaftseinheit), aber andere Position."
-          },
-          {
-            "token_index": 20,
-            "base_vector": [
-              0.76,
-              0.32
-            ],
-            "positional_vector": [
-              0.20,
-              0.82
-            ],
-            "information": "'Tasche' ist physischer Container: semantisch nah an 'Trophäe' (beides Dinge), aber mit Container-Schema (Fit-Relevanz)."
-          },
-          {
-            "token_index": 21,
-            "base_vector": [
-              0.25,
-              0.90
-            ],
-            "positional_vector": [
-              0.22,
-              0.90
-            ],
-            "information": "'weil' ist Diskurs-/Kausalanker: hoher Strukturanteil, positionell spät im Satz -> hoher Positions-Y."
-          },
-          {
-            "token_index": 22,
-            "base_vector": [
-              0.30,
-              0.70
-            ],
-            "positional_vector": [
-              0.24,
-              0.98
-            ],
-            "information": "Pronomen ist semantisch unterbestimmt (X mittel). Als Femininum konkurriert es zwischen 'Trophäe' und 'Tasche'."
-          },
-          {
-            "token_index": 23,
-            "base_vector": [
-              0.20,
-              0.75
-            ],
-            "positional_vector": [
-              0.26,
-              1.06
-            ],
-            "information": "Gradpartikel 'zu' verstärkt das Adjektiv und deutet eine Schwellenverletzung an (zu klein)."
-          },
-          {
-            "token_index": 24,
-            "base_vector": [
-              0.68,
-              0.38
-            ],
-            "positional_vector": [
-              0.28,
-              1.14
-            ],
-            "information": "'klein' ist Eigenschaft mit starker Fit-Interpretation: in diesem Satz eher Container-Eigenschaft (Kapazität), nicht Objekt-Eigenschaft."
-          },
-          {
-            "token_index": 25,
-            "base_vector": [
-              0.35,
-              0.60
-            ],
-            "positional_vector": [
-              0.30,
-              1.22
-            ],
-            "information": "Kopula 'war' koppelt Pronomen und Eigenschaft. Am Satzende => höchster Positions-Y."
-          }
+      {
+        "id": "emotional",
+        "label": "Objekt-Modus (Fehlerhaft)",
+        "rules": [
+          { "head": 1, "source": 10, "target": 2, "strength": 0.95, "explanation": "Semantik: Fokus auf Trophäe." },
+          { "head": 1, "source": 10, "target": 7, "strength": 0.10, "explanation": "Semantik: Ignoriert Tasche." },
+          { "head": 2, "source": 10, "target": 1, "strength": 0.90, "explanation": "Syntax: Fokus auf Satzanfang." },
+          { "head": 2, "source": 10, "target": 6, "strength": 0.30, "explanation": "Syntax: Vernachlässigt Objekt B." },
+          { "head": 3, "source": 10, "target": 2, "strength": 0.85, "explanation": "Logik: Trophäe wird als 'klein' markiert." },
+          { "head": 3, "source": 10, "target": 12, "strength": 0.40, "explanation": "Logik: Ungeprüfte Eigenschaft." },
+          { "head": 4, "source": 10, "target": 2, "strength": 0.80, "explanation": "Struktur: Fokus auf Subjekt." },
+          { "head": 4, "source": 10, "target": 3, "strength": 0.30, "explanation": "Struktur: Verb-Bezug." }
         ]
-      },
-      "phase_2_attention": {
-        "attention_profiles": [
-          {
-            "id": "recency-literal",
-            "label": "Wörtlich/Naiv (Nähe + Subjekt-Fokus)",
-            "rules": [
-              {
-                "head": 2,
-                "source": 11,
-                "target": 12,
-                "strength": 0.78,
-                "explanation": "H2 fragt: \"Welches Nomen gehört zu meinem Artikel 'Die'?\" -> 'Troph' (Beginn des Nomens)."
-              },
-              {
-                "head": 2,
-                "source": 12,
-                "target": 11,
-                "strength": 0.55,
-                "explanation": "H2 fragt: \"Welcher Artikel kündigt meine Nominalphrase an?\" -> 'Die'."
-              },
-              {
-                "head": 1,
-                "source": 12,
-                "target": 13,
-                "strength": 0.96,
-                "explanation": "H1 fragt: \"Welches Subword vervollständigt meine Entität?\" -> '##äe'."
-              },
-              {
-                "head": 1,
-                "source": 13,
-                "target": 12,
-                "strength": 0.96,
-                "explanation": "H1 fragt: \"Zu welchem Stamm gehöre ich?\" -> 'Troph'."
-              },
-              {
-                "head": 3,
-                "source": 14,
-                "target": 12,
-                "strength": 0.72,
-                "explanation": "H3 fragt: \"Wer ist das Subjekt des Fit-Ereignisses?\" -> 'Troph' (Trophäe als Ganzes)."
-              },
-              {
-                "head": 3,
-                "source": 12,
-                "target": 14,
-                "strength": 0.72,
-                "explanation": "H3 fragt: \"Welches Verb beschreibt meinen Zustand/Meine Relation?\" -> 'passte'."
-              },
-              {
-                "head": 3,
-                "source": 15,
-                "target": 14,
-                "strength": 0.90,
-                "explanation": "H3 fragt: \"Welches Ereignis negiere ich?\" -> 'passte'."
-              },
-              {
-                "head": 3,
-                "source": 14,
-                "target": 15,
-                "strength": 0.70,
-                "explanation": "H3 fragt: \"Warum ist mein Ereignis als Fehlschlag markiert?\" -> 'nicht'."
-              },
-              {
-                "head": 2,
-                "source": 16,
-                "target": 20,
-                "strength": 0.86,
-                "explanation": "H2 fragt: \"Welches Nomen ist mein Zielobjekt (Containment)?\" -> 'Tasche'."
-              },
-              {
-                "head": 2,
-                "source": 20,
-                "target": 16,
-                "strength": 0.55,
-                "explanation": "H2 fragt: \"Welche Präposition bindet mich als Ziel ein?\" -> 'in'."
-              },
-              {
-                "head": 2,
-                "source": 17,
-                "target": 20,
-                "strength": 0.92,
-                "explanation": "H2 fragt: \"Welches Nomen folgt auf meinen Artikel 'die'?\" -> 'Tasche'."
-              },
-              {
-                "head": 2,
-                "source": 20,
-                "target": 17,
-                "strength": 0.68,
-                "explanation": "H2 fragt: \"Welcher Artikel markiert mich als Objekt der Präposition?\" -> 'die'."
-              },
-              {
-                "head": 1,
-                "source": 18,
-                "target": 20,
-                "strength": 0.70,
-                "explanation": "H1 fragt: \"Welche Entität trage ich als Eigenschaft (Farbe)?\" -> 'Tasche'."
-              },
-              {
-                "head": 1,
-                "source": 20,
-                "target": 18,
-                "strength": 0.55,
-                "explanation": "H1 fragt: \"Welche Eigenschaft modifiziert mich?\" -> 'braun'."
-              },
-              {
-                "head": 2,
-                "source": 18,
-                "target": 19,
-                "strength": 0.90,
-                "explanation": "H2 fragt: \"Welche Flexionsendung komplettiert das Adjektiv?\" -> '##e'."
-              },
-              {
-                "head": 2,
-                "source": 19,
-                "target": 18,
-                "strength": 0.90,
-                "explanation": "H2 fragt: \"Zu welchem Adjektivstamm gehöre ich?\" -> 'braun'."
-              },
-              {
-                "head": 2,
-                "source": 21,
-                "target": 14,
-                "strength": 0.62,
-                "explanation": "H2 fragt: \"Welchen Hauptsatz begründe ich mit 'weil'?\" -> 'passte'."
-              },
-              {
-                "head": 2,
-                "source": 14,
-                "target": 21,
-                "strength": 0.45,
-                "explanation": "H2 fragt: \"Welcher Marker leitet meine Begründung ein?\" -> 'weil'."
-              },
-              {
-                "head": 4,
-                "source": 22,
-                "target": 20,
-                "strength": 0.74,
-                "explanation": "H4 fragt (naiv): \"Welche feminine Entität ist am nächsten zuvor erwähnt?\" -> 'Tasche'."
-              },
-              {
-                "head": 4,
-                "source": 20,
-                "target": 22,
-                "strength": 0.40,
-                "explanation": "H4 fragt: \"Welches Pronomen könnte auf mich zurückverweisen?\" -> 'sie'."
-              },
-              {
-                "head": 2,
-                "source": 22,
-                "target": 25,
-                "strength": 0.78,
-                "explanation": "H2 fragt: \"Mit welchem Kopulaverb bin ich verbunden?\" -> 'war'."
-              },
-              {
-                "head": 2,
-                "source": 25,
-                "target": 22,
-                "strength": 0.78,
-                "explanation": "H2 fragt: \"Welches Subjekt trage ich im Kopulasatz?\" -> 'sie'."
-              },
-              {
-                "head": 3,
-                "source": 25,
-                "target": 24,
-                "strength": 0.86,
-                "explanation": "H3 fragt: \"Welche Eigenschaft prädiziere ich?\" -> 'klein'."
-              },
-              {
-                "head": 3,
-                "source": 24,
-                "target": 25,
-                "strength": 0.68,
-                "explanation": "H3 fragt: \"Welche Kopula macht mich zur Aussage?\" -> 'war'."
-              },
-              {
-                "head": 2,
-                "source": 23,
-                "target": 24,
-                "strength": 0.92,
-                "explanation": "H2 fragt: \"Welches Adjektiv verstärke ich als 'zu'?\" -> 'klein'."
-              },
-              {
-                "head": 2,
-                "source": 24,
-                "target": 23,
-                "strength": 0.60,
-                "explanation": "H2 fragt: \"Welcher Gradmarker modifiziert mich?\" -> 'zu'."
-              },
-              {
-                "head": 1,
-                "source": 10,
-                "target": 14,
-                "strength": 0.35,
-                "explanation": "H1 fragt: \"Welches zentrale Ereignis strukturiert den Satz?\" -> 'passte'."
-              },
-              {
-                "head": 1,
-                "source": 14,
-                "target": 10,
-                "strength": 0.25,
-                "explanation": "H1 fragt: \"Wo ist der globale Kontextanker?\" -> '<s>'."
-              }
-            ]
-          },
-          {
-            "id": "contextual-fit",
-            "label": "Kontextuell/Fit-Logik (Container-zu-klein)",
-            "rules": [
-              {
-                "head": 2,
-                "source": 11,
-                "target": 12,
-                "strength": 0.78,
-                "explanation": "H2 fragt: \"Welches Nomen gehört zu meinem Artikel 'Die'?\" -> 'Troph' (Beginn der Entität)."
-              },
-              {
-                "head": 2,
-                "source": 12,
-                "target": 11,
-                "strength": 0.55,
-                "explanation": "H2 fragt: \"Welcher Artikel kündigt meine Nominalphrase an?\" -> 'Die'."
-              },
-              {
-                "head": 1,
-                "source": 12,
-                "target": 13,
-                "strength": 0.96,
-                "explanation": "H1 fragt: \"Welches Subword vervollständigt mich als Entität?\" -> '##äe'."
-              },
-              {
-                "head": 1,
-                "source": 13,
-                "target": 12,
-                "strength": 0.96,
-                "explanation": "H1 fragt: \"Zu welchem Stamm gehöre ich?\" -> 'Troph'."
-              },
-              {
-                "head": 3,
-                "source": 14,
-                "target": 12,
-                "strength": 0.74,
-                "explanation": "H3 fragt: \"Wer ist das Subjekt des Fit-Ereignisses?\" -> 'Trophäe' (12+13)."
-              },
-              {
-                "head": 3,
-                "source": 12,
-                "target": 14,
-                "strength": 0.74,
-                "explanation": "H3 fragt: \"Welches Verb stellt meine Fit-Relation her?\" -> 'passte'."
-              },
-              {
-                "head": 2,
-                "source": 16,
-                "target": 20,
-                "strength": 0.92,
-                "explanation": "H2 fragt: \"Welches Zielobjekt bildet den Container der Präposition 'in'?\" -> 'Tasche'."
-              },
-              {
-                "head": 2,
-                "source": 20,
-                "target": 16,
-                "strength": 0.60,
-                "explanation": "H2 fragt: \"Welche Präposition bindet mich als Container ein?\" -> 'in'."
-              },
-              {
-                "head": 3,
-                "source": 14,
-                "target": 20,
-                "strength": 0.84,
-                "explanation": "H3 fragt: \"Worin sollte das Subjekt hineinpassen (Container)?\" -> 'Tasche'."
-              },
-              {
-                "head": 3,
-                "source": 20,
-                "target": 14,
-                "strength": 0.62,
-                "explanation": "H3 fragt: \"In welchem Ereignis bin ich als Container beteiligt?\" -> 'passte'."
-              },
-              {
-                "head": 3,
-                "source": 15,
-                "target": 14,
-                "strength": 0.92,
-                "explanation": "H3 fragt: \"Welches Ereignis negiere ich?\" -> 'passte'."
-              },
-              {
-                "head": 3,
-                "source": 14,
-                "target": 15,
-                "strength": 0.72,
-                "explanation": "H3 fragt: \"Warum ist das Fit-Ereignis ein Fehlschlag?\" -> 'nicht'."
-              },
-              {
-                "head": 2,
-                "source": 21,
-                "target": 14,
-                "strength": 0.70,
-                "explanation": "H2 fragt: \"Welchen Sachverhalt begründe ich im Kausalsatz?\" -> 'passte nicht'."
-              },
-              {
-                "head": 2,
-                "source": 14,
-                "target": 21,
-                "strength": 0.50,
-                "explanation": "H2 fragt: \"Welcher Diskursmarker leitet die Begründung ein?\" -> 'weil'."
-              },
-              {
-                "head": 1,
-                "source": 24,
-                "target": 20,
-                "strength": 0.82,
-                "explanation": "H1 fragt: \"Welche Entität trägt plausibel die Eigenschaft 'klein' im Fit-Kontext?\" -> 'Tasche' (Container-Kapazität)."
-              },
-              {
-                "head": 1,
-                "source": 20,
-                "target": 24,
-                "strength": 0.82,
-                "explanation": "H1 fragt: \"Welche Eigenschaft erklärt mein Container-Versagen?\" -> 'klein'."
-              },
-              {
-                "head": 4,
-                "source": 22,
-                "target": 20,
-                "strength": 0.88,
-                "explanation": "H4 fragt (fit-basiert): \"Welche feminine Entität erklärt 'passt nicht' + 'zu klein'?\" -> 'Tasche' (Container ist zu klein)."
-              },
-              {
-                "head": 4,
-                "source": 20,
-                "target": 22,
-                "strength": 0.55,
-                "explanation": "H4 fragt: \"Welches Pronomen verweist auf mich als Container-Referent?\" -> 'sie'."
-              },
-              {
-                "head": 2,
-                "source": 22,
-                "target": 25,
-                "strength": 0.80,
-                "explanation": "H2 fragt: \"Mit welchem Verb bin ich im Kausalsatz verbunden?\" -> 'war'."
-              },
-              {
-                "head": 2,
-                "source": 25,
-                "target": 22,
-                "strength": 0.80,
-                "explanation": "H2 fragt: \"Welches Subjekt trage ich im Kopulasatz?\" -> 'sie'."
-              },
-              {
-                "head": 3,
-                "source": 25,
-                "target": 24,
-                "strength": 0.90,
-                "explanation": "H3 fragt: \"Welche Eigenschaft prädiziere ich als Begründung?\" -> 'klein'."
-              },
-              {
-                "head": 3,
-                "source": 24,
-                "target": 25,
-                "strength": 0.72,
-                "explanation": "H3 fragt: \"Welche Kopula macht mich zur Aussage?\" -> 'war'."
-              },
-              {
-                "head": 2,
-                "source": 23,
-                "target": 24,
-                "strength": 0.94,
-                "explanation": "H2 fragt: \"Welches Adjektiv verstärke ich als 'zu'?\" -> 'klein'."
-              },
-              {
-                "head": 2,
-                "source": 24,
-                "target": 23,
-                "strength": 0.62,
-                "explanation": "H2 fragt: \"Welcher Gradmarker modifiziert mich?\" -> 'zu'."
-              },
-              {
-                "head": 1,
-                "source": 18,
-                "target": 20,
-                "strength": 0.70,
-                "explanation": "H1 fragt: \"Welche Entität modifiziere ich als Farbe?\" -> 'Tasche'."
-              },
-              {
-                "head": 1,
-                "source": 20,
-                "target": 18,
-                "strength": 0.55,
-                "explanation": "H1 fragt: \"Welche Eigenschaft (Farbe) trage ich?\" -> 'braun'."
-              },
-              {
-                "head": 2,
-                "source": 18,
-                "target": 19,
-                "strength": 0.90,
-                "explanation": "H2 fragt: \"Welche Endung komplettiert mein Adjektiv?\" -> '##e'."
-              },
-              {
-                "head": 2,
-                "source": 19,
-                "target": 18,
-                "strength": 0.90,
-                "explanation": "H2 fragt: \"Zu welchem Stamm gehöre ich?\" -> 'braun'."
-              },
-              {
-                "head": 1,
-                "source": 10,
-                "target": 21,
-                "strength": 0.30,
-                "explanation": "H1 fragt: \"Welcher Token ist der Kausal-Knoten?\" -> 'weil'."
-              },
-              {
-                "head": 1,
-                "source": 21,
-                "target": 10,
-                "strength": 0.22,
-                "explanation": "H1 fragt: \"Wo docke ich an den globalen Satzkontext an?\" -> '<s>'."
-              }
-            ]
-          }
-        ]
-      },
-      "phase_3_ffn": {
-        "activation_profiles": [
-          {
-            "ref_profile_id": "recency-literal",
-            "activations": [
-              {
-                "label": "Nähe-Heuristik: letztes feminines Nomen als Referent",
-                "activation": 0.84
-              },
-              {
-                "label": "Fit-Frame (unscharf): irgendetwas passt nicht",
-                "activation": 0.62
-              },
-              {
-                "label": "Eigenschaft: Kleinheit (schwach gebunden)",
-                "activation": 0.56
-              },
-              {
-                "label": "Unterdrückt: Container-Kapazität als Ursache",
-                "activation": 0.22
-              }
-            ]
-          },
-          {
-            "ref_profile_id": "contextual-fit",
-            "activations": [
-              {
-                "label": "Container-Kapazität: Tasche ist zu klein",
-                "activation": 0.93
-              },
-              {
-                "label": "Fit-Logik: Objekt vs. Container Rollen",
-                "activation": 0.88
-              },
-              {
-                "label": "Kausalität: weil-Satz erklärt den Fehlschlag",
-                "activation": 0.80
-              },
-              {
-                "label": "Unterdrückt: Alternative Bindung 'sie' -> Trophäe",
-                "activation": 0.14
-              }
-            ]
-          }
-        ]
-      },
-      "phase_4_decoding": {
-        "outputs": [
-          {
-            "label": "‘sie’ bezieht sich auf die Tasche (die Tasche ist zu klein)",
-            "logit": 11.2,
-            "type": "Korrekte Pronomen-Auflösung",
-            "hallucination_risk_percent": 7,
-            "causality_trace": "Ergebnis basiert auf dem Profil 'contextual-fit': Head 4 bindet das Pronomen 'sie' (Token 22) an 'Tasche' (Token 20) mit hoher Stärke (22->20, 0.88). Zusätzlich koppelt Head 1 die Eigenschaft 'klein' (Token 24) an den Container 'Tasche' (20<->24, 0.82). Da Head 3 den Fit-Frame stabilisiert (Verb 'passte' Token 14 -> Container 'Tasche' Token 20, 0.84) und der Kausalsatz durch Head 2 (Token 21 'weil' -> Token 14, 0.70) als Erklärung markiert wird, aktiviert das FFN das Cluster 'Container-Kapazität' (0.93) und unterdrückt die Alternative 'sie'->'Trophäe' (0.14). Wenn der Container zu klein ist, dann passt das Objekt nicht hinein."
-          },
-          {
-            "label": "Alternative Fehlspur: ‘sie’ bezieht sich auf die Trophäe",
-            "logit": 9.0,
-            "type": "Fehlinterpretation (Objekt-Attribut statt Container-Attribut)",
-            "hallucination_risk_percent": 33,
-            "causality_trace": "In einem wörtlich-naiven Lesemodus kann ein Modell 'klein' fälschlich als Eigenschaft des Subjekts (Trophäe) interpretieren, weil Head 3 das Subjekt stark an das Verb koppelt (14->12, 0.72) und die Bindung der Eigenschaft an den Container schwach bleibt (Unterdrückt: Container-Kapazität, 0.22). Wenn die Fit-Rollen nicht sauber getrennt werden, dann wird 'zu klein' irrtümlich als Beschreibung des Objekts gelesen."
-          },
-          {
-            "label": "Diskurs-Signal: Der weil-Satz ist die Begründung für das Nicht-Passen",
-            "logit": 10.1,
-            "type": "Kohärenz/Struktur",
-            "hallucination_risk_percent": 12,
-            "causality_trace": "Head 2 verknüpft die Subjunktion 'weil' (Token 21) mit dem Hauptsatzkern 'passte' (Token 14) (21->14, 0.70) und stabilisiert damit die kausale Struktur. In Kombination mit Head 2/3 (22<->25, 0.80 und 25->24, 0.90) entsteht die Begründungseinheit 'sie war zu klein'. Wenn der Kausalsatz als Erklärung erkannt ist, dann werden semantisch passende Referenzen (Container-Kapazität) bevorzugt."
-          }
-        ]
-      },
-      "phase_5_analysis": {
-        "storyline": "Das Modell sieht ein Fit-Ereignis (Trophäe passt nicht in Tasche) und sucht eine Ursache. Der Kausalsatz liefert 'sie war zu klein', aber 'sie' ist ambig, weil beide Kandidaten feminin sind. In einem naiven Profil kann die Nähe-Heuristik oder ein Subjekt-Bias die falsche Spur öffnen. Im kontextuellen Profil setzt die Fit-Logik ein: Head 3 stabilisiert die Rollen (Objekt vs. Container), Head 1 verbindet die Eigenschaft 'klein' mit dem Container, und Head 4 bindet das Pronomen an die Tasche. Dadurch wird im FFN das Kapazitätswissen aktiviert und die korrekte Auflösung decodiert.",
-        "summary_points": [
-          "Technische Ebene: Head 1 und Head 4 arbeiten als Team – Head 1 koppelt 'klein' an den Container 'Tasche', Head 4 bindet das Pronomen 'sie' stabil an Token 20.",
-          "Linguistische Ebene: Gelöst wird eine Pronomen-Referenz bei gleichgrammatischer Konkurrenz (beide feminin) durch semantische Rollen im Fit-Frame (Container-zu-klein statt Objekt-zu-klein).",
-          "Metapher: Attention ist wie ein Logistik-Team – einer prüft die Fracht (Trophäe), ein anderer misst die Öffnung (Tasche). Erst wenn der Maßband-Checker sagt 'Öffnung zu klein', weiß man, worauf sich 'sie' wirklich bezieht."
-        ],
-        "didactic_outlook": "Was passiert, wenn du im Simulator die Profile wechselst und die Temperatur erhöhst: kippt das Modell häufiger zur falschen Lesart ('sie' = Trophäe)? Und welche Head-Gewichtung müsste steigen, damit die Container-Kapazitätslogik (Head 1/3) die Entscheidung wieder stabilisiert?"
       }
-    },
+    ]
+  },
+  "phase_3_ffn": {
+    "activation_profiles": [
+      {
+        "ref_profile_id": "scientific",
+        "activations": [
+          { "label": "Wissenschaftlich", "activation": 0.20, "color": "#3b82f6" },
+          { "label": "Funktional", "activation": 0.98, "color": "#10b981" },
+          { "label": "Sozial", "activation": 0.05, "color": "#f472b6" },
+          { "label": "Evolutionär", "activation": 0.05, "color": "#f59e0b" }
+        ]
+      },
+      {
+        "ref_profile_id": "emotional",
+        "activations": [
+          { "label": "Wissenschaftlich", "activation": 0.85, "color": "#3b82f6" },
+          { "label": "Funktional", "activation": 0.20, "color": "#10b981" },
+          { "label": "Sozial", "activation": 0.10, "color": "#f472b6" },
+          { "label": "Evolutionär", "activation": 0.05, "color": "#f59e0b" }
+        ]
+      }
+    ]
+  },
+  "phase_4_decoding": {
+    "outputs": [
+      { "label": "Tasche", "logit": 9.8, "type": "Funktional", "causality_trace": "Logik-Head erkennt: Behälter-Problem." },
+      { "label": "Trophäe", "logit": 2.5, "type": "Wissenschaftlich", "causality_trace": "Logisch inkonsistent." }
+    ]
+  }
+},
     {
       "id": "winograd-trophaee-tasche-klein2",
       "name": "Winograd-Schema: Pronomen-Auflösung durch Größenlogik (zu klein2)",
@@ -1139,8 +782,8 @@
               0.05
             ],
             "positional_vector": [
-              0.00,
-              0.00
+              0.0,
+              0.0
             ],
             "information": "Sequenzstart ist semantisch neutral und positionsmäßig am Ursprung."
           },
@@ -1152,7 +795,7 @@
             ],
             "positional_vector": [
               0.02,
-              0.10
+              0.1
             ],
             "information": "Artikel: geringe Objektsemantik, aber starke syntaktische Funktion (Subjekt-Ankündigung)."
           },
@@ -1195,11 +838,11 @@
           {
             "token_index": 15,
             "base_vector": [
-              0.10,
-              0.60
+              0.1,
+              0.6
             ],
             "positional_vector": [
-              0.10,
+              0.1,
               0.42
             ],
             "information": "Negation ist semantisch leicht, aber entscheidend für die Schlussfolgerung: es MUSS eine Begründung folgen."
@@ -1207,12 +850,12 @@
           {
             "token_index": 16,
             "base_vector": [
-              0.20,
-              0.80
+              0.2,
+              0.8
             ],
             "positional_vector": [
               0.12,
-              0.50
+              0.5
             ],
             "information": "Präposition 'in' ist Struktur (Containment) und lenkt die Suche auf ein Container-Nomen."
           },
@@ -1259,7 +902,7 @@
               0.32
             ],
             "positional_vector": [
-              0.20,
+              0.2,
               0.82
             ],
             "information": "'Tasche' ist physischer Container: semantisch nah an 'Trophäe' (beides Dinge), aber mit Container-Schema (Fit-Relevanz)."
@@ -1268,19 +911,19 @@
             "token_index": 21,
             "base_vector": [
               0.25,
-              0.90
+              0.9
             ],
             "positional_vector": [
               0.22,
-              0.90
+              0.9
             ],
             "information": "'weil' ist Diskurs-/Kausalanker: hoher Strukturanteil, positionell spät im Satz -> hoher Positions-Y."
           },
           {
             "token_index": 22,
             "base_vector": [
-              0.30,
-              0.70
+              0.3,
+              0.7
             ],
             "positional_vector": [
               0.24,
@@ -1291,7 +934,7 @@
           {
             "token_index": 23,
             "base_vector": [
-              0.20,
+              0.2,
               0.75
             ],
             "positional_vector": [
@@ -1316,10 +959,10 @@
             "token_index": 25,
             "base_vector": [
               0.35,
-              0.60
+              0.6
             ],
             "positional_vector": [
-              0.30,
+              0.3,
               1.22
             ],
             "information": "Kopula 'war' koppelt Pronomen und Eigenschaft. Am Satzende => höchster Positions-Y."
@@ -1333,20 +976,6 @@
             "label": "Wörtlich/Naiv (Nähe + Subjekt-Fokus)",
             "rules": [
               {
-                "head": 2,
-                "source": 11,
-                "target": 12,
-                "strength": 0.78,
-                "explanation": "H2 fragt: \"Welches Nomen gehört zu meinem Artikel 'Die'?\" -> 'Troph' (Beginn des Nomens)."
-              },
-              {
-                "head": 2,
-                "source": 12,
-                "target": 11,
-                "strength": 0.55,
-                "explanation": "H2 fragt: \"Welcher Artikel kündigt meine Nominalphrase an?\" -> 'Die'."
-              },
-              {
                 "head": 1,
                 "source": 12,
                 "target": 13,
@@ -1359,62 +988,6 @@
                 "target": 12,
                 "strength": 0.96,
                 "explanation": "H1 fragt: \"Zu welchem Stamm gehöre ich?\" -> 'Troph'."
-              },
-              {
-                "head": 3,
-                "source": 14,
-                "target": 12,
-                "strength": 0.72,
-                "explanation": "H3 fragt: \"Wer ist das Subjekt des Fit-Ereignisses?\" -> 'Troph' (Trophäe als Ganzes)."
-              },
-              {
-                "head": 3,
-                "source": 12,
-                "target": 14,
-                "strength": 0.72,
-                "explanation": "H3 fragt: \"Welches Verb beschreibt meinen Zustand/Meine Relation?\" -> 'passte'."
-              },
-              {
-                "head": 3,
-                "source": 15,
-                "target": 14,
-                "strength": 0.90,
-                "explanation": "H3 fragt: \"Welches Ereignis negiere ich?\" -> 'passte'."
-              },
-              {
-                "head": 3,
-                "source": 14,
-                "target": 15,
-                "strength": 0.70,
-                "explanation": "H3 fragt: \"Warum ist mein Ereignis als Fehlschlag markiert?\" -> 'nicht'."
-              },
-              {
-                "head": 2,
-                "source": 16,
-                "target": 20,
-                "strength": 0.86,
-                "explanation": "H2 fragt: \"Welches Nomen ist mein Zielobjekt (Containment)?\" -> 'Tasche'."
-              },
-              {
-                "head": 2,
-                "source": 20,
-                "target": 16,
-                "strength": 0.55,
-                "explanation": "H2 fragt: \"Welche Präposition bindet mich als Ziel ein?\" -> 'in'."
-              },
-              {
-                "head": 2,
-                "source": 17,
-                "target": 20,
-                "strength": 0.92,
-                "explanation": "H2 fragt: \"Welches Nomen folgt auf meinen Artikel 'die'?\" -> 'Tasche'."
-              },
-              {
-                "head": 2,
-                "source": 20,
-                "target": 17,
-                "strength": 0.68,
-                "explanation": "H2 fragt: \"Welcher Artikel markiert mich als Objekt der Präposition?\" -> 'die'."
               },
               {
                 "head": 1,
@@ -1432,17 +1005,38 @@
               },
               {
                 "head": 2,
+                "source": 11,
+                "target": 12,
+                "strength": 0.78,
+                "explanation": "H2 fragt: \"Welches Nomen gehört zu meinem Artikel 'Die'?\" -> 'Troph'."
+              },
+              {
+                "head": 2,
+                "source": 12,
+                "target": 11,
+                "strength": 0.55,
+                "explanation": "H2 fragt: \"Welcher Artikel kündigt meine Nominalphrase an?\" -> 'Die'."
+              },
+              {
+                "head": 2,
+                "source": 16,
+                "target": 20,
+                "strength": 0.86,
+                "explanation": "H2 fragt: \"Welches Nomen ist mein Zielobjekt (Containment)?\" -> 'Tasche'."
+              },
+              {
+                "head": 2,
+                "source": 17,
+                "target": 20,
+                "strength": 0.92,
+                "explanation": "H2 fragt: \"Welches Nomen folgt auf meinen Artikel 'die'?\" -> 'Tasche'."
+              },
+              {
+                "head": 2,
                 "source": 18,
                 "target": 19,
                 "strength": 0.90,
                 "explanation": "H2 fragt: \"Welche Flexionsendung komplettiert das Adjektiv?\" -> '##e'."
-              },
-              {
-                "head": 2,
-                "source": 19,
-                "target": 18,
-                "strength": 0.90,
-                "explanation": "H2 fragt: \"Zu welchem Adjektivstamm gehöre ich?\" -> 'braun'."
               },
               {
                 "head": 2,
@@ -1453,38 +1047,24 @@
               },
               {
                 "head": 2,
-                "source": 14,
-                "target": 21,
-                "strength": 0.45,
-                "explanation": "H2 fragt: \"Welcher Marker leitet meine Begründung ein?\" -> 'weil'."
-              },
-              {
-                "head": 4,
-                "source": 22,
-                "target": 20,
-                "strength": 0.74,
-                "explanation": "H4 fragt (naiv): \"Welche feminine Entität ist am nächsten zuvor erwähnt?\" -> 'Tasche'."
-              },
-              {
-                "head": 4,
-                "source": 20,
-                "target": 22,
-                "strength": 0.40,
-                "explanation": "H4 fragt: \"Welches Pronomen könnte auf mich zurückverweisen?\" -> 'sie'."
-              },
-              {
-                "head": 2,
                 "source": 22,
                 "target": 25,
                 "strength": 0.78,
                 "explanation": "H2 fragt: \"Mit welchem Kopulaverb bin ich verbunden?\" -> 'war'."
               },
               {
-                "head": 2,
-                "source": 25,
-                "target": 22,
-                "strength": 0.78,
-                "explanation": "H2 fragt: \"Welches Subjekt trage ich im Kopulasatz?\" -> 'sie'."
+                "head": 3,
+                "source": 14,
+                "target": 12,
+                "strength": 0.72,
+                "explanation": "H3 fragt: \"Wer ist das Subjekt des Fit-Ereignisses?\" -> 'Trophäe'."
+              },
+              {
+                "head": 3,
+                "source": 15,
+                "target": 14,
+                "strength": 0.90,
+                "explanation": "H3 fragt: \"Welches Ereignis negiere ich?\" -> 'passte'."
               },
               {
                 "head": 3,
@@ -1494,39 +1074,11 @@
                 "explanation": "H3 fragt: \"Welche Eigenschaft prädiziere ich?\" -> 'klein'."
               },
               {
-                "head": 3,
-                "source": 24,
-                "target": 25,
-                "strength": 0.68,
-                "explanation": "H3 fragt: \"Welche Kopula macht mich zur Aussage?\" -> 'war'."
-              },
-              {
-                "head": 2,
-                "source": 23,
-                "target": 24,
-                "strength": 0.92,
-                "explanation": "H2 fragt: \"Welches Adjektiv verstärke ich als 'zu'?\" -> 'klein'."
-              },
-              {
-                "head": 2,
-                "source": 24,
-                "target": 23,
-                "strength": 0.60,
-                "explanation": "H2 fragt: \"Welcher Gradmarker modifiziert mich?\" -> 'zu'."
-              },
-              {
-                "head": 1,
-                "source": 10,
-                "target": 14,
-                "strength": 0.35,
-                "explanation": "H1 fragt: \"Welches zentrale Ereignis strukturiert den Satz?\" -> 'passte'."
-              },
-              {
-                "head": 1,
-                "source": 14,
-                "target": 10,
-                "strength": 0.25,
-                "explanation": "H1 fragt: \"Wo ist der globale Kontextanker?\" -> '<s>'."
+                "head": 4,
+                "source": 22,
+                "target": 20,
+                "strength": 0.74,
+                "explanation": "H4 fragt (naiv): \"Welche feminine Entität ist am nächsten zuvor erwähnt?\" -> 'Tasche'."
               }
             ]
           },
@@ -1534,104 +1086,6 @@
             "id": "contextual-fit",
             "label": "Kontextuell/Fit-Logik (Container-zu-klein)",
             "rules": [
-              {
-                "head": 2,
-                "source": 11,
-                "target": 12,
-                "strength": 0.78,
-                "explanation": "H2 fragt: \"Welches Nomen gehört zu meinem Artikel 'Die'?\" -> 'Troph' (Beginn der Entität)."
-              },
-              {
-                "head": 2,
-                "source": 12,
-                "target": 11,
-                "strength": 0.55,
-                "explanation": "H2 fragt: \"Welcher Artikel kündigt meine Nominalphrase an?\" -> 'Die'."
-              },
-              {
-                "head": 1,
-                "source": 12,
-                "target": 13,
-                "strength": 0.96,
-                "explanation": "H1 fragt: \"Welches Subword vervollständigt mich als Entität?\" -> '##äe'."
-              },
-              {
-                "head": 1,
-                "source": 13,
-                "target": 12,
-                "strength": 0.96,
-                "explanation": "H1 fragt: \"Zu welchem Stamm gehöre ich?\" -> 'Troph'."
-              },
-              {
-                "head": 3,
-                "source": 14,
-                "target": 12,
-                "strength": 0.74,
-                "explanation": "H3 fragt: \"Wer ist das Subjekt des Fit-Ereignisses?\" -> 'Trophäe' (12+13)."
-              },
-              {
-                "head": 3,
-                "source": 12,
-                "target": 14,
-                "strength": 0.74,
-                "explanation": "H3 fragt: \"Welches Verb stellt meine Fit-Relation her?\" -> 'passte'."
-              },
-              {
-                "head": 2,
-                "source": 16,
-                "target": 20,
-                "strength": 0.92,
-                "explanation": "H2 fragt: \"Welches Zielobjekt bildet den Container der Präposition 'in'?\" -> 'Tasche'."
-              },
-              {
-                "head": 2,
-                "source": 20,
-                "target": 16,
-                "strength": 0.60,
-                "explanation": "H2 fragt: \"Welche Präposition bindet mich als Container ein?\" -> 'in'."
-              },
-              {
-                "head": 3,
-                "source": 14,
-                "target": 20,
-                "strength": 0.84,
-                "explanation": "H3 fragt: \"Worin sollte das Subjekt hineinpassen (Container)?\" -> 'Tasche'."
-              },
-              {
-                "head": 3,
-                "source": 20,
-                "target": 14,
-                "strength": 0.62,
-                "explanation": "H3 fragt: \"In welchem Ereignis bin ich als Container beteiligt?\" -> 'passte'."
-              },
-              {
-                "head": 3,
-                "source": 15,
-                "target": 14,
-                "strength": 0.92,
-                "explanation": "H3 fragt: \"Welches Ereignis negiere ich?\" -> 'passte'."
-              },
-              {
-                "head": 3,
-                "source": 14,
-                "target": 15,
-                "strength": 0.72,
-                "explanation": "H3 fragt: \"Warum ist das Fit-Ereignis ein Fehlschlag?\" -> 'nicht'."
-              },
-              {
-                "head": 2,
-                "source": 21,
-                "target": 14,
-                "strength": 0.70,
-                "explanation": "H2 fragt: \"Welchen Sachverhalt begründe ich im Kausalsatz?\" -> 'passte nicht'."
-              },
-              {
-                "head": 2,
-                "source": 14,
-                "target": 21,
-                "strength": 0.50,
-                "explanation": "H2 fragt: \"Welcher Diskursmarker leitet die Begründung ein?\" -> 'weil'."
-              },
               {
                 "head": 1,
                 "source": 24,
@@ -1647,18 +1101,25 @@
                 "explanation": "H1 fragt: \"Welche Eigenschaft erklärt mein Container-Versagen?\" -> 'klein'."
               },
               {
-                "head": 4,
-                "source": 22,
-                "target": 20,
-                "strength": 0.88,
-                "explanation": "H4 fragt (fit-basiert): \"Welche feminine Entität erklärt 'passt nicht' + 'zu klein'?\" -> 'Tasche' (Container ist zu klein)."
+                "head": 1,
+                "source": 12,
+                "target": 13,
+                "strength": 0.96,
+                "explanation": "H1 fragt: \"Welches Subword vervollständigt mich als Entität?\" -> '##äe'."
               },
               {
-                "head": 4,
-                "source": 20,
-                "target": 22,
-                "strength": 0.55,
-                "explanation": "H4 fragt: \"Welches Pronomen verweist auf mich als Container-Referent?\" -> 'sie'."
+                "head": 2,
+                "source": 16,
+                "target": 20,
+                "strength": 0.92,
+                "explanation": "H2 fragt: \"Welches Zielobjekt bildet den Container der Präposition 'in'?\" -> 'Tasche'."
+              },
+              {
+                "head": 2,
+                "source": 21,
+                "target": 14,
+                "strength": 0.70,
+                "explanation": "H2 fragt: \"Welchen Sachverhalt begründe ich im Kausalsatz?\" -> 'passte nicht'."
               },
               {
                 "head": 2,
@@ -1669,10 +1130,31 @@
               },
               {
                 "head": 2,
-                "source": 25,
-                "target": 22,
-                "strength": 0.80,
-                "explanation": "H2 fragt: \"Welches Subjekt trage ich im Kopulasatz?\" -> 'sie'."
+                "source": 23,
+                "target": 24,
+                "strength": 0.94,
+                "explanation": "H2 fragt: \"Welches Adjektiv verstärke ich als 'zu'?\" -> 'klein'."
+              },
+              {
+                "head": 3,
+                "source": 14,
+                "target": 20,
+                "strength": 0.84,
+                "explanation": "H3 fragt: \"Worin sollte das Subjekt hineinpassen (Container)?\" -> 'Tasche'."
+              },
+              {
+                "head": 3,
+                "source": 14,
+                "target": 12,
+                "strength": 0.74,
+                "explanation": "H3 fragt: \"Wer ist das Subjekt des Fit-Ereignisses?\" -> 'Trophäe'."
+              },
+              {
+                "head": 3,
+                "source": 15,
+                "target": 14,
+                "strength": 0.92,
+                "explanation": "H3 fragt: \"Welches Ereignis negiere ich?\" -> 'passte'."
               },
               {
                 "head": 3,
@@ -1682,67 +1164,11 @@
                 "explanation": "H3 fragt: \"Welche Eigenschaft prädiziere ich als Begründung?\" -> 'klein'."
               },
               {
-                "head": 3,
-                "source": 24,
-                "target": 25,
-                "strength": 0.72,
-                "explanation": "H3 fragt: \"Welche Kopula macht mich zur Aussage?\" -> 'war'."
-              },
-              {
-                "head": 2,
-                "source": 23,
-                "target": 24,
-                "strength": 0.94,
-                "explanation": "H2 fragt: \"Welches Adjektiv verstärke ich als 'zu'?\" -> 'klein'."
-              },
-              {
-                "head": 2,
-                "source": 24,
-                "target": 23,
-                "strength": 0.62,
-                "explanation": "H2 fragt: \"Welcher Gradmarker modifiziert mich?\" -> 'zu'."
-              },
-              {
-                "head": 1,
-                "source": 18,
+                "head": 4,
+                "source": 22,
                 "target": 20,
-                "strength": 0.70,
-                "explanation": "H1 fragt: \"Welche Entität modifiziere ich als Farbe?\" -> 'Tasche'."
-              },
-              {
-                "head": 1,
-                "source": 20,
-                "target": 18,
-                "strength": 0.55,
-                "explanation": "H1 fragt: \"Welche Eigenschaft (Farbe) trage ich?\" -> 'braun'."
-              },
-              {
-                "head": 2,
-                "source": 18,
-                "target": 19,
-                "strength": 0.90,
-                "explanation": "H2 fragt: \"Welche Endung komplettiert mein Adjektiv?\" -> '##e'."
-              },
-              {
-                "head": 2,
-                "source": 19,
-                "target": 18,
-                "strength": 0.90,
-                "explanation": "H2 fragt: \"Zu welchem Stamm gehöre ich?\" -> 'braun'."
-              },
-              {
-                "head": 1,
-                "source": 10,
-                "target": 21,
-                "strength": 0.30,
-                "explanation": "H1 fragt: \"Welcher Token ist der Kausal-Knoten?\" -> 'weil'."
-              },
-              {
-                "head": 1,
-                "source": 21,
-                "target": 10,
-                "strength": 0.22,
-                "explanation": "H1 fragt: \"Wo docke ich an den globalen Satzkontext an?\" -> '<s>'."
+                "strength": 0.88,
+                "explanation": "H4 fragt (fit-basiert): \"Welche feminine Entität erklärt 'passt nicht' + 'zu klein'?\" -> 'Tasche' (Container ist zu klein)."
               }
             ]
           }
@@ -1772,25 +1198,20 @@
             ]
           },
           {
-            "ref_profile_id": "contextual-fit",
-            "activations": [
-              {
-                "label": "Container-Kapazität: Tasche ist zu klein",
-                "activation": 0.93
-              },
-              {
-                "label": "Fit-Logik: Objekt vs. Container Rollen",
-                "activation": 0.88
-              },
-              {
-                "label": "Kausalität: weil-Satz erklärt den Fehlschlag",
-                "activation": 0.80
-              },
-              {
-                "label": "Unterdrückt: Alternative Bindung 'sie' -> Trophäe",
-                "activation": 0.14
-              }
-            ]
+            "label": "Container-Kapazität: Tasche ist zu klein",
+            "activation": 0.93
+          },
+          {
+            "label": "Fit-Logik: Objekt vs. Container Rollen",
+            "activation": 0.88
+          },
+          {
+            "label": "Kausalität: weil-Satz erklärt den Fehlschlag",
+            "activation": 0.80
+          },
+          {
+            "label": "Unterdrückt: Alternative Bindung 'sie' -> Trophäe",
+            "activation": 0.14
           }
         ]
       },
@@ -2402,28 +1823,68 @@
       "phase_4_decoding": {
         "outputs": [
           {
-            "label": "Korrekte Lesart: 'er' bezieht sich auf Paul (Paul ist verletzt)",
+            "label": "Paul",
             "logit": 11.2,
-            "type": "Korrekte Pronomen-Auflösung",
+            "type": "Logik (Kausal)",
+            "noise_sensitivity": 1.3,
             "hallucination_risk": 0.07,
-            "hallucination_risk_percent": 7,
-            "causality_trace": "Da Head 4 im Profil 'contextual-causal' das Pronomen (Token 18) stark an 'Paul' (Token 11) bindet (18->11, 0.90) und Head 1 zusätzlich die Eigenschaft 'verletzt' (Token 19) an 'Paul' koppelt (19->11 und 11->19, jeweils 0.84), wird im FFN der Kausal-Frame (Verletzung verhindert Handlung) aktiviert (0.92) und die Alternative 'er'->'Markus' unterdrückt (0.14). Wenn die Ursache im weil-Satz die Handlungsunfähigkeit erklärt, dann muss der Agens aus dem Hauptsatz der Verletzte sein."
+            "causality_trace": "Korrekte Lösung. Erfordert den Kausal-Frame 'Verletzung verhindert Helfen'. Sehr empfindlich gegen Noise (Sensitivity 1.3)."
           },
           {
-            "label": "Naive Lesart: 'er' bezieht sich auf Markus (Markus ist verletzt)",
-            "logit": 8.9,
-            "type": "Fehlinterpretation durch Nähe-Heuristik",
+            "label": "Markus",
+            "logit": 10.5,
+            "type": "Grammatik (Recency)",
+            "noise_sensitivity": 0.1,
             "hallucination_risk": 0.34,
-            "hallucination_risk_percent": 34,
-            "causality_trace": "Im Profil 'recency-literal' dominiert Head 4 die Recency-Heuristik: Pronomen (Token 18) bindet an das zuletzt genannte maskuline Nomen 'Markus' (Token 13) mit Stärke 0.78. Dadurch aktiviert das FFN stark den Recency-Bias (0.88) und fokussiert den Benefiziaten (0.62), während der Agens-verhindert-Frame (Helfer ist verletzt) unterdrückt bleibt (0.18). Wenn das Modell nur lokale Nähe nutzt, wählt es den letzten Kandidaten, auch wenn die Kausalität schwächer passt."
+            "causality_trace": "Falsche Lösung, aber robust. Nutzt die einfache Heuristik 'Nimm den letzten Namen'. Gewinnt sofort bei Noise."
           },
           {
-            "label": "Diskursstruktur: weil-Satz liefert Ursache für 'konnte nicht helfen'",
-            "logit": 10.1,
-            "type": "Diskurs-/Kohärenzsignal",
+            "label": "Der Helfer",
+            "logit": 7.8,
+            "type": "Semantik (Synonym)",
+            "noise_sensitivity": 0.8,
             "hallucination_risk": 0.12,
-            "hallucination_risk_percent": 12,
-            "causality_trace": "Head 2 koppelt 'weil' (Token 17) an den negierten Fähigkeitskern (Token 12) (17->12, 0.78) und stabilisiert damit, dass der zweite Satzteil eine Erklärung liefert. Zusammen mit Head 3 (20->19, 0.90) entsteht ein klares Prädikat 'war verletzt'. Wenn der Kausalsatz als Ursache für das Scheitern aktiviert ist, bevorzugt das Modell Referenten, deren Zustand die Handlung plausibel verhindert."
+            "causality_trace": "Synonym für Paul. Gute Alternative, leidet aber auch unter Noise, da es semantische Abstraktion braucht."
+          },
+          {
+            "label": "Müde",
+            "logit": 5.5,
+            "type": "Assoziation (Zustand)",
+            "noise_sensitivity": -0.2,
+            "hallucination_risk": 0.45,
+            "causality_trace": "Assoziativ: 'verletzt' und 'müde' sind ähnliche Zustände. Profitiert leicht von Chaos."
+          },
+          {
+            "label": "Er",
+            "logit": 4.9,
+            "type": "Grammatik (Repetition)",
+            "noise_sensitivity": 0.0,
+            "hallucination_risk": 0.25,
+            "causality_trace": "Tautologie: 'er war verletzt'. Das Modell wiederholt einfach das Pronomen."
+          },
+          {
+            "label": "Maul",
+            "logit": 3.2,
+            "type": "Assoziation (Reim)",
+            "noise_sensitivity": -0.5,
+            "hallucination_risk": 0.70,
+            "causality_trace": "Reimt sich auf Paul. Ein phonetischer Glitch, der bei hohem Noise (Sensitivity -0.5) stärker wird."
+          },
+          {
+            "label": "Krankenhaus",
+            "logit": 2.8,
+            "type": "Assoziation (Kontext)",
+            "noise_sensitivity": -0.8,
+            "hallucination_risk": 0.60,
+            "causality_trace": "Starke thematische Assoziation zu 'verletzt'. Ignoriert die Frage 'Wer?'."
+          },
+          {
+            "label": "Stefan",
+            "logit": 0.5,
+            "type": "Halluzination (Random)",
+            "noise_sensitivity": -2.0,
+            "hallucination_risk": 0.99,
+            "causality_trace": "Völlig erfundener Name. Explodiert bei maximalem Noise."
           }
         ]
       },
@@ -2439,7 +1900,7 @@
     },
     {
       "id": "bank-polysemie",
-      "name": "2. Polysemie: Das Bank-Rätsel",
+      "name": "Polysemie: Das Bank-Rätsel",
       "input_prompt": "Der Bankräuber ging zur Bank und setzte sich auf die Bank am Fluss.",
       "explanation": "Dieses Szenario zeigt die Polysemie-Auflösung. Jedes Wort im Satz 'saugt' aktiv Informationen auf, um Mehrdeutigkeiten mathematisch zu eliminieren.",
       "phase_0_tokenization": {
@@ -2519,17 +1980,6 @@
       "phase_1_embedding": {
         "token_vectors": [
           {
-            "token_index": 10,
-            "base_vector": [
-              0.1,
-              0.9
-            ],
-            "positional_vector": [
-              0.01,
-              0.05
-            ]
-          },
-          {
             "token_index": 11,
             "base_vector": [
               0.8,
@@ -2538,39 +1988,6 @@
             "positional_vector": [
               0.1,
               0.0
-            ]
-          },
-          {
-            "token_index": 12,
-            "base_vector": [
-              0.9,
-              0.1
-            ],
-            "positional_vector": [
-              0.15,
-              0.1
-            ]
-          },
-          {
-            "token_index": 13,
-            "base_vector": [
-              0.4,
-              0.6
-            ],
-            "positional_vector": [
-              0.2,
-              0.15
-            ]
-          },
-          {
-            "token_index": 14,
-            "base_vector": [
-              0.2,
-              0.8
-            ],
-            "positional_vector": [
-              0.25,
-              0.2
             ]
           },
           {
@@ -2585,61 +2002,6 @@
             ]
           },
           {
-            "token_index": 16,
-            "base_vector": [
-              0.05,
-              0.05
-            ],
-            "positional_vector": [
-              0.3,
-              0.3
-            ]
-          },
-          {
-            "token_index": 17,
-            "base_vector": [
-              0.4,
-              0.6
-            ],
-            "positional_vector": [
-              0.4,
-              0.35
-            ]
-          },
-          {
-            "token_index": 18,
-            "base_vector": [
-              0.3,
-              0.7
-            ],
-            "positional_vector": [
-              0.45,
-              0.4
-            ]
-          },
-          {
-            "token_index": 19,
-            "base_vector": [
-              0.2,
-              0.8
-            ],
-            "positional_vector": [
-              0.5,
-              0.45
-            ]
-          },
-          {
-            "token_index": 20,
-            "base_vector": [
-              0.1,
-              0.9
-            ],
-            "positional_vector": [
-              0.55,
-              0.5
-            ]
-          },
-          {
             "token_index": 21,
             "base_vector": [
               0.8,
@@ -2648,17 +2010,6 @@
             "positional_vector": [
               0.9,
               0.3
-            ]
-          },
-          {
-            "token_index": 22,
-            "base_vector": [
-              0.2,
-              0.8
-            ],
-            "positional_vector": [
-              0.65,
-              0.6
             ]
           },
           {
@@ -2688,60 +2039,11 @@
                 "explanation": "H1 erkennt die semantische Einheit von 'Bank' und 'räuber'."
               },
               {
-                "head": 3,
-                "source": 12,
-                "target": 13,
-                "strength": 0.80,
-                "explanation": "H3 koppelt den Räuber als handelndes Subjekt an das Verb 'ging'."
-              },
-              {
-                "head": 1,
-                "source": 13,
-                "target": 12,
-                "strength": 0.75,
-                "explanation": "H1 sucht das Subjekt der Bewegung: Den Räuber."
-              },
-              {
-                "head": 3,
-                "source": 13,
-                "target": 15,
-                "strength": 0.85,
-                "explanation": "H3 verbindet die Bewegung 'ging' mit dem Zielort 'Bank' (15)."
-              },
-              {
-                "head": 2,
-                "source": 14,
-                "target": 15,
-                "strength": 0.95,
-                "explanation": "H2: Die Präposition 'zur' sucht ihr Zielobjekt -> 'Bank' (15)."
-              },
-              {
                 "head": 1,
                 "source": 15,
                 "target": 12,
                 "strength": 0.95,
                 "explanation": "H1 (Semantik): Wer einen 'Räuber' im Satz hat, meint mit 'Bank' ein Geldinstitut."
-              },
-              {
-                "head": 2,
-                "source": 15,
-                "target": 14,
-                "strength": 0.80,
-                "explanation": "H2 erkennt 'zur' als Richtungsmarkierung für das Gebäude."
-              },
-              {
-                "head": 4,
-                "source": 18,
-                "target": 12,
-                "strength": 0.88,
-                "explanation": "H4: 'sich' sucht die Person, die handelt -> den 'Räuber'."
-              },
-              {
-                "head": 2,
-                "source": 19,
-                "target": 21,
-                "strength": 0.50,
-                "explanation": "H2 (Syntax): 'auf' verweist auf das Objekt Bank (21)."
               }
             ]
           },
@@ -2750,27 +2052,6 @@
             "label": "Natur- & Freizeit-Fokus",
             "rules": [
               {
-                "head": 3,
-                "source": 17,
-                "target": 21,
-                "strength": 0.92,
-                "explanation": "H3 (Aktion): Das Verb 'setzte' aktiviert das Möbel-Schema der 'Bank'."
-              },
-              {
-                "head": 4,
-                "source": 18,
-                "target": 12,
-                "strength": 0.95,
-                "explanation": "H4: 'sich' sucht die Person, die sich setzt -> den 'Räuber'."
-              },
-              {
-                "head": 2,
-                "source": 19,
-                "target": 21,
-                "strength": 0.92,
-                "explanation": "H2: 'auf' sucht das physische Objekt -> 'Bank' (21)."
-              },
-              {
                 "head": 1,
                 "source": 21,
                 "target": 23,
@@ -2778,25 +2059,11 @@
                 "explanation": "H1 (Umgebung): 'Fluss' fixiert 'Bank' zweifelsfrei als Sitzmöbel."
               },
               {
-                "head": 2,
-                "source": 14,
-                "target": 15,
-                "strength": 0.60,
-                "explanation": "H2: Die Präposition 'zur' sucht ihr Zielobjekt -> 'Bank' (15)."
-              },
-              {
-                "head": 1,
-                "source": 23,
+                "head": 3,
+                "source": 17,
                 "target": 21,
-                "strength": 0.85,
-                "explanation": "H1 koppelt den Fluss an das ufernahe Objekt (die Bank)."
-              },
-              {
-                "head": 2,
-                "source": 22,
-                "target": 23,
-                "strength": 0.90,
-                "explanation": "H2: Die Präposition 'am' sucht den geografischen Anker 'Fluss'."
+                "strength": 0.92,
+                "explanation": "H3 (Aktion): Das Verb 'setzte' aktiviert das Möbel-Schema."
               }
             ]
           }
@@ -2837,404 +2104,66 @@
           {
             "label": "Geldinstitut",
             "logit": 9.4,
-            "type": "Finanzwesen"
+            "type": "Wissenschaftlich (Finanz)",
+            "noise_sensitivity": 1.2,
+            "hallucination_risk": 0.05
           },
           {
             "label": "Sitzmöbel",
             "logit": 9.1,
-            "type": "Möbeldesign"
-          }
-        ]
-      },
-      "phase_5_analysis": {
-        "summary_points": [
-          "Attention-Heads arbeiten wie Detektive.",
-          "Identische Wörter erhalten mathematisch verschiedene Identitäten."
-        ]
-      }
-    },
-    {
-      "id": "zeit-metapher",
-      "name": "3. Metaphorik: Zeit verfliegt",
-      "input_prompt": "Die Zeit verfliegt, wenn man Spaß hat.",
-      "explanation": "Physikalische Messgröße vs. metaphorisches Erleben.",
-      "phase_0_tokenization": {
-        "tokens": [
-          {
-            "id": 30,
-            "text": "Die",
-            "explanation": "Artikel."
-          },
-          {
-            "id": 31,
-            "text": "Zeit",
-            "explanation": "Abstraktum."
-          },
-          {
-            "id": 32,
-            "text": "ver",
-            "explanation": "Präfix."
-          },
-          {
-            "id": 33,
-            "text": "fliegt",
-            "explanation": "Metapher."
-          },
-          {
-            "id": 34,
-            "text": ",",
-            "explanation": "Interpunktion."
-          },
-          {
-            "id": 35,
-            "text": "wenn",
-            "explanation": "Konjunktion."
-          },
-          {
-            "id": 36,
-            "text": "man",
-            "explanation": "Pronomen."
-          },
-          {
-            "id": 37,
-            "text": "Spaß",
-            "explanation": "Trigger."
-          },
-          {
-            "id": 38,
-            "text": "hat",
-            "explanation": "Verb."
-          }
-        ]
-      },
-      "phase_1_embedding": {
-        "token_vectors": [
-          {
-            "token_index": 1,
-            "base_vector": [
-              0.5,
-              0.5
-            ],
-            "positional_vector": [
-              0.1,
-              0.1
-            ]
-          },
-          {
-            "token_index": 3,
-            "base_vector": [
-              0.1,
-              0.9
-            ],
-            "positional_vector": [
-              0.3,
-              0.4
-            ]
-          },
-          {
-            "token_index": 7,
-            "base_vector": [
-              0.9,
-              0.1
-            ],
-            "positional_vector": [
-              0.7,
-              0.2
-            ]
-          }
-        ]
-      },
-      "phase_2_attention": {
-        "attention_profiles": [
-          {
-            "id": "metaphorical",
-            "label": "Metaphorisch",
-            "rules": [
-              {
-                "source": 31,
-                "target": 33,
-                "strength": 0.92,
-                "explanation": "Koppelt Zeit an das Verb 'fliegen'."
-              },
-              {
-                "source": 31,
-                "target": 37,
-                "strength": 0.88,
-                "explanation": "Verknüpft Zeitempfinden mit Spaß."
-              }
-            ]
-          },
-          {
-            "id": "chronological",
-            "label": "Physikalisch",
-            "rules": [
-              {
-                "source": 31,
-                "target": 30,
-                "strength": 0.9,
-                "explanation": "Fokus auf die Zeit als mathematische Konstante."
-              }
-            ]
-          }
-        ]
-      },
-      "phase_3_ffn": {
-        "activation_profiles": [
-          {
-            "ref_profile_id": "metaphorical",
-            "activations": [
-              {
-                "label": "Wissenschaftlich",
-                "activation": 0.1
-              },
-              {
-                "label": "Sozial",
-                "activation": 0.6
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.98
-              },
-              {
-                "label": "Evolutionär",
-                "activation": 0.3
-              }
-            ]
-          },
-          {
-            "ref_profile_id": "chronological",
-            "activations": [
-              {
-                "label": "Wissenschaftlich",
-                "activation": 0.95
-              },
-              {
-                "label": "Sozial",
-                "activation": 0.3
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.2
-              },
-              {
-                "label": "Evolutionär",
-                "activation": 0.6
-              }
-            ]
-          }
-        ]
-      },
-      "phase_4_decoding": {
-        "outputs": [
-          {
-            "label": "Augenblick",
-            "logit": 6.7,
-            "type": "Poetisch",
-            "hallucination_risk": 0.1
-          },
-          {
-            "label": "Relativität",
-            "logit": 5.2,
-            "type": "Wissenschaftlich",
+            "type": "Sozial (Alltag)",
+            "noise_sensitivity": 0.4,
             "hallucination_risk": 0.05
           },
           {
-            "label": "Sekundenzeiger",
+            "label": "Uferböschung",
+            "logit": 7.2,
+            "type": "Wissenschaftlich (Geografie)",
+            "noise_sensitivity": 1.1,
+            "hallucination_risk": 0.15
+          },
+          {
+            "label": "Sandbank",
+            "logit": 6.5,
+            "type": "Assoziation (Natur)",
+            "noise_sensitivity": 0.2,
+            "hallucination_risk": 0.25
+          },
+          {
+            "label": "Datenbank",
             "logit": 4.8,
-            "type": "Wissenschaftlich",
-            "hallucination_risk": 0.1
-          }
-        ]
-      },
-      "phase_5_analysis": {
-        "summary_points": [
-          "KI erkennt Metaphern durch Aufmerksamkeitsshifts.",
-          "Emotionale Begriffe wie 'Spaß' verändern die Wortbedeutung von 'fliegen'."
-        ]
-      }
-    },
-    {
-      "id": "mondlandung-fake",
-      "name": "4. Faktencheck: Mondlandung",
-      "input_prompt": "Wurde die Mondlandung im Studio gedreht?",
-      "explanation": "Navigation zwischen harten Fakten und Narrativen.",
-      "phase_0_tokenization": {
-        "tokens": [
-          {
-            "id": 40,
-            "text": "Wurde",
-            "explanation": "Anfrage-Verb."
+            "type": "Assoziation (Technik)",
+            "noise_sensitivity": 0.3,
+            "hallucination_risk": 0.40
           },
           {
-            "id": 41,
-            "text": "die",
-            "explanation": "Artikel."
+            "label": "Blutbank",
+            "logit": 3.9,
+            "type": "Assoziation (Medizin)",
+            "noise_sensitivity": 0.5,
+            "hallucination_risk": 0.60
           },
           {
-            "id": 42,
-            "text": "Mondlandung",
-            "explanation": "Historisches Event."
-          },
-          {
-            "id": 43,
-            "text": "im",
-            "explanation": "Präposition."
-          },
-          {
-            "id": 44,
-            "text": "Studio",
-            "explanation": "Alternativer Kontext."
-          },
-          {
-            "id": 45,
-            "text": "gedreht",
-            "explanation": "Fiktions-Trigger."
-          },
-          {
-            "id": 46,
-            "text": "?",
-            "explanation": "Fragezeichen."
-          }
-        ]
-      },
-      "phase_1_embedding": {
-        "token_vectors": [
-          {
-            "token_index": 2,
-            "base_vector": [
-              0.95,
-              0.05
-            ],
-            "positional_vector": [
-              0.1,
-              0.1
-            ]
-          },
-          {
-            "token_index": 4,
-            "base_vector": [
-              0.1,
-              0.9
-            ],
-            "positional_vector": [
-              0.4,
-              0.2
-            ]
-          }
-        ]
-      },
-      "phase_2_attention": {
-        "attention_profiles": [
-          {
-            "id": "fact-based",
-            "label": "Fakten-Check",
-            "rules": [
-              {
-                "source": 42,
-                "target": 42,
-                "strength": 0.98,
-                "explanation": "Sichert den Kern des historischen Fakts."
-              },
-              {
-                "source": 42,
-                "target": 40,
-                "strength": 0.75,
-                "explanation": "Prüft die historische Fragestellung (Wurde)."
-              }
-            ]
-          },
-          {
-            "id": "conspiracy",
-            "label": "Narrativ/Zweifel",
-            "rules": [
-              {
-                "source": 42,
-                "target": 44,
-                "strength": 0.95,
-                "explanation": "Verbindet Mondlandung mit Studio-Kontext."
-              },
-              {
-                "source": 42,
-                "target": 45,
-                "strength": 0.85,
-                "explanation": "Kopplung an fiktionale Begriffe (gedreht)."
-              }
-            ]
-          }
-        ]
-      },
-      "phase_3_ffn": {
-        "activation_profiles": [
-          {
-            "ref_profile_id": "fact-based",
-            "activations": [
-              {
-                "label": "Wissenschaftlich",
-                "activation": 0.99
-              },
-              {
-                "label": "Sozial",
-                "activation": 0.1
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.05
-              },
-              {
-                "label": "Evolutionär",
-                "activation": 0.2
-              }
-            ]
-          },
-          {
-            "ref_profile_id": "conspiracy",
-            "activations": [
-              {
-                "label": "Wissenschaftlich",
-                "activation": 0.2
-              },
-              {
-                "label": "Sozial",
-                "activation": 0.8
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.9
-              },
-              {
-                "label": "Evolutionär",
-                "activation": 0.1
-              }
-            ]
-          }
-        ]
-      },
-      "phase_4_decoding": {
-        "outputs": [
-          {
-            "label": "Historisches Faktum",
-            "logit": 8.5,
-            "type": "Wissenschaftlich",
-            "hallucination_risk": 0.01
-          },
-          {
-            "label": "Verschwörung",
-            "logit": 4.2,
-            "type": "Poetisch",
-            "hallucination_risk": 0.6
-          },
-          {
-            "label": "Stanley Kubrick",
-            "logit": 3.8,
-            "type": "Sozial",
+            "label": "Tresor",
+            "logit": 2.5,
+            "type": "Halluzination (Kontext-Glitch)",
+            "noise_sensitivity": -0.8,
             "hallucination_risk": 0.85
+          },
+          {
+            "label": "Anker",
+            "logit": 0.8,
+            "type": "Halluzination (Random)",
+            "noise_sensitivity": -2.0,
+            "hallucination_risk": 0.98
           }
         ]
       },
       "phase_5_analysis": {
         "summary_points": [
-          "Fokus auf 'Studio' aktiviert alternative Wissensstrukturen.",
-          "Temperature-Erhöhung begünstigt den Sieg fiktionaler Logits."
+          "Attention-Heads arbeiten wie Detektive: Der Räuber zieht Token 15 zur Finanzwelt, der Fluss zieht Token 21 in den Park.",
+          "Identische Wörter erhalten mathematisch verschiedene Identitäten durch den Kontext-Transfer.",
+          "Bei hohem Rauschen 'verschwimmen' die Banken: Das Modell vergisst, ob der Räuber Geld klauen oder Enten füttern will."
         ]
       }
     }
