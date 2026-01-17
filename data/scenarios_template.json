@@ -56,7 +56,8 @@
             "activations": [
               {
                 "label": "<string>",
-                "activation": 0.0
+                "activation": 0.0,
+                "color": "#HEXCODE"
               }
             ]
           }
@@ -68,6 +69,8 @@
             "label": "<string>",
             "logit": 0.0,
             "type": "<string>",
+            "color": "#HEXCODE",
+            "noise_sensitivity": 0.0,
             "hallucination_risk": 0.0,
             "hallucination_risk_percent": 0,
             "causality_trace": "<string>"
