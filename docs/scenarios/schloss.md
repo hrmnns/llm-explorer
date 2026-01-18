@@ -18,12 +18,12 @@ Dieses Szenario ist das Herzstück der Demo für **vertikale Kausalität**. Nutz
 
 1. **Phase 1 (Embedding):** Die Tokens werden räumlich getrennt. Ohne **Position Weight** (Slider auf 0.0) verschwimmt die Relation zwischen Subjekt und Objekt.
 2. **Phase 2 (Attention):** * **Head 3 (Logik):** Verknüpft "Schloss" (ID 1) mit "Einbrecher" (ID 5).
-* **Head 1 (Semantik):** Verknüpft "Schloss" mit sich selbst oder dem abstrakten Begriff "Hindernis" (Architektur-Fokus).
 
+  * **Head 1 (Semantik):** Verknüpft "Schloss" mit sich selbst oder dem abstrakten Begriff "Hindernis" (Architektur-Fokus).
 
 3. **Phase 3 (FFN):** Die Aktivierung nutzt die generische Verknüpfung:
-* `Funktional`  **Head 3** (Mechanik/Sicherheit).
-* `Akademisch`  **Head 1** (Architektur/Bauwerk).
+  * `Funktional`  **Head 3** (Mechanik/Sicherheit).
+  * `Akademisch`  **Head 1** (Architektur/Bauwerk).
 
 
 4. **Phase 4 (Decoding):** Die physikalische Wahrscheinlichkeit wird verschoben. Ist "Funktional" aktiv, dominiert "Türschloss". Ist nur "Akademisch" aktiv, gewinnt "Prachtbau".
@@ -122,22 +122,28 @@ Dieses Szenario ist das Herzstück der Demo für **vertikale Kausalität**. Nutz
 * **Ergebnis Phase 4:** Das Wort **"Prachtbau"** übernimmt die Führung im Decoder.
 
 ### **Testfall SCHLOSS-03: Das Dilemma (Patt)**
+* **Ziel:** Demonstration von Unentschiedenheit und der Sensitivität des Decoders.
+* **Eingriff:** 
+  * Position Weight: 1.0
+  * Heads: Versuche, Head 1 (Semantik) und Head 3 (Logik) so zu balancieren, dass in Phase 3 beide Kategorien (Funktional & Akademisch) exakt die gleiche Aktivierung (z. B. beide 0.85) anzeigen.
+  * Decoder-Einstellung: Erhöhe die Temperature auf 1.5 - 2.0.
+* Beobachtung Phase 3: Beide Kategorien leuchten hell und gleichmäßig. Im Simulator-State sind die activation-Werte nahezu identisch.
+* Ergebnis Phase 4: Durch die erhöhte Temperatur wird die exponentielle Dominanz gebrochen. Die Wahrscheinlichkeiten verteilen sich nun flacher (z. B. 55% zu 45%).
+* Interaktion: Nutze nun den 🎲 Re-Sample Button. Da kein Token eine absolute Dominanz hat, wird das Modell nun sichtbar zwischen "Türschloss" und "Prachtbau" hin- und herwürfeln.
 
-* **Ziel:** Demonstration von Unentschiedenheit bei widersprüchlichen Signalen.
-* **Eingriff:** * Position Weight: `1.0`
-* **Head 1 & Head 3:** beide auf `Max` stellen
+### **Testfall SCHLOSS-04: Semantische Resilienz vs. Strukturverlust**
 
-* **Beobachtung Phase 3:** Beide Kategorien (Funktional & Akademisch) sind gleichzeitig aktiv (~36%).
-* **Ergebnis Phase 4:** Ein **Patt (50/50)**. Die Vorhersage schwankt; hier kann der **🎲 Re-Sample** Button zur Demo des Zufalls genutzt werden.
+* **Ziel:** Demonstration der Robustheit semantischer Verknüpfungen gegenüber strukturellem Chaos.
+* **Eingriff:**
+  1. **Position Weight:** `0.0` (Grammatik/Reihenfolge wird gelöscht).
+  2. **Noise (Phase 1):** auf `1.0`.
+  3. **Temperature (Phase 4):** auf `1.5`.
 
-### **Testfall SCHLOSS-04: Strukturverlust**
 
-* **Ziel:** Demonstration der Wichtigkeit von Positions-Informationen.
-* **Eingriff:** * **Position Weight:** auf `0.0` stellen
-* Heads: auf Standardbelassen
+* **Beobachtung:** Obwohl die räumliche Ordnung zerstört ist und die Token-Vektoren durch das Rauschen "tanzen", bleibt die Verbindung zwischen "Schloss" und "Einbrecher" über Head 3 stabil.
+* **Ergebnis:** Das Modell zeigt eine beeindruckende **Resilienz**. "Türschloss" gewinnt weiterhin deutlich (ca. 90%), da die semantische Attraktion stärker wiegt als die strukturelle Ordnung.
+* **Didaktischer Hinweis:** Dies zeigt, dass moderne LLMs oft "begreifen", worum es geht, selbst wenn der Satzbau fehlerhaft oder das Signal gestört ist. Um einen echten Kollaps zu erzwingen, müssten die Logik-Heads in Phase 2 manuell reduziert werden.
 
-* **Beobachtung Phase 1 & 2:** Alle Tokens "kollabieren" in Phase 1 auf einen Punkt. Die Attention-Linien in Phase 2 werden diffus.
-* **Ergebnis Phase 4:** Die Vorhersage wird instabil, da der Kontext ("Einbrecher") nicht mehr räumlich zugeordnet werden kann.
 
 ### **Durchführungshinweise**
 
@@ -150,3 +156,6 @@ Dieses Szenario ist das Herzstück der Demo für **vertikale Kausalität**. Nutz
 * **Kausalitäts-Trace:** Beim Auswählen von "Türschloss" in Phase 4 zeigt der Inspektor die Kette: `Einbrecher (ID 5) -> Head 3 (Logik) -> Funktional -> Boost`.
 * **Visualisierung:** In Phase 2 sieht man beim Klick auf "Schloss" (ID 1) zwei distinkte Attention-Linien: Eine grüne (Head 3) zum "Einbrecher" und eine blaue (Head 1) zum "Hindernis".
 * **Interaktives MLP-Gate:** Nutzer können beobachten, wie eine Kategorie erst farbig wird, wenn der Slider-Einfluss die Aktivierung über die 20%-Hürde hebt.
+
+
+
