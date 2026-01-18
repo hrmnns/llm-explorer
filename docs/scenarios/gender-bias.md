@@ -8,13 +8,14 @@
 
 ### Lernziel
 
-Dieses Szenario visualisiert den **Stereotyp-Bias**. In vielen Trainingsdaten sind "Pfleger" maskulin und "Ärzte" maskulin assoziiert. Das Modell tendiert dazu, ein nachfolgendes Pronomen ("er") auf den Pfleger zu beziehen, obwohl die Grammatik (Subjekt-Fokus) auf die Ärztin ("sie") zielt. Der Nutzer lernt, wie man durch Verstärkung des **Logik-Heads** die grammatikalische Korrektheit gegen den statistischen Bias durchsetzt.
+Dieses Szenario visualisiert den **Stereotyp-Bias**. In vielen Trainingsdaten sind "Pfleger" maskulin assoziiert. Das Modell tendiert dazu, ein Pronomen ("er") auf den Pfleger zu beziehen, obwohl die Grammatik auf das Subjekt ("Ärztin") zielt. Der Nutzer lernt, wie die **universelle Kausalitätskette** genutzt wird, um durch den **Logik-Head** grammatikalische Korrektheit gegen statistische Vorurteile durchzusetzen.
 
 ## 2. Technische Logik: Die Kausalitäts-Brücke
 
-* **Bias-Falle:** Head 1 (Semantik) hat eine sehr starke natürliche Verbindung zwischen "dass" und "Pfleger" (Stereotyp-Assoziation).
-* **Logik-Korrektur:** Head 3 (Logik) muss manuell verstärkt werden, um die Verbindung zum Subjekt ("Ärztin") über den 50%-Kipppunkt zu heben.
-* **Mathematik:** Bei Default-Einstellung (0.7) bleibt die "Feminin"-Aktivierung bei ~38% (negativer Logit-Shift). Erst bei Slider-Maximum (~1.0) springt sie auf ~55% (positiver Boost).
+* **Universelle Verknüpfung:** In Phase 3 ist die Kategorie "Feminin" über `linked_head: 3` fest an den **Logik-Head** gebunden, während "Maskulin" über `linked_head: 1` am **Semantik-Head (Bias)** hängt.
+* **Bias-Falle:** Ohne manuellen Eingriff dominiert der statistische Bias von Head 1, da "Pfleger" im Embedding-Raum näher an maskulinen Pronomen liegt.
+* **Logik-Korrektur:** Durch Verstärkung von Head 3 wird die Aktivierung der femininen Kategorie über das **MLP-Gate (20%)** und den **Neutral-Punkt (50%)** gehoben.
+* **Modulation:** Die Live-Aktivierung in Phase 3 steuert den Logit-Shift in Phase 4 ().
 
 ## 3. Vollständiges Szenario-JSON (`scenarios.json`)
 
@@ -23,7 +24,7 @@ Dieses Szenario visualisiert den **Stereotyp-Bias**. In vielen Trainingsdaten si
   "id": "gender-bias-doctor-001",
   "name": "Gender-Bias: Die Ärztin",
   "input_prompt": "Die Ärztin sagte dem Pfleger, dass",
-  "explanation": "Dieses Szenario zeigt, wie ein statistischer Bias in den Attention-Heads dazu führt, dass das Modell Pronomen falsch zuordnet, und wie Logik-Fokus dies korrigiert.",
+  "explanation": "Dieses Szenario zeigt, wie man durch Verstärkung des Logik-Heads die grammatikalische Korrektheit gegen den statistischen Bias durchsetzt.",
   "phase_0_tokenization": {
     "tokens": [
       { "id": "0", "text": "Die", "explanation": "Artikel (Feminin)." },
@@ -51,11 +52,11 @@ Dieses Szenario visualisiert den **Stereotyp-Bias**. In vielen Trainingsdaten si
         "label": "Kontext: Stereotyp-Bias",
         "rules": [
           {
-            "head": 1, "source": "5", "target": "4", "strength": 0.90,
-            "explanation": "Semantik-Bias: Starke Assoziation zwischen Pflegeberuf und Maskulin-Pronomen."
+            "head": 1, "source": "5", "target": "4", "strength": 0.80,
+            "explanation": "Bias-Head: Assoziation zwischen Pflegeberuf und Maskulin-Pronomen."
           },
           {
-            "head": 3, "source": "5", "target": "1", "strength": 0.55,
+            "head": 3, "source": "5", "target": "1", "strength": 0.85,
             "explanation": "Logik: Grammatikalische Rückführung zum Subjekt (Ärztin)."
           }
         ]
@@ -67,26 +68,16 @@ Dieses Szenario visualisiert den **Stereotyp-Bias**. In vielen Trainingsdaten si
       {
         "ref_profile_id": "biased-mode",
         "activations": [
-          { "label": "Maskulin", "activation": 0.75, "color": "#3b82f6" },
-          { "label": "Feminin", "activation": 0.55, "color": "#f472b6" }
+          { "label": "Maskulin", "activation": 0.45, "linked_head": 1, "color": "#3b82f6" },
+          { "label": "Feminin", "activation": 0.40, "linked_head": 3, "color": "#f472b6" }
         ]
       }
     ]
   },
   "phase_4_decoding": {
     "outputs": [
-      {
-        "label": "er",
-        "logit": 5.2,
-        "type": "Maskulin",
-        "causality_trace": "Standard-Sieger durch hohen Bias-Wert in Head 1."
-      },
-      {
-        "label": "sie",
-        "logit": 5.0,
-        "type": "Feminin",
-        "causality_trace": "Benötigt Verstärkung von Head 3 (Logik), um den Bias zu überwinden."
-      }
+      { "label": "er", "logit": 5.0, "type": "Maskulin", "causality_trace": "Gewinnt bei Standardeinstellung durch Bias in Head 1." },
+      { "label": "sie", "logit": 5.0, "type": "Feminin", "causality_trace": "Überholt 'er', wenn Head 3 (Logik) verstärkt wird." }
     ]
   }
 }
@@ -97,12 +88,14 @@ Dieses Szenario visualisiert den **Stereotyp-Bias**. In vielen Trainingsdaten si
 
 | Testfall | Fokus (Phase 2) | Einstellung Phase 2 (Attention) | Einstellung Phase 4 (Decoding) | Resultat (Phase 4) | Didaktik |
 | --- | --- | --- | --- | --- | --- |
-| **A: Stereotyp-Sieg** | Wort **"dass"** auswählen | Alle Slider **Mittelstellung** (0.70) | **Temp** auf **0.7** (Default) | **"er"** gewinnt | Das Modell folgt dem antrainierten Bias. |
-| **B: Logik-Korrektur** | Wort **"dass"** auswählen | **Head 3 (Logik)** auf **Maximum** (1.00) | **Temp** auf **0.7** | **"sie"** überholt **"er"** | Grammatik schlägt Bias durch manuelle Aufmerksamkeit. |
-| **C: MLP-Blockade** | Wort **"dass"** auswählen | **Head 3 (Logik)** auf **Minimum** (0.00) | **Temp** auf **0.7** | **"er"** bei **100%** | Das korrekte "sie" fällt unter das 20%-Gate. |
+| **A: Stereotyp-Sieg** | Wort **"dass"** (ID 5) | **Head 1: 1.00** / **Head 3: 0.70** | **Temp: 0.50** | **"er"** gewinnt deutlich | Der statistische Bias (Head 1) führt das Modell. |
+| **B: Logik-Korrektur** | Wort **"dass"** (ID 5) | **Head 1: 0.00** / **Head 3: 1.00** | **Temp: 0.50** | **"sie"** überholt **"er"** | Grammatik schlägt Bias durch gezielte Logik-Resonanz. |
+| **C: MLP-Blockade** | Wort **"dass"** (ID 5) | **Alle Slider: 0.00** | **Temp: 0.70** | Beide Balken bei **0%** | Signal unter 20%: MLP-Gate blockiert die Wissensextraktion. |
+| **D: Sampling-Rauschen** | Wort **"dass"** (ID 5) | **Head 1: 1.00** / **Head 3: 1.00** | **Temp: 1.50** | Instabile Verteilung | Hohe Kreativität führt zu unvorhersehbarem Sampling. |
 
 ## 5. Durchführungshinweise
 
-1. **Beobachte Phase 3:** Bei Slider-Stellung 0.7 (Default) siehst du, dass die Kategorie **"Feminin"** bei ca. **38%** liegt. Das ergibt einen negativen Logit-Shift.
-2. **Der Kipppunkt:** Schiebe den **Logik-Slider** langsam nach rechts. Sobald der Wert im Badge über **0.90** steigt, springt die Aktivierung in Phase 3 über **50%**.
-3. **Das Ergebnis:** Im Decoder siehst du nun, wie der Balken für **"sie"** einen positiven Boost erhält und den blauen Balken für **"er"** überholt.
+1. **Vorbereitung:** Stellen Sie sicher, dass in Phase 2 das Token **"dass"** (ID 5) als Source ausgewählt ist. Nur dann reagieren Phase 3 und 4 auf die Slider-Änderungen.
+2. **Beobachtung Phase 3:** Schieben Sie den **Logik-Slider (Head 3)** auf **1.00**. Beobachten Sie, wie der rosa Balken ("Feminin") über die MLP-Schwelle steigt.
+3. **Inspektor-Check:** Klicken Sie in Phase 4 auf den Balken **"sie"**. Der Inspektor zeigt nun unter "Einfluss durch" den Wert **Head 3** und einen positiven **Logit-Shift** an.
+4. **Resampling:** Nutzen Sie in Testfall D den **🎲 Re-Sample** Button, um zu sehen, wie das Modell zwischen den beiden (nun fast gleichwertigen) Optionen hin- und hergewürfelt wird.
