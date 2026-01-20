@@ -2,18 +2,65 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 
 const ScenarioContext = createContext();
 
+// --- NEU: Der Scenario-Checker als interne Hilfsfunktion ---
+const validateScenario = (s) => {
+  const errors = [];
+  const warnings = [];
+
+  // 1. Basis-Validierung
+  if (!s.id || !s.name) errors.push("ID oder Name fehlt");
+
+  // 2. Phasen-Check
+  if (!s.phase_3_ffn?.activations) {
+    errors.push("Phase 3: 'activations' Liste fehlt");
+  }
+  if (!s.phase_4_decoding?.top_k_tokens) {
+    errors.push("Phase 4: 'top_k_tokens' fehlen");
+  }
+
+  // 3. Kausalitäts-Mapping Check
+  if (s.phase_3_ffn?.activations && s.phase_4_decoding?.top_k_tokens) {
+    const p3Ids = s.phase_3_ffn.activations.map(a => String(a.id).trim().toLowerCase());
+
+    s.phase_4_decoding.top_k_tokens.forEach(t => {
+      if (t.category_link) {
+        const link = String(t.category_link).trim().toLowerCase();
+        if (!p3Ids.includes(link)) {
+          errors.push(`Kausalitäts-Lücke: Token "${t.token}" verweist auf die fehlende Kategorie "${t.category_link}"`);
+        }
+      } else {
+        warnings.push(`Token "${t.token}" hat keinen category_link (kein Bias-Einfluss)`);
+      }
+    });
+  }
+
+  // 4. NEU: Settings-Check (für Punkt 3: Dokumentations-Modus)
+  const settings = s.phase_4_decoding?.settings;
+  if (!settings) {
+    warnings.push("Keine Phase 4 Settings gefunden (Nutze globale Defaults)");
+  } else {
+    if (settings.logit_bias_multiplier === undefined) {
+      warnings.push("logit_bias_multiplier fehlt (Default: 12)");
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings
+  };
+};
+
 export const ScenarioProvider = ({ children }) => {
   const [scenarios, setScenarios] = useState([]);
   const [activeScenario, setActiveScenario] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [scenariosData, setScenariosData] = useState(null); 
+  const [scenariosData, setScenariosData] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({}); // NEU: Fehler pro Szenario speichern
 
-  // Initiales Laden der scenarios.json
   useEffect(() => {
     const baseUrl = import.meta.env.BASE_URL || "/";
     const dataPath = `${baseUrl.endsWith('/') ? baseUrl : baseUrl + '/'}data/scenarios.json`;
-
-    console.log("Fetch-Versuch von:", dataPath);
 
     fetch(dataPath)
       .then((response) => {
@@ -21,36 +68,38 @@ export const ScenarioProvider = ({ children }) => {
         return response.json();
       })
       .then((data) => {
-        console.log("Daten empfangen:", data);
+        const scenarioArray = data.scenarios || [];
+
+        // --- NEU: Jedes Szenario beim Laden validieren ---
+        const validatedScenarios = scenarioArray.map(s => {
+          const check = validateScenario(s);
+          if (!check.isValid) {
+            console.warn(`Szenario "${s.name}" ist fehlerhaft:`, check.errors);
+          }
+          // Wir speichern den Validierungsstatus direkt am Objekt für das UI
+          return { ...s, isValid: check.isValid, validationErrors: check.errors };
+        });
+
         setScenariosData(data);
+        setScenarios(validatedScenarios);
 
-        // WICHTIG: Wir greifen auf den Schlüssel "scenarios" im Objekt zu
-        const scenarioArray = data.scenarios;
-
-        if (Array.isArray(scenarioArray) && scenarioArray.length > 0) {
-          setScenarios(scenarioArray);
-          setActiveScenario(scenarioArray[0]);
-          setLoading(false); // Das beendet den "Lade Simulation..." Screen
-        } else {
-          console.error("Strukturfehler: 'scenarios' Feld nicht gefunden oder leer", data);
+        if (validatedScenarios.length > 0) {
+          // Wir setzen das erste VALIDIERTE Szenario als aktiv
+          const firstValid = validatedScenarios.find(s => s.isValid) || validatedScenarios[0];
+          setActiveScenario(firstValid);
         }
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Ladefehler:", error);
-        // Damit die App nicht ewig hängen bleibt, beenden wir das Laden 
-        // auch bei einem Fehler und zeigen eine Meldung
         setLoading(false);
       });
   }, []);
 
-  // Global Reset Funktion: Wird beim Szenarien-Wechsel aufgerufen
   const handleScenarioChange = (scenarioId) => {
-    // Wir wandeln beide Seiten in Strings um, um sicherzugehen
     const selected = scenarios.find(s => String(s.id) === String(scenarioId));
     if (selected) {
       setActiveScenario(selected);
-    } else {
-      console.error("Szenario nicht gefunden für ID:", scenarioId);
     }
   };
 
@@ -59,9 +108,10 @@ export const ScenarioProvider = ({ children }) => {
       scenarios,
       scenariosData,
       activeScenario,
-      setActiveScenario, // <- Das hier MUSS rein, damit Header.jsx darauf zugreifen kann
+      setActiveScenario,
       handleScenarioChange,
-      loading
+      loading,
+      validationErrors // Falls das UI Fehlermeldungen anzeigen soll
     }}>
       {children}
     </ScenarioContext.Provider>

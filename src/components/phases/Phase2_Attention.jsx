@@ -83,9 +83,6 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
     if (setMinPThreshold) setMinPThreshold(0.05);
     if (setIsShuffling) setIsShuffling(false);
 
-    if (setTemperature) setTemperature(0.7);
-    if (setNoise) setNoise(0.0);
-    if (setMlpThreshold) setMlpThreshold(0.2);
     if (setHeadOverrides) setHeadOverrides({});
 
     const savedToken = PERSIST_TOKEN_KEY ? sessionStorage.getItem(PERSIST_TOKEN_KEY) : null;
@@ -97,7 +94,7 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
     }
 
     lastScenarioId.current = activeScenario.id;
-  }, [activeScenario?.id, PERSIST_TOKEN_KEY, setTemperature, setNoise, setMlpThreshold, setHeadOverrides, setSourceTokenId, setSelectedLabel, setTopK, setMinPThreshold, setIsShuffling]);
+  }, [activeScenario?.id, PERSIST_TOKEN_KEY, setHeadOverrides, setSourceTokenId, setSelectedLabel, setTopK, setMinPThreshold, setIsShuffling]);
 
   const tokens = activeScenario?.phase_0_tokenization?.tokens || [];
   const profiles = activeScenario?.phase_2_attention?.attention_profiles || [];

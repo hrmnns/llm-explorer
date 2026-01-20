@@ -15,74 +15,45 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
   const [isShuffling, setIsShuffling] = useState(false);
 
   const getItemVisuals = (item) => {
-    // Wir suchen die Kategorie im aktiven FFN, die zum 'type' des Wortes passt
     const matchingCategory = activeFFN?.find(cat =>
-      cat.label.toLowerCase() === (item.type || "").toLowerCase()
+      String(cat.id).toLowerCase() === String(item.category_link || "").toLowerCase()
     );
 
     return {
-      // Wenn im JSON eine Farbe oder ein Icon definiert ist, nimm das.
-      // Ansonsten nimm Defaults.
       color: item?.color || matchingCategory?.color || "#475569",
       icon: item?.icon || matchingCategory?.icon || "📄"
     };
   };
 
   const calculateLogic = useCallback(() => {
-    // 1. Hole das Szenario entweder aus der Prop oder direkt vom Simulator
     const scenario = activeScenario || simulator?.activeScenario;
+    const sourceTokens = scenario?.phase_4_decoding?.top_k_tokens;
 
-    if (!finalOutputs || finalOutputs.length === 0 || !scenario) {
-//      console.warn("⚠️ [Phase 4] Warte auf Szenario-Daten...");
+    if (!sourceTokens || sourceTokens.length === 0 || !scenario) {
       return null;
     }
 
-    // 2. Nutze das Profil-Mapping aus Phase 3 (dort liegen die target_tokens)
-    const profiles = scenario.phase_3_ffn?.activation_profiles || [];
-    const currentProfile = profiles.find(p =>
-      String(p.ref_profile_id).trim() === String(activeProfileId).trim()
-    ) || profiles[0];
-
     const T = Math.max(0.01, parseFloat(temperature) || 0.7);
+    const biasMultiplier = scenario?.phase_4_decoding?.settings?.logit_bias_multiplier || 12;
 
-    const results = finalOutputs.map(item => {
-      // 3. Generisches Mapping über target_tokens aus dem Szenario-JSON
-      const ffnCatDefinition = activeFFN?.find(f => {
-        const meta = currentProfile?.activations?.find(a =>
-          String(a.label).toLowerCase().trim() === String(f.label).toLowerCase().trim()
-        );
-        return meta?.target_tokens?.some(t =>
-          String(t).toLowerCase().trim() === String(item.label).toLowerCase().trim()
-        );
-      });
-
-      // --- LIVE-ABGLEICH MIT DEM SIMULATOR-STATE ---
-      // Wir suchen die AKTUELLEN Werte im Simulator, falls ffnCatDefinition gefunden wurde
+    const results = sourceTokens.map(item => {
       const liveFFNData = simulator?.activeFFN?.find(f =>
-        String(f.label).toLowerCase().trim() === String(ffnCatDefinition?.label).toLowerCase().trim()
+        String(f.id).toLowerCase().trim() === String(item.category_link).toLowerCase().trim()
       );
 
-      // Falls wir Live-Daten haben, nutzen wir diese, sonst Fallback auf Definition oder 0.5
-      const liveActivation = liveFFNData ? liveFFNData.activation : (ffnCatDefinition ? ffnCatDefinition.activation : 0.5);
+      const liveActivation = liveFFNData ? liveFFNData.activation : 0.5;
+      const ffnBias = (liveActivation - 0.5) * biasMultiplier;
+      const baseLogit = item.base_logit !== undefined ? item.base_logit : 5.0;
 
-      // 4. Berechnung des Bias (Hebel 24 für SCHLOSS-02)
-      const ffnBias = (liveActivation - 0.5) * 24;
-      const baseLogit = item.logit !== undefined ? item.logit : 5.0;
-
-      // Noise/Entropy-Einfluss
       const jitter = (Math.random() - 0.5) * (noise || 0) * 2.0;
       const effectiveLogit = baseLogit + ffnBias + jitter;
 
-      // Debug-Log zur Überprüfung der mathematischen Kette
-      if (ffnCatDefinition && (item.label === "Prachtbau" || item.label === "Türschloss")) {
-        console.log(`🧪 BIAS-CHECK [${item.label}]: Act=${liveActivation.toFixed(3)} | Bias=${ffnBias.toFixed(2)}`);
-      }
-
       return {
         ...item,
+        label: item.token, 
         effectiveLogit,
         liveActivation,
-        actingHead: ffnCatDefinition ? `Head ${ffnCatDefinition.linked_head}` : "Default",
+        actingHead: liveFFNData?.linked_head ? `Head ${liveFFNData.linked_head}` : "Default",
         ffnBoost: ffnBias,
         isBlockedByMLP: liveActivation < mlpThreshold,
         exp: Math.exp(effectiveLogit / T)
@@ -95,102 +66,73 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
       dynamicProb: sumExp > 0 ? item.exp / sumExp : 0
     })).sort((a, b) => b.dynamicProb - a.dynamicProb);
 
-  }, [
-    finalOutputs,
-    activeFFN,
-    simulator?.activeFFN, // Wichtig: React muss auf Änderungen im Simulator-FFN reagieren
-    activeScenario,
-    simulator?.activeScenario,
-    activeProfileId,
-    temperature,
-    noise,
-    mlpThreshold,
-    JSON.stringify(headOverrides)
-  ]);
+  }, [activeFFN, simulator?.activeFFN, activeScenario, temperature, noise, mlpThreshold]);
 
-  // Effekt zur Synchronisierung des States
   useEffect(() => {
     const results = calculateLogic();
     if (results) {
       setSimulationState(prev => ({
         outputs: results.slice(0, 10),
-        winner: (prev.winner && results.find(r => r.label === prev.winner.label)) || results[0]
+        winner: (prev.winner && results.find(r => r.token === prev.winner.token)) || results[0]
       }));
     }
-  }, [calculateLogic, JSON.stringify(headOverrides), activeFFN]);
-
-  // DER TRIGGER-EFFECT (Prüfe ob dieser exakt so aussieht!)
-  useEffect(() => {
-    console.log("🔄 [DECODER] Effect Sync...");
-    const results = calculateLogic();
-    if (results) {
-      setSimulationState(prev => ({
-        outputs: results.slice(0, 10),
-        winner: (prev.winner && results.find(r => r.label === prev.winner.label)) || results[0]
-      }));
-    }
-  }, [calculateLogic, headOverrides, activeFFN]); // Diese drei müssen das Update treiben
+  }, [calculateLogic]);
 
   const getInspectorData = useCallback((out, index) => {
     if (!out) return null;
     const { icon } = getItemVisuals(out);
+    
+    // Halluzinations-Risiko Check
+    const isHallucination = out.hallucination_risk > 0.8 || (noise > 0.8 && out.noise_sensitivity > 0.7);
+
     return {
-      title: `${icon} Decoding: ${out.label}`,
-      subtitle: `Kategorie: ${out.type}`,
+      title: `${icon} Decoding: ${out.token}`,
+      subtitle: `Kategorie: ${out.category_link}`,
       data: {
-        "Einfluss durch": out.actingHead,
-        "Aktivierung (Live)": (out.liveActivation * 100).toFixed(0) + "%",
-        "Logit-Shift": (out.ffnBoost >= 0 ? "+" : "") + out.ffnBoost?.toFixed(2),
+        "Status": out.isBlockedByMLP ? "BLOCKIERT (MLP)" : (index < topK ? "AKTIV" : "GEFILTERT"),
         "Wahrscheinlichkeit": (out.dynamicProb * 100).toFixed(2) + "%",
-        "Status": out.isBlockedByMLP ? "BLOCKIERT (MLP)" : (index < topK ? "AKTIV" : "GEFILTERT")
+        "Einfluss durch": out.actingHead,
+        "Logit-Shift": (out.ffnBoost >= 0 ? "+" : "") + out.ffnBoost?.toFixed(2),
+        "Halluzinations-Risiko": isHallucination ? "HOCH ⚠️" : "NIEDRIG",
+        "Aktivierung (Live)": (out.liveActivation * 100).toFixed(0) + "%"
       }
     };
-  }, [topK, activeFFN]);
+  }, [topK, activeFFN, noise]);
 
-  // Fix 1: Robuste Inspektor-Aktualisierung
-  const updateInspector = useCallback((label) => {
+  const updateInspector = useCallback((token) => {
     const results = calculateLogic();
-    const out = results?.find(o => o.label === label);
-    const idx = results?.findIndex(o => o.label === label);
+    const out = results?.find(o => o.token === token);
+    const idx = results?.findIndex(o => o.token === token);
     if (out) setHoveredItem(getInspectorData(out, idx));
   }, [calculateLogic, getInspectorData, setHoveredItem]);
 
-  // Sync bei Slider-Bewegung für selektiertes Item
   useEffect(() => {
     if (selectedLabel) updateInspector(selectedLabel);
   }, [headOverrides, mlpThreshold, noise, temperature, selectedLabel, updateInspector]);
 
-  // Ersetze den bestehenden useEffect für die initialen Ergebnisse durch diesen:
   useEffect(() => {
     if (!isShuffling) {
       const results = calculateLogic();
       if (results) {
         setSimulationState(prev => {
-          // Wir suchen den aktuellen Gewinner in den neuen Ergebnissen
           const newWinner = prev.winner
-            ? results.find(r => r.label === prev.winner.label)
+            ? results.find(r => r.token === prev.winner.token)
             : results[0];
 
           return {
             outputs: results.slice(0, 10),
-            // Falls der alte Gewinner jetzt blockiert ist, nimm den neuen Spitzenreiter
             winner: (newWinner && !newWinner.isBlockedByMLP) ? newWinner : results[0]
           };
         });
       }
     }
-    // WICHTIG: headOverrides muss hier als Dependency stehen!
-  }, [calculateLogic, activeScenario?.id, activeProfileId, sourceTokenId, isShuffling, headOverrides]);
+  }, [calculateLogic, activeScenario?.id, isShuffling, headOverrides, simulator?.activeFFN]);
 
-  // Fix 2: Resampling-Logik mit State-Lock
   const triggerResample = () => {
     setIsShuffling(true);
     setTimeout(() => {
       const results = calculateLogic();
       if (results) {
-        // Filtere Kandidaten, die überhaupt gewürfelt werden können
-        const candidates = results.filter((out, i) => i < topK && !out.isBlockedByMLP && out.dynamicProb > 0.001);
-
         let win = results[0];
         const r = Math.random();
         let cum = 0;
@@ -201,26 +143,11 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
 
         setSimulationState({ outputs: results.slice(0, 10), winner: win });
         if (setSelectedToken) setSelectedToken(win);
-        // Wir markieren den neuen Gewinner auch im Inspektor
-        setSelectedLabel(win.label);
+        setSelectedLabel(win.token);
       }
       setIsShuffling(false);
     }, 450);
   };
-
-  useEffect(() => {
-    if (!isShuffling) {
-      const results = calculateLogic();
-      if (results) {
-        // Wir überschreiben den winner NUR, wenn noch kein winner durch triggerResample gesetzt wurde
-        // oder wenn sich das Szenario/Token ändert.
-        setSimulationState(prev => ({
-          outputs: results.slice(0, 10),
-          winner: prev.winner && results.find(r => r.label === prev.winner.label) ? results.find(r => r.label === prev.winner.label) : results[0]
-        }));
-      }
-    }
-  }, [calculateLogic, activeScenario?.id, activeProfileId, sourceTokenId, isShuffling]);
 
   const activeOptionsCount = useMemo(() => {
     return simulationState.outputs.filter((out, i) =>
@@ -259,21 +186,27 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
 
             <div className="relative flex items-end justify-around gap-1 lg:gap-2 h-full pb-10">
               {simulationState.outputs.map((out, i) => {
-                const isWinner = simulationState.winner?.label === out.label;
+                const isWinner = simulationState.winner?.token === out.token;
                 const isActive = i < topK && out.dynamicProb >= minPThreshold && !out.isBlockedByMLP;
                 const { color, icon } = getItemVisuals(out);
 
                 return (
-                  <div key={i} className={`relative flex flex-col items-center flex-1 h-full justify-end transition-all duration-500 ${selectedLabel === out.label ? 'z-30' : 'z-10'} ${(!isActive && !isWinner) ? 'opacity-30 grayscale' : 'opacity-100'}`}
+                  <div key={out.token + i} className={`relative flex flex-col items-center flex-1 h-full justify-end transition-all duration-500 ${selectedLabel === out.token ? 'z-30' : 'z-10'} ${(!isActive && !isWinner) ? 'opacity-30 grayscale' : 'opacity-100'}`}
                     onMouseEnter={() => setHoveredItem(getInspectorData(out, i))}
                     onMouseLeave={() => selectedLabel ? updateInspector(selectedLabel) : setHoveredItem(null)}
-                    onClick={(e) => { e.stopPropagation(); setSelectedLabel(out.label); }}
+                    onClick={(e) => { e.stopPropagation(); setSelectedLabel(out.token); }}
                   >
                     {isWinner && !isShuffling && (
                       <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[20px] animate-bounce z-40 bg-slate-900/50 rounded-full p-1 border border-white/20 shadow-xl">
                         {noise > 1.2 ? '🥴' : '🎯'}
                       </div>
                     )}
+                    
+                    {/* NEU: Warn-Icon für blockierte Tokens */}
+                    {out.isBlockedByMLP && (
+                      <div className="absolute top-0 text-[10px] animate-pulse text-red-500 font-bold z-50">⚠️</div>
+                    )}
+
                     <div className="mb-1 text-[10px]">{icon}</div>
                     <span className={`text-[8px] font-black mb-1 ${(isActive || isWinner) ? (theme === 'light' ? 'text-slate-900' : 'text-blue-400') : 'text-slate-500'}`}>
                       {isShuffling ? (Math.random() * 100).toFixed(0) : (out.dynamicProb * 100).toFixed(0)}%
@@ -281,11 +214,13 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
                     <div className={`w-full max-w-[40px] rounded-t-lg transition-all duration-300 ${isWinner && !isShuffling ? 'ring-2 ring-blue-500 shadow-lg' : ''} ${isShuffling ? 'animate-pulse opacity-50' : ''}`}
                       style={{
                         height: isShuffling ? `${Math.random() * 85}%` : `${out.dynamicProb * 85}%`,
-                        backgroundColor: (isActive || isWinner) ? color : (theme === 'light' ? '#cbd5e1' : '#334155')
+                        backgroundColor: (isActive || isWinner) ? color : (theme === 'light' ? '#cbd5e1' : '#334155'),
+                        // Jitter-Effekt bei hohem Noise
+                        transform: noise > 0.8 ? `translateX(${(Math.random() - 0.5) * noise * 2}px)` : 'none'
                       }}
                     />
                     <div className="absolute top-full pt-2 w-full text-center">
-                      <span className={`text-[9px] uppercase tracking-tighter block truncate px-0.5 ${isWinner ? 'font-black text-blue-600' : 'text-slate-500'}`}>{out.label}</span>
+                      <span className={`text-[9px] uppercase tracking-tighter block truncate px-0.5 ${isWinner ? 'font-black text-blue-600' : 'text-slate-500'}`}>{out.token}</span>
                     </div>
                   </div>
                 );

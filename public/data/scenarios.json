@@ -1,12 +1,12 @@
 {
   "project": "LLM-Explorer",
-  "version": "3.37",
+  "version": "4.00",
   "scenarios": [
     {
       "id": "polysemie-schloss-labor",
-      "name": "Mehrdeutigkeit: Das Schloss",
+      "name": "Mehrdeutigkeit: Das Schloss (Kausalitäts-Modus)",
       "input_prompt": "Das Schloss war für den Einbrecher kein Hindernis.",
-      "explanation": "Steuerung: Head 3 (Logik/Mechanik) selektiert Türschloss via 'Einbrecher'. Head 1 (Semantik) selektiert Prachtbau via 'Hindernis'.",
+      "explanation": "Visualisierung der vertikalen Kausalität: Der Kontext 'Einbrecher' (Phase 2) aktiviert die mechanische Kategorie (Phase 3), was in Phase 4 den Token 'Türschloss' gegenüber 'Prachtbau' gewinnen lässt.",
       "phase_0_tokenization": {
         "tokens": [
           {
@@ -99,12 +99,14 @@
             "rules": [
               {
                 "head": 1,
+                "label": "Semantik",
                 "source": "1",
                 "target": "7",
                 "strength": 1.2
               },
               {
                 "head": 3,
+                "label": "Logik/Mechanik",
                 "source": "1",
                 "target": "5",
                 "strength": 1.4
@@ -114,65 +116,80 @@
         ]
       },
       "phase_3_ffn": {
-        "activation_profiles": [
+        "activations": [
           {
-            "ref_profile_id": "context-check",
-            "activations": [
-              {
-                "label": "Funktional",
-                "activation": 0.50,
-                "linked_head": 3,
-                "color": "#10b981",
-                "icon": "⚙️",
-                "target_tokens": [
-                  "Türschloss",
-                  "Sperre",
-                  "Bolzen"
-                ]
-              },
-              {
-                "label": "Akademisch",
-                "activation": 0.50,
-                "linked_head": 1,
-                "color": "#3b82f6",
-                "icon": "🏛️",
-                "target_tokens": [
-                  "Prachtbau",
-                  "Residenz",
-                  "Palast"
-                ]
-              }
-            ]
+            "id": "funktional",
+            "label": "Mechanik/Sicherheit",
+            "activation_default": 0.8,
+            "linked_head": 3,
+            "color": "#10b981",
+            "icon": "⚙️",
+            "suggested_token": "Türschloss"
+          },
+          {
+            "id": "akademisch",
+            "label": "Architektur/Pracht",
+            "activation_default": 0.2,
+            "linked_head": 1,
+            "color": "#3b82f6",
+            "icon": "🏛️",
+            "suggested_token": "Prachtbau"
+          },
+          {
+            "id": "neutral",
+            "label": "Grammatik",
+            "activation_default": 1.0,
+            "is_hidden": true,
+            "suggested_token": "Das"
           }
         ]
       },
       "phase_4_decoding": {
-        "outputs": [
+        "settings": {
+          "sampling_mode": "top_k",
+          "default_temperature": 0.7,
+          "logit_bias_multiplier": 12,
+          "entropy_visual_threshold": 0.3
+        },
+        "top_k_tokens": [
           {
-            "label": "Türschloss",
-            "logit": 4.2,
-            "type": "Funktional",
-            "noise_sensitivity": 0.8
+            "token": "Türschloss",
+            "base_logit": 4.2,
+            "category_link": "funktional",
+            "noise_sensitivity": 0.5
           },
           {
-            "label": "Prachtbau",
-            "logit": 4.2,
-            "type": "Akademisch",
-            "noise_sensitivity": 0.8
+            "token": "Prachtbau",
+            "base_logit": 4.2,
+            "category_link": "akademisch",
+            "noise_sensitivity": 0.5
           },
           {
-            "label": "Das",
-            "logit": 3.8,
-            "type": "Neutral"
+            "token": "Das",
+            "base_logit": 3.8,
+            "category_link": "neutral",
+            "noise_sensitivity": 0.1
+          },
+          {
+            "token": "Residenz",
+            "base_logit": 3.5,
+            "category_link": "akademisch",
+            "noise_sensitivity": 0.6
+          },
+          {
+            "token": "Riegel",
+            "base_logit": 3.2,
+            "category_link": "funktional",
+            "noise_sensitivity": 0.7
           }
         ]
       }
     },
     {
-      "id": "hallucination-lab-001",
-      "name": "Halluzinations-Labor: Der Logik-Verlust",
-      "input_prompt": "Die Hauptstadt von Frankreich ist",
-      "explanation": "Steuerung: Head 3 (Logik) aktiviert Geographie-Fakten. Head 4 (Zufall) provoziert Halluzinationen.",
+      "id": "halluzinations-labor-01",
+      "name": "Halluzinations-Labor: Logik am Limit",
+      "input_prompt": "Die Hauptstadt von Frankreich ist...",
+      "explanation": "Dieses Szenario demonstriert, wie niedrige Wissens-Aktivierung (Phase 3) bei hohem Rauschen (Phase 4) zu Halluzinationen führt. Schiebe den Noise-Regler hoch, um zu sehen, wie 'Paris' seine Dominanz verliert.",
       "phase_0_tokenization": {
         "tokens": [
           {
@@ -200,47 +217,25 @@
       "phase_1_embedding": {
         "token_vectors": [
           {
-            "token_index": 0,
+            "token_index": 1,
             "base_vector": [
-              0.1,
-              0.1
+              0.8,
+              0.2
             ],
             "positional_vector": [
               -0.4,
-              0.0
-            ]
-          },
-          {
-            "token_index": 1,
-            "base_vector": [
-              0.4,
-              0.5
-            ],
-            "positional_vector": [
-              -0.2,
-              0.0
+              0.1
             ]
           },
           {
             "token_index": 3,
             "base_vector": [
-              0.8,
+              0.2,
               0.8
             ],
             "positional_vector": [
-              0.2,
-              0.0
-            ]
-          },
-          {
-            "token_index": 4,
-            "base_vector": [
-              0.1,
+              0.3,
               0.1
-            ],
-            "positional_vector": [
-              0.4,
-              0.0
             ]
           }
         ]
@@ -248,248 +243,93 @@
       "phase_2_attention": {
         "attention_profiles": [
           {
-            "id": "entropy-mode",
-            "label": "Fakten-Extraktion",
+            "id": "fact-retrieval",
+            "label": "Fakten-Abruf",
             "rules": [
               {
                 "head": 3,
-                "source": "4",
-                "target": "3",
-                "strength": 1.4
+                "label": "Geografie-Logik",
+                "source": "3",
+                "target": "1",
+                "strength": 1.5
               },
-              {
-                "head": 4,
-                "source": "4",
-                "target": "0",
-                "strength": 0.8
-              }
-            ]
-          }
-        ]
-      },
-      "phase_3_ffn": {
-        "activation_profiles": [
-          {
-            "ref_profile_id": "entropy-mode",
-            "activations": [
-              {
-                "label": "Geographie",
-                "activation": 0.50,
-                "linked_head": 3,
-                "color": "#3b82f6",
-                "icon": "🌍",
-                "target_tokens": [
-                  "Paris",
-                  "Lyon",
-                  "Marseille"
-                ]
-              },
-              {
-                "label": "Zufall",
-                "activation": 0.50,
-                "linked_head": 4,
-                "color": "#f97316",
-                "icon": "🥴",
-                "target_tokens": [
-                  "Bananen-Republik",
-                  "Zitroneneis"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      "phase_4_decoding": {
-        "outputs": [
-          {
-            "label": "Paris",
-            "logit": 4.5,
-            "type": "Geographie",
-            "noise_sensitivity": 0.2
-          },
-          {
-            "label": "Bananen-Republik",
-            "logit": 4.2,
-            "type": "Zufall",
-            "noise_sensitivity": 0.9
-          },
-          {
-            "label": "Zitroneneis",
-            "logit": 3.8,
-            "type": "Zufall",
-            "noise_sensitivity": 0.9
-          }
-        ]
-      }
-    },
-    {
-      "id": "poetry-generator-001",
-      "name": "Poesie-Generator: Reim vs. Botanik",
-      "input_prompt": "Rosen sind rot, Veilchen sind",
-      "explanation": "Steuerung: Head 1 (Semantik/Fakten) vs. Head 4 (Struktur/Reim).",
-      "phase_0_tokenization": {
-        "tokens": [
-          {
-            "id": "0",
-            "text": "Rosen"
-          },
-          {
-            "id": "1",
-            "text": "sind"
-          },
-          {
-            "id": "2",
-            "text": "rot"
-          },
-          {
-            "id": "3",
-            "text": ","
-          },
-          {
-            "id": "4",
-            "text": "Veilchen"
-          },
-          {
-            "id": "5",
-            "text": "sind"
-          }
-        ]
-      },
-      "phase_1_embedding": {
-        "token_vectors": [
-          {
-            "token_index": 0,
-            "base_vector": [
-              0.8,
-              -0.2
-            ],
-            "positional_vector": [
-              -0.6,
-              0.0
-            ]
-          },
-          {
-            "token_index": 1,
-            "base_vector": [
-              0.0,
-              0.0
-            ],
-            "positional_vector": [
-              -0.4,
-              0.0
-            ]
-          },
-          {
-            "token_index": 2,
-            "base_vector": [
-              0.7,
-              0.5
-            ],
-            "positional_vector": [
-              -0.2,
-              0.0
-            ]
-          },
-          {
-            "token_index": 3,
-            "base_vector": [
-              0.0,
-              0.0
-            ],
-            "positional_vector": [
-              0.0,
-              0.0
-            ]
-          },
-          {
-            "token_index": 4,
-            "base_vector": [
-              0.6,
-              -0.4
-            ],
-            "positional_vector": [
-              0.3,
-              0.0
-            ]
-          },
-          {
-            "token_index": 5,
-            "base_vector": [
-              0.0,
-              0.0
-            ],
-            "positional_vector": [
-              0.6,
-              0.0
-            ]
-          }
-        ]
-      },
-      "phase_2_attention": {
-        "attention_profiles": [
-          {
-            "id": "poetic-mode",
-            "label": "Kontext: Stil-Analyse",
-            "rules": [
               {
                 "head": 1,
-                "source": "5",
-                "target": "4",
-                "strength": 1.2,
-                "explanation": "Semantik: Fokus auf die Pflanze 'Veilchen'."
-              },
-              {
-                "head": 4,
-                "source": "5",
-                "target": "2",
-                "strength": 1.4,
-                "explanation": "Struktur: Suche nach einem Reimwort zu 'rot'."
+                "label": "Rauschen/Chaos",
+                "source": "4",
+                "target": "0",
+                "strength": 0.2
               }
             ]
           }
         ]
       },
       "phase_3_ffn": {
-        "activation_profiles": [
+        "activations": [
           {
-            "ref_profile_id": "poetic-mode",
-            "activations": [
-              {
-                "label": "Wissenschaft",
-                "activation": 0.50,
-                "linked_head": 1,
-                "color": "#10b981"
-              },
-              {
-                "label": "Poetisch",
-                "activation": 0.50,
-                "linked_head": 4,
-                "color": "#8b5cf6"
-              }
-            ]
+            "id": "geografie",
+            "label": "Geografisches Wissen",
+            "activation_default": 0.9,
+            "linked_head": 3,
+            "color": "#10b981",
+            "icon": "🌍",
+            "suggested_token": "Paris"
+          },
+          {
+            "id": "instabil",
+            "label": "Zufällige Assoziationen",
+            "activation_default": 0.1,
+            "linked_head": 1,
+            "color": "#f59e0b",
+            "icon": "🌀",
+            "suggested_token": "Bananenrepublik"
           }
         ]
       },
       "phase_4_decoding": {
-        "outputs": [
+        "settings": {
+          "sampling_mode": "top_k",
+          "default_temperature": 1.2,
+          "logit_bias_multiplier": 14,
+          "entropy_visual_threshold": 0.4
+        },
+        "top_k_tokens": [
           {
-            "label": "blau",
-            "logit": 5.1,
-            "type": "Poetisch"
+            "token": "Paris",
+            "base_logit": 5.0,
+            "category_link": "geografie",
+            "noise_sensitivity": 0.2,
+            "hallucination_risk": 0.1
           },
           {
-            "label": "violett",
-            "logit": 5.0,
-            "type": "Wissenschaft"
+            "token": "Bananenrepublik",
+            "base_logit": 3.8,
+            "category_link": "instabil",
+            "noise_sensitivity": 0.9,
+            "hallucination_risk": 0.95
+          },
+          {
+            "token": "London",
+            "base_logit": 4.5,
+            "category_link": "geografie",
+            "noise_sensitivity": 0.4,
+            "hallucination_risk": 0.3
+          },
+          {
+            "token": "Baguette",
+            "base_logit": 3.5,
+            "category_link": "instabil",
+            "noise_sensitivity": 0.8,
+            "hallucination_risk": 0.8
           }
         ]
       }
     },
     {
-      "id": "gender-bias-doctor-001",
-      "name": "Gender-Bias: Die Ärztin",
-      "input_prompt": "Die Ärztin sagte dem Pfleger, dass",
-      "explanation": "Head 1 steuert Maskulin, Head 3 steuert Feminin.",
+      "id": "gender-bias-chirurgie-01",
+      "name": "Gender-Bias: Das Skalpell",
+      "input_prompt": "Die Person führt das Skalpell. Es handelt sich um eine...",
+      "explanation": "Dieses Szenario zeigt, wie ein trainierter Bias (Head 1) die neutrale Kategorie 'Medizin' in Phase 3 maskulin einfärbt. In Phase 4 gewinnt 'Arzt' gegenüber 'Ärztin', obwohl der Text geschlechtsneutral ist.",
       "phase_0_tokenization": {
         "tokens": [
           {
@@ -498,92 +338,48 @@
           },
           {
             "id": "1",
-            "text": "Ärztin"
+            "text": "Person"
           },
           {
             "id": "2",
-            "text": "sagte"
+            "text": "führt"
           },
           {
             "id": "3",
-            "text": "dem"
+            "text": "das"
           },
           {
             "id": "4",
-            "text": "Pfleger"
+            "text": "Skalpell"
           },
           {
             "id": "5",
-            "text": "dass"
+            "text": "."
           }
         ]
       },
       "phase_1_embedding": {
         "token_vectors": [
           {
-            "token_index": 0,
-            "base_vector": [
-              0.1,
-              0.5
-            ],
-            "positional_vector": [
-              -0.5,
-              0.0
-            ]
-          },
-          {
             "token_index": 1,
             "base_vector": [
-              -0.2,
-              0.9
+              0.4,
+              0.4
             ],
             "positional_vector": [
-              -0.3,
-              0.1
-            ]
-          },
-          {
-            "token_index": 2,
-            "base_vector": [
-              0.1,
-              0.0
-            ],
-            "positional_vector": [
-              -0.1,
-              0.0
-            ]
-          },
-          {
-            "token_index": 3,
-            "base_vector": [
-              0.5,
-              -0.1
-            ],
-            "positional_vector": [
-              0.1,
+              0.0,
               0.0
             ]
           },
           {
             "token_index": 4,
             "base_vector": [
-              0.9,
-              -0.2
+              0.6,
+              0.7
             ],
             "positional_vector": [
-              0.3,
-              -0.1
-            ]
-          },
-          {
-            "token_index": 5,
-            "base_vector": [
-              0.0,
-              0.0
-            ],
-            "positional_vector": [
-              0.5,
-              0.0
+              0.2,
+              0.1
             ]
           }
         ]
@@ -591,57 +387,83 @@
       "phase_2_attention": {
         "attention_profiles": [
           {
-            "id": "biased-mode",
-            "label": "Kontext",
+            "id": "stereotypes",
+            "label": "Soziale Muster (Stereotype)",
             "rules": [
               {
                 "head": 1,
-                "source": "5",
-                "target": "4",
-                "strength": 1.0
+                "label": "Maskuliner Bias",
+                "source": "4",
+                "target": "1",
+                "strength": 1.4
               },
               {
                 "head": 3,
-                "source": "5",
+                "label": "Berufs-Logik",
+                "source": "4",
                 "target": "1",
-                "strength": 1.0
+                "strength": 0.9
               }
             ]
           }
         ]
       },
       "phase_3_ffn": {
-        "activation_profiles": [
+        "activations": [
           {
-            "ref_profile_id": "biased-mode",
-            "activations": [
-              {
-                "label": "Maskulin",
-                "activation": 0.50,
-                "linked_head": 1,
-                "color": "#3b82f6"
-              },
-              {
-                "label": "Feminin",
-                "activation": 0.50,
-                "linked_head": 3,
-                "color": "#f472b6"
-              }
-            ]
+            "id": "maskulin",
+            "label": "Kategorie: Maskulin",
+            "activation_default": 0.8,
+            "linked_head": 1,
+            "color": "#3b82f6",
+            "icon": "👨",
+            "suggested_token": "Arzt"
+          },
+          {
+            "id": "feminin",
+            "label": "Kategorie: Feminin",
+            "activation_default": 0.2,
+            "linked_head": 4,
+            "color": "#ec4899",
+            "icon": "👩",
+            "suggested_token": "Ärztin"
+          },
+          {
+            "id": "medizin",
+            "label": "Kategorie: Medizin",
+            "activation_default": 0.9,
+            "linked_head": 3,
+            "color": "#10b981",
+            "icon": "🏥",
+            "suggested_token": "Chirurg"
           }
         ]
       },
       "phase_4_decoding": {
-        "outputs": [
+        "settings": {
+          "sampling_mode": "top_k",
+          "default_temperature": 0.7,
+          "logit_bias_multiplier": 12,
+          "entropy_visual_threshold": 0.3
+        },
+        "top_k_tokens": [
           {
-            "label": "er",
-            "logit": 5.0,
-            "type": "Maskulin"
+            "token": "Arzt",
+            "base_logit": 4.8,
+            "category_link": "maskulin",
+            "noise_sensitivity": 0.3
           },
           {
-            "label": "sie",
-            "logit": 5.0,
-            "type": "Feminin"
+            "token": "Ärztin",
+            "base_logit": 4.8,
+            "category_link": "feminin",
+            "noise_sensitivity": 0.3
+          },
+          {
+            "token": "Chirurg",
+            "base_logit": 3.5,
+            "category_link": "maskulin",
+            "noise_sensitivity": 0.4
           }
         ]
       }
