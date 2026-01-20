@@ -324,6 +324,149 @@
           }
         ]
       }
+    },
+    {
+      "id": "gender-bias-chirurgie-01",
+      "name": "Gender-Bias: Das Skalpell",
+      "input_prompt": "Die Person führt das Skalpell. Es handelt sich um eine...",
+      "explanation": "Dieses Szenario zeigt, wie ein trainierter Bias (Head 1) die neutrale Kategorie 'Medizin' in Phase 3 maskulin einfärbt. In Phase 4 gewinnt 'Arzt' gegenüber 'Ärztin', obwohl der Text geschlechtsneutral ist.",
+      "phase_0_tokenization": {
+        "tokens": [
+          {
+            "id": "0",
+            "text": "Die"
+          },
+          {
+            "id": "1",
+            "text": "Person"
+          },
+          {
+            "id": "2",
+            "text": "führt"
+          },
+          {
+            "id": "3",
+            "text": "das"
+          },
+          {
+            "id": "4",
+            "text": "Skalpell"
+          },
+          {
+            "id": "5",
+            "text": "."
+          }
+        ]
+      },
+      "phase_1_embedding": {
+        "token_vectors": [
+          {
+            "token_index": 1,
+            "base_vector": [
+              0.4,
+              0.4
+            ],
+            "positional_vector": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "token_index": 4,
+            "base_vector": [
+              0.6,
+              0.7
+            ],
+            "positional_vector": [
+              0.2,
+              0.1
+            ]
+          }
+        ]
+      },
+      "phase_2_attention": {
+        "attention_profiles": [
+          {
+            "id": "stereotypes",
+            "label": "Soziale Muster (Stereotype)",
+            "rules": [
+              {
+                "head": 1,
+                "label": "Maskuliner Bias",
+                "source": "4",
+                "target": "1",
+                "strength": 1.4
+              },
+              {
+                "head": 3,
+                "label": "Berufs-Logik",
+                "source": "4",
+                "target": "1",
+                "strength": 0.9
+              }
+            ]
+          }
+        ]
+      },
+      "phase_3_ffn": {
+        "activations": [
+          {
+            "id": "maskulin",
+            "label": "Kategorie: Maskulin",
+            "activation_default": 0.8,
+            "linked_head": 1,
+            "color": "#3b82f6",
+            "icon": "👨",
+            "suggested_token": "Arzt"
+          },
+          {
+            "id": "feminin",
+            "label": "Kategorie: Feminin",
+            "activation_default": 0.2,
+            "linked_head": 4,
+            "color": "#ec4899",
+            "icon": "👩",
+            "suggested_token": "Ärztin"
+          },
+          {
+            "id": "medizin",
+            "label": "Kategorie: Medizin",
+            "activation_default": 0.9,
+            "linked_head": 3,
+            "color": "#10b981",
+            "icon": "🏥",
+            "suggested_token": "Chirurg"
+          }
+        ]
+      },
+      "phase_4_decoding": {
+        "settings": {
+          "sampling_mode": "top_k",
+          "default_temperature": 0.7,
+          "logit_bias_multiplier": 12,
+          "entropy_visual_threshold": 0.3
+        },
+        "top_k_tokens": [
+          {
+            "token": "Arzt",
+            "base_logit": 4.8,
+            "category_link": "maskulin",
+            "noise_sensitivity": 0.3
+          },
+          {
+            "token": "Ärztin",
+            "base_logit": 4.8,
+            "category_link": "feminin",
+            "noise_sensitivity": 0.3
+          },
+          {
+            "token": "Chirurg",
+            "base_logit": 3.5,
+            "category_link": "maskulin",
+            "noise_sensitivity": 0.4
+          }
+        ]
+      }
     }
   ]
 }
