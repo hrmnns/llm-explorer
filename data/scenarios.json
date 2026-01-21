@@ -467,6 +467,178 @@
           }
         ]
       }
+    },
+    {
+      "id": "hauptstadt-multi-kontext-01",
+      "name": "Hauptstadt: Der Kontext-Mixer",
+      "input_prompt": "Die Hauptstadt von Deutschland ist...",
+      "explanation": "Dieses Szenario demonstriert Multi-Head-Inferenz. Jeder Head repräsentiert einen anderen Fokus: Fakten (Berlin), Geschichte (Bonn), Ästhetik (schön), Umgebung (laut) oder Distanz (weit weg).",
+      "phase_0_tokenization": {
+        "tokens": [
+          {
+            "id": "0",
+            "text": "Die"
+          },
+          {
+            "id": "1",
+            "text": "Hauptstadt"
+          },
+          {
+            "id": "2",
+            "text": "von"
+          },
+          {
+            "id": "3",
+            "text": "Deutschland"
+          },
+          {
+            "id": "4",
+            "text": "ist"
+          }
+        ]
+      },
+      "phase_1_embedding": {
+        "token_vectors": [
+          {
+            "token_index": 1,
+            "base_vector": [
+              0.8,
+              0.1
+            ],
+            "positional_vector": [
+              0.1,
+              0.0
+            ]
+          },
+          {
+            "token_index": 3,
+            "base_vector": [
+              0.2,
+              0.9
+            ],
+            "positional_vector": [
+              0.3,
+              0.1
+            ]
+          },
+          {
+            "token_index": 4,
+            "base_vector": [
+              0.5,
+              0.5
+            ],
+            "positional_vector": [
+              0.5,
+              0.2
+            ]
+          }
+        ]
+      },
+      "phase_2_attention": {
+        "attention_profiles": [
+          {
+            "id": "mindset-selector",
+            "label": "KI-Aufmerksamkeits-Fokus",
+            "rules": [
+              {
+                "head": 3,
+                "label": "Fakten-Abruf",
+                "source": "3",
+                "target": "1",
+                "strength": 1.4
+              },
+              {
+                "head": 4,
+                "label": "Historisches Wissen",
+                "source": "3",
+                "target": "0",
+                "strength": 1.1
+              },
+              {
+                "head": 2,
+                "label": "Ästhetik/Gefühl",
+                "source": "4",
+                "target": "1",
+                "strength": 1.2
+              },
+              {
+                "head": 1,
+                "label": "Sensorik/Umgebung",
+                "source": "4",
+                "target": "2",
+                "strength": 1.1
+              }
+            ]
+          }
+        ]
+      },
+      "phase_3_ffn": {
+        "activations": [
+          {
+            "id": "geografie",
+            "label": "Fakten-Speicher",
+            "linked_head": 3,
+            "color": "#10b981",
+            "icon": "📚"
+          },
+          {
+            "id": "geschichte",
+            "label": "Archiv-Wissen",
+            "linked_head": 4,
+            "color": "#8b5cf6",
+            "icon": "⏳"
+          },
+          {
+            "id": "emotion",
+            "label": "Affektive Ebene",
+            "linked_head": 2,
+            "color": "#ec4899",
+            "icon": "💖"
+          },
+          {
+            "id": "sensorik",
+            "label": "Umgebung/Lärm",
+            "linked_head": 1,
+            "color": "#f59e0b",
+            "icon": "🚗"
+          }
+        ]
+      },
+      "phase_4_decoding": {
+        "settings": {
+          "default_temperature": 0.7,
+          "default_noise": 0.0,
+          "default_mlp_threshold": 0.3,
+          "logit_bias_multiplier": 16
+        },
+        "top_k_tokens": [
+          {
+            "token": "Berlin",
+            "base_logit": 5.2,
+            "category_link": "geografie"
+          },
+          {
+            "token": "Bonn",
+            "base_logit": 4.0,
+            "category_link": "geschichte"
+          },
+          {
+            "token": "schön",
+            "base_logit": 4.5,
+            "category_link": "emotion"
+          },
+          {
+            "token": "laut",
+            "base_logit": 4.3,
+            "category_link": "sensorik"
+          },
+          {
+            "token": "weit weg",
+            "base_logit": 3.5,
+            "category_link": "sensorik"
+          }
+        ]
+      }
     }
   ]
 }
