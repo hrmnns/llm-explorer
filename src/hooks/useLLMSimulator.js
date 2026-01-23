@@ -95,41 +95,46 @@ export const useLLMSimulator = (activeScenario) => {
   // --- NEU & ZENTRAL: PHASE 3 BERECHNUNG DIREKT IM HOOK ---
   const activeFFN = useMemo(() => {
     const activationsSource = activeScenario?.phase_3_ffn?.activations;
-    if (!activationsSource) return [];
+    const tokens = activeScenario?.phase_0_tokenization?.tokens;
+    if (!activationsSource || !tokens) return [];
 
-    const signals = { 1: getSliderVal(1), 2: getSliderVal(2), 3: getSliderVal(3), 4: getSliderVal(4) };
-
-    // Hole Regeln aus dem aktiven Attention-Profil
     const activeAttProfile = activeAttention.profiles.find(p => String(p.id) === String(activeProfileId)) || activeAttention.profiles[0];
     const rules = activeAttProfile?.rules || [];
+    const globalSignal = activeAttention.avgSignal || 0;
 
     return activationsSource.map((cat, index) => {
       const linkedHeadId = cat.linked_head || (index + 1);
-      const sliderVal = signals[linkedHeadId];
-      const sliderFactor = sliderVal / 0.7;
+      let totalActivation = 0;
 
-      // Filter Regeln für diesen Head und Source-Token
-      const relevantRules = rules.filter(r =>
-        Number(r.head) === Number(linkedHeadId) &&
-        (!selectedToken || String(r.source) === String(selectedToken.id || selectedToken.token_index))
-      );
+      tokens.forEach(t => {
+        const tokenKey = `${activeProfileId}_s${t.id}_h${linkedHeadId}`;
 
-      const rulesSum = relevantRules.length > 0 ? relevantRules.reduce((acc, r) => acc + parseFloat(r.strength), 0) : 0.50;
+        const sliderVal = headOverrides[tokenKey] !== undefined
+          ? parseFloat(headOverrides[tokenKey])
+          : 0.7;
 
-      // Berechnung der Aktivierung basierend auf Phase 2 Heads
-      let activation = 0;
-      if (sliderVal > 0.01) {
-        activation = Math.max(0, Math.min(1.0, 0.5 * rulesSum * sliderFactor));
-      }
+        // KORREKTUR: Zusätzlicher Check auf cat.id
+        const rule = rules.find(r =>
+          Number(r.head) === Number(linkedHeadId) &&
+          String(r.source) === String(t.id) &&
+          r.label === cat.id // Die Regel muss vom Label her zur Kategorie-ID passen
+        );
+
+        if (rule) {
+          totalActivation += (sliderVal / 0.7) * parseFloat(rule.strength) * globalSignal;
+        }
+      });
+
+      const finalActivation = Math.max(0, Math.min(1.0, totalActivation * 0.35));
 
       return {
         ...cat,
-        activation,
-        isActive: activation >= mlpThreshold,
+        activation: finalActivation,
+        isActive: finalActivation >= mlpThreshold,
         linked_head: linkedHeadId
       };
     });
-  }, [activeScenario, headOverrides, selectedToken, activeProfileId, mlpThreshold, activeAttention]);
+  }, [activeScenario, headOverrides, activeProfileId, mlpThreshold, activeAttention]);
 
   // 4. PHASE 4: DECODING (Reagiert nun SOFORT auf das berechnete activeFFN)
   const finalOutputs = useMemo(() => {

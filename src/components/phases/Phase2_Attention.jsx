@@ -115,6 +115,26 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
     }
   };
 
+  const handleZeroAll = (e) => {
+    e.stopPropagation();
+    if (window.confirm("Möchtest du wirklich alle Heads für ALLE Token auf 0 setzen?")) {
+      const newOverrides = {};
+      // Wir iterieren über alle verfügbaren Token und Heads, um eine vollständige Null-Map zu erzwingen
+      tokens.forEach(token => {
+        [1, 2, 3, 4].forEach(hId => {
+          const key = generateKey(activeProfileId, token.id, hId);
+          newOverrides[key] = 0;
+          if (simulator.updateHeadWeight) {
+            simulator.updateHeadWeight(key, 0);
+          }
+        });
+      });
+      
+      setHeadOverrides(newOverrides);
+      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(newOverrides));
+    }
+  };
+
   const V_SIZE = 400;
   const V_CENTER = 200;
   const V_BASE_RADIUS = 130;
@@ -155,7 +175,12 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
     }
 
     const baseStrength = rule ? parseFloat(rule.strength) : 0;
-    return { strength: baseStrength * sliderVal, hasRule: !!rule, explanation: rule ? rule.explanation : "Keine spezifische Regel definiert." };
+    return { 
+      strength: baseStrength * sliderVal, 
+      hasRule: !!rule, 
+      explanation: rule?.explanation || "Für diese Verbindung wurde keine spezifische Aufmerksamkeits-Regel im aktuellen Kontext hinterlegt.",
+      label: rule?.label || "Neutrale Kopplung"
+    };
   }, [activeAttention, headOverrides, activeProfileId, currentSourceTokenId, profiles]);
 
   const getHeadActiveCount = (hId) => {
@@ -168,21 +193,40 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
     return count;
   };
 
-  const headDefinitions = { 1: { label: "Semantik" }, 2: { label: "Syntax" }, 3: { label: "Logik" }, 4: { label: "Struktur" } };
+  const headDefinitions = { 
+    1: { label: "Semantik", desc: "Sucht nach inhaltlicher Ähnlichkeit und Wortbedeutungen." }, 
+    2: { label: "Syntax", desc: "Analysiert grammatikalische Abhängigkeiten und Satzbau." }, 
+    3: { label: "Logik", desc: "Verknüpft Fakten und kausale Zusammenhänge im Vektorraum." }, 
+    4: { label: "Struktur", desc: "Überwacht Satzzeichen und formale Textabschnitte." } 
+  };
 
   useEffect(() => {
     const targetId = hoveredTokenId || selectedTokenId || currentSourceTokenId;
-    const { strength, explanation } = getConnectionInfo(targetId, activeHead);
+    const { strength, explanation, label } = getConnectionInfo(targetId, activeHead);
     const targetToken = tokens.find(t => idsMatch(t.id, targetId));
+    const sourceToken = tokens.find(t => idsMatch(t.id, currentSourceTokenId));
 
-    if (targetToken) {
+    if (targetToken && sourceToken) {
+      const isSelf = idsMatch(targetId, currentSourceTokenId);
+      
       setHoveredItem({
-        title: idsMatch(targetId, currentSourceTokenId) ? `🔍 Query: ${targetToken.text}` : `🔍 Relation: ${targetToken.text}`,
+        title: isSelf ? `Query-Fokus: ${targetToken.text}` : `Relation: ${sourceToken.text} → ${targetToken.text}`,
         subtitle: `Head ${activeHead}: ${headDefinitions[activeHead].label}`,
         data: {
-          "Attention-Wert": (strength * 100).toFixed(0) + "%",
-          "Kontext-Info": targetToken.explanation || "N/A",
-          "Kausale Spur": explanation
+          "--- Verbindung": "---",
+          "Match-Qualität": (strength * 100).toFixed(0) + "%",
+          "Funktion": label,
+          "Kopf-Spezialisierung": headDefinitions[activeHead].label,
+
+          "--- Mathematischer Kontext": "---",
+          "Query-ID": sourceToken.id,
+          "Key-ID": targetToken.id,
+          "Signal-Impact": strength > 0.8 ? "Dominant" : (strength > 0.4 ? "Stabil" : "Schwach"),
+
+          "--- Analyse ": "---",
+          "Information": isSelf 
+            ? `Das Token '${targetToken.text}' fungiert als Query. ${headDefinitions[activeHead].desc}`
+            : explanation
         }
       });
     }
@@ -212,12 +256,16 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
           <div className="absolute top-6 right-6 flex flex-col gap-2 z-50">
             <button onClick={() => setZoom(z => Math.min(z + 0.2, 2.5))} className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white hover:bg-blue-600 transition-all shadow-xl">+</button>
             <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))} className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white hover:bg-blue-600 transition-all shadow-xl">-</button>
-            <button onClick={handleReset} className="w-10 h-10 rounded-xl bg-red-900/20 border border-red-500/30 text-red-400 flex items-center justify-center mt-2 hover:bg-red-500 hover:text-white transition-all shadow-xl">
+            <button title="Alle Heads (global) auf 0" onClick={handleZeroAll} className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white flex items-center justify-center mt-2 hover:bg-orange-600 transition-all shadow-xl font-black text-xs">
+              Ø
+            </button>
+            <button title="Reset auf Standard" onClick={handleReset} className="w-10 h-10 rounded-xl bg-red-900/20 border border-red-500/30 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-xl">
               <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-1.103 4.116c-.806 1.347-2.277 2.25-3.965 2.25-2.5 0-4.5-2.03-4.5-4.5s2.03-4.5 4.5-4.5c1.75 0 3.27 1 4.026 2.484.061.121.23.13.34.023l.592-.572a.124.124 0 0 0 .03-.127C10.17 3.501 8.25 2 6 2 2.69 2 0 4.69 0 8s2.69 6 6 6c2.123 0 3.997-1.123 5.062-2.803.047-.074.024-.173-.05-.223l-.56-.381a.125.125 0 0 0-.121-.011z" /></svg>
             </button>
           </div>
 
           <div className="relative w-full max-w-[450px] aspect-square">
+            
             <svg viewBox={`0 0 ${V_SIZE} ${V_SIZE}`} className="absolute inset-0 w-full h-full overflow-visible pointer-events-none z-10">
               <defs><filter id="glow"><feGaussianBlur stdDeviation="2.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs>
               {tokens.map((token, i) => {

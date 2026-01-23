@@ -23,10 +23,7 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
 
   const tokens = activeScenario?.phase_0_tokenization?.tokens || [];
   
-  // WICHTIG: GRID_SCALE 150 entspricht 1.0 Einheiten im Simulator
   const GRID_SCALE = 150; 
-
-  const pipelineSignal = simulator?.activeAttention?.avgSignal || 1.0;
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -38,10 +35,6 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
     observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, []);
-
-  const getTokenData = (index) => {
-    return tokens.find(t => t.id === index + 1) || { text: '?', explanation: '' };
-  };
 
   const getSemanticPosition = (x, y) => {
     const horizontal = x >= 0 ? "Weltbezug" : "Struktur";
@@ -57,6 +50,7 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
 
     const baseVec = rawVector?.base_vector || [0, 0];
     const posVec = rawVector?.positional_vector || [0, 0];
+    const explanation = rawVector?.explanation || "Keine spezifische Analyse für dieses Token im aktuellen Szenario hinterlegt.";
 
     if (vec && token) {
       const stabilityValue = Math.max(5, 100 - (noise * 16));
@@ -69,7 +63,7 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
         data: {
           "--- Base-Vector (Original)": "---",
           "Base X (Semantik)": baseVec[0].toFixed(3),
-          "Base Y (Vektor)": baseVec[1].toFixed(3), // Umbenannt, um langes Textfeld zu vermeiden
+          "Base Y (Vektor)": baseVec[1].toFixed(3),
           
           "--- Arbeits-Vector (Live)": "---",
           "Current X (Total)": currentXWithNoise.toFixed(3),
@@ -81,8 +75,8 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
           "Rauschen (Einfluss)": noise > 0 ? `±${(noise * 0.08).toFixed(3)}` : "Keines",
           "Stabilität": stabilityValue.toFixed(0) + "%",
 
-          "--- Information": "---",
-          "Information": "Der Arbeitsvektor zeigt die finale Position nach Anwendung von Position und Rauschen."
+          "--- KI Begründung": "---",
+          "Information": explanation || "Keine zusätzlichen Infos verfügbar.",
         }
       };
     }

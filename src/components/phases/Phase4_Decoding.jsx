@@ -5,7 +5,8 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
   const {
     temperature, setTemperature, finalOutputs, activeAttention,
     setSelectedToken, mlpThreshold, setMlpThreshold, activeFFN, noise, setNoise,
-    headOverrides, setHeadOverrides, activeProfileId, sourceTokenId, setSourceTokenId
+    headOverrides, setHeadOverrides, activeProfileId, sourceTokenId, setSourceTokenId,
+    selectedToken // Wichtig: Wir nutzen den globalen Zustand
   } = simulator;
 
   const [selectedLabel, setSelectedLabel] = useState(null);
@@ -61,35 +62,50 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
     });
 
     const sumExp = results.reduce((acc, curr) => acc + curr.exp, 0);
+    
     return results.map(item => ({
       ...item,
       dynamicProb: sumExp > 0 ? item.exp / sumExp : 0
-    })).sort((a, b) => b.dynamicProb - a.dynamicProb);
+    }));
 
   }, [activeFFN, simulator?.activeFFN, activeScenario, temperature, noise, mlpThreshold]);
 
+  const findTopResult = (results) => {
+    if (!results || results.length === 0) return null;
+    return [...results].sort((a, b) => b.dynamicProb - a.dynamicProb)[0];
+  };
+
+  // KORREKTUR: Synchronisation mit dem globalen selectedToken
   useEffect(() => {
     const results = calculateLogic();
     if (results) {
-      setSimulationState(prev => ({
+      const topRes = findTopResult(results);
+      // Priorität: 1. Globaler selectedToken, 2. lokaler winner, 3. mathematischer Top-Result
+      const currentWinner = results.find(r => r.token === selectedToken?.token) || 
+                            results.find(r => r.token === simulationState.winner?.token) || 
+                            topRes;
+
+      setSimulationState({
         outputs: results.slice(0, 10),
-        winner: (prev.winner && results.find(r => r.token === prev.winner.token)) || results[0]
-      }));
+        winner: currentWinner
+      });
     }
-  }, [calculateLogic]);
+  }, [calculateLogic, selectedToken]); // Lauscht auf globalen Token-Wechsel
 
   const getInspectorData = useCallback((out, index) => {
     if (!out) return null;
     const { icon } = getItemVisuals(out);
-    
-    // Halluzinations-Risiko Check
     const isHallucination = out.hallucination_risk > 0.8 || (noise > 0.8 && out.noise_sensitivity > 0.7);
+
+    const results = calculateLogic() || [];
+    const sortedForRank = [...results].sort((a, b) => b.dynamicProb - a.dynamicProb);
+    const rank = sortedForRank.findIndex(r => r.token === out.token);
 
     return {
       title: `${icon} Decoding: ${out.token}`,
       subtitle: `Kategorie: ${out.category_link}`,
       data: {
-        "Status": out.isBlockedByMLP ? "BLOCKIERT (MLP)" : (index < topK ? "AKTIV" : "GEFILTERT"),
+        "Status": out.isBlockedByMLP ? "BLOCKIERT (MLP)" : (rank < topK ? "AKTIV" : "GEFILTERT"),
         "Wahrscheinlichkeit": (out.dynamicProb * 100).toFixed(2) + "%",
         "Einfluss durch": out.actingHead,
         "Logit-Shift": (out.ffnBoost >= 0 ? "+" : "") + out.ffnBoost?.toFixed(2),
@@ -97,7 +113,7 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
         "Aktivierung (Live)": (out.liveActivation * 100).toFixed(0) + "%"
       }
     };
-  }, [topK, activeFFN, noise]);
+  }, [topK, activeFFN, noise, calculateLogic]);
 
   const updateInspector = useCallback((token) => {
     const results = calculateLogic();
@@ -110,30 +126,30 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
     if (selectedLabel) updateInspector(selectedLabel);
   }, [headOverrides, mlpThreshold, noise, temperature, selectedLabel, updateInspector]);
 
+  // Effekt für Live-Updates (Slider etc.) ohne Resampling
   useEffect(() => {
     if (!isShuffling) {
       const results = calculateLogic();
       if (results) {
+        const topRes = findTopResult(results);
         setSimulationState(prev => {
-          const newWinner = prev.winner
-            ? results.find(r => r.token === prev.winner.token)
-            : results[0];
+          const syncWinner = results.find(r => r.token === (selectedToken?.token || prev.winner?.token)) || topRes;
 
           return {
             outputs: results.slice(0, 10),
-            winner: (newWinner && !newWinner.isBlockedByMLP) ? newWinner : results[0]
+            winner: (syncWinner && !syncWinner.isBlockedByMLP) ? syncWinner : topRes
           };
         });
       }
     }
-  }, [calculateLogic, activeScenario?.id, isShuffling, headOverrides, simulator?.activeFFN]);
+  }, [calculateLogic, activeScenario?.id, isShuffling, headOverrides, simulator?.activeFFN, selectedToken]);
 
   const triggerResample = () => {
     setIsShuffling(true);
     setTimeout(() => {
       const results = calculateLogic();
       if (results) {
-        let win = results[0];
+        let win = findTopResult(results);
         const r = Math.random();
         let cum = 0;
         for (let o of results) {
@@ -150,8 +166,11 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
   };
 
   const activeOptionsCount = useMemo(() => {
-    return simulationState.outputs.filter((out, i) =>
-      i < topK && out.dynamicProb >= minPThreshold && !out.isBlockedByMLP
+    const sorted = [...simulationState.outputs].sort((a, b) => b.dynamicProb - a.dynamicProb);
+    const topKTokens = sorted.slice(0, topK).map(t => t.token);
+
+    return simulationState.outputs.filter((out) =>
+      topKTokens.includes(out.token) && out.dynamicProb >= minPThreshold && !out.isBlockedByMLP
     ).length;
   }, [simulationState.outputs, topK, minPThreshold]);
 
@@ -185,14 +204,18 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
             </div>
 
             <div className="relative flex items-end justify-around gap-1 lg:gap-2 h-full pb-10">
-              {simulationState.outputs.map((out, i) => {
+              {simulationState.outputs.map((out) => {
                 const isWinner = simulationState.winner?.token === out.token;
-                const isActive = i < topK && out.dynamicProb >= minPThreshold && !out.isBlockedByMLP;
+                
+                const sorted = [...simulationState.outputs].sort((a, b) => b.dynamicProb - a.dynamicProb);
+                const rank = sorted.findIndex(r => r.token === out.token);
+                const isActive = rank < topK && out.dynamicProb >= minPThreshold && !out.isBlockedByMLP;
+                
                 const { color, icon } = getItemVisuals(out);
 
                 return (
-                  <div key={out.token + i} className={`relative flex flex-col items-center flex-1 h-full justify-end transition-all duration-500 ${selectedLabel === out.token ? 'z-30' : 'z-10'} ${(!isActive && !isWinner) ? 'opacity-30 grayscale' : 'opacity-100'}`}
-                    onMouseEnter={() => setHoveredItem(getInspectorData(out, i))}
+                  <div key={out.token} className={`relative flex flex-col items-center flex-1 h-full justify-end transition-all duration-500 ${selectedLabel === out.token ? 'z-30' : 'z-10'} ${(!isActive && !isWinner) ? 'opacity-30 grayscale' : 'opacity-100'}`}
+                    onMouseEnter={() => setHoveredItem(getInspectorData(out, rank))}
                     onMouseLeave={() => selectedLabel ? updateInspector(selectedLabel) : setHoveredItem(null)}
                     onClick={(e) => { e.stopPropagation(); setSelectedLabel(out.token); }}
                   >
@@ -202,7 +225,6 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
                       </div>
                     )}
                     
-                    {/* NEU: Warn-Icon für blockierte Tokens */}
                     {out.isBlockedByMLP && (
                       <div className="absolute top-0 text-[10px] animate-pulse text-red-500 font-bold z-50">⚠️</div>
                     )}
@@ -215,7 +237,6 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
                       style={{
                         height: isShuffling ? `${Math.random() * 85}%` : `${out.dynamicProb * 85}%`,
                         backgroundColor: (isActive || isWinner) ? color : (theme === 'light' ? '#cbd5e1' : '#334155'),
-                        // Jitter-Effekt bei hohem Noise
                         transform: noise > 0.8 ? `translateX(${(Math.random() - 0.5) * noise * 2}px)` : 'none'
                       }}
                     />
