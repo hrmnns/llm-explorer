@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpanded, setIsExpanded, hoveredItem }) => {
     const [showTech, setShowTech] = useState(true);
@@ -13,10 +13,18 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
     ];
 
     const currentPhaseIndex = activePhase === 99 ? 5 : activePhase;
-
     const pipelineSignal = simulator?.activeAttention?.avgSignal || 1.0;
     const isDegraded = pipelineSignal < 0.7;
     const isCritical = pipelineSignal < 0.4;
+
+    // Hilfsfunktion zur Erkennung von Textblöcken
+    const isMultilineBlock = (key, value) => {
+        if (!value) return false;
+        //const longTextKeys = ["info", "analyse", "begründung", "kontext", "details", "beschreibung", "erkenntnis", "interpretation"];
+        //const keyMatch = longTextKeys.some(k => key.toLowerCase().includes(k));
+        const lengthMatch = value.toString().length > 20;
+        return /*keyMatch ||*/ lengthMatch;
+    };
 
     if (!isExpanded) return (
         <div className="w-full h-full flex items-center justify-center bg-slate-900/20 backdrop-blur-md rounded-2xl border border-slate-800">
@@ -57,6 +65,7 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
 
             <div className="flex-1 space-y-6 overflow-y-auto pr-1 custom-scrollbar">
                 
+                {/* SIGNAL STATUS */}
                 <section className="animate-in fade-in slide-in-from-top-2 duration-700">
                     <div className={`p-3 rounded-xl border transition-all duration-500 ${
                         isCritical ? 'bg-red-500/10 border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 
@@ -74,6 +83,7 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                     </div>
                 </section>
 
+                {/* PHASE INFO */}
                 <section>
                     <div className="p-4 rounded-lg bg-blue-600/5 border border-blue-500/10 border-l-2 border-l-blue-500 shadow-inner">
                         <p className="text-[10px] leading-relaxed opacity-70 italic font-medium">{phaseContent[currentPhaseIndex]?.details}</p>
@@ -92,7 +102,6 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                             <MetricBox label="Noise" value={(simulator.noise * 100).toFixed(0)} unit="%" color={isCritical ? "text-red-500" : isDegraded ? "text-orange-400" : "text-blue-500"} />
                             <MetricBox label="Pos. Weight" value={simulator.positionWeight?.toFixed(2)} />
                             
-                            {/* NEU: Hinweistext nur für Phase 1 */}
                             {activePhase === 1 && (
                                 <div className="col-span-2 mt-1 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10 border-dashed animate-pulse">
                                     <p className="text-[9px] leading-snug text-blue-400/80 italic font-medium">
@@ -107,13 +116,14 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                     )}
                 </section>
 
+                {/* INSPECTOR SECTION */}
                 <section className="flex flex-col border-t border-white/5 pt-5 pb-4">
                     <p className="text-[9px] font-black text-blue-400 mb-4 uppercase tracking-[0.2em] flex items-center gap-2">
                         <span className={`w-1.5 h-1.5 rounded-full ${hoveredItem ? 'bg-blue-500 animate-pulse' : 'bg-slate-700'}`}></span>
                         Pipeline Inspector
                     </p>
 
-                    <div className={`min-h-[160px] rounded-xl border transition-all duration-300 ${hoveredItem
+                    <div className={`min-h-[160px] rounded-xl border transition-all duration-500 ${hoveredItem
                         ? (theme === 'dark' ? 'bg-slate-950/40 border-blue-500/30 p-4' : 'bg-blue-50/50 border-blue-200 p-4 shadow-inner')
                         : 'border-dashed border-white/5 flex items-center justify-center p-4'
                     }`}>
@@ -125,18 +135,36 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                                 </h6>
                                 <div className="space-y-4">
                                     {Object.entries(hoveredItem.data || {}).map(([key, value]) => {
+                                        // Trenner-Logik (---)
                                         if (!value || value.toString().includes('---')) {
-                                            return <div key={key} className="pt-3 border-t border-white/5 first:pt-0 first:border-0"><span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-500/80">{key.replace(/-/g, '').trim()}</span></div>;
+                                            const cleanKey = key.replace(/-/g, '').trim();
+                                            return cleanKey ? (
+                                                <div key={key} className="pt-3 border-t border-white/5 first:pt-0 first:border-0">
+                                                    <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-500/80">{cleanKey}</span>
+                                                </div>
+                                            ) : <div key={key} className="h-px bg-white/5 my-2" />;
                                         }
-                                        const isLongText = ["Information", "Kontext", "Transfer-Value", "Erkenntnis"].some(k => key.includes(k));
-                                        if (isLongText) {
-                                            return <div key={key} className="flex flex-col gap-1.5"><span className="text-[7px] uppercase font-black text-slate-500/60 tracking-widest">{key}</span><p className="text-[10px] leading-relaxed italic text-blue-100/90 font-medium bg-blue-500/5 p-2.5 rounded-lg border border-blue-500/10 shadow-inner">{value}</p></div>;
+
+                                        // Mehrzeilen-Check (isMultilineBlock)
+                                        if (isMultilineBlock(key, value)) {
+                                            return (
+                                                <div key={key} className="flex flex-col gap-2 group/text">
+                                                    <span className="text-[7px] uppercase font-black text-slate-500/60 tracking-widest group-hover/text:text-blue-400/60 transition-colors">
+                                                        {key}
+                                                    </span>
+                                                    <p className="text-[10px] leading-relaxed italic text-blue-100/90 font-medium bg-blue-500/5 p-3 rounded-xl border border-blue-500/10 shadow-inner group-hover/text:bg-blue-500/10 transition-all">
+                                                        {value}
+                                                    </p>
+                                                </div>
+                                            );
                                         }
+
+                                        // Standard Einzeiler
                                         return (
-                                            <div key={key} className="flex flex-col gap-1">
+                                            <div key={key} className="flex flex-col gap-1 group/row">
                                                 <div className="flex justify-between items-end">
-                                                    <span className="text-[7px] uppercase font-black text-slate-500/80 tracking-tighter">{key}</span>
-                                                    <span className="text-[10px] font-bold text-blue-400 font-mono tracking-tight">{value}</span>
+                                                    <span className="text-[7px] uppercase font-black text-slate-500/80 tracking-tighter group-hover/row:text-slate-300 transition-colors">{key}</span>
+                                                    <span className="text-[10px] font-bold text-blue-400 font-mono tracking-tight group-hover/row:scale-105 transition-transform origin-right">{value}</span>
                                                 </div>
                                             </div>
                                         );
@@ -144,7 +172,12 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-center group"><div className="text-[8px] uppercase font-black tracking-[0.3em] opacity-10 group-hover:opacity-30 transition-all duration-700">System Standby<br/><span className="font-normal lowercase tracking-normal">Select token to probe pipeline</span></div></div>
+                            <div className="text-center group">
+                                <div className="text-[8px] uppercase font-black tracking-[0.3em] opacity-10 group-hover:opacity-30 transition-all duration-700">
+                                    System Standby<br/>
+                                    <span className="font-normal lowercase tracking-normal">Select token to probe pipeline</span>
+                                </div>
+                            </div>
                         )}
                     </div>
                 </section>
@@ -153,7 +186,7 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
             <div className="mt-3 pt-3 border-t border-white/5 shrink-0">
                 <div className="flex justify-between items-center opacity-20 text-[7px] font-black uppercase tracking-[0.2em]">
                     <span>Neural Analysis Engine</span>
-                    <span className="font-mono tracking-tighter">v1.5.0_PIPELINE</span>
+                    <span className="font-mono tracking-tighter">v1.6.0_SMART_DECODER</span>
                 </div>
             </div>
         </div>

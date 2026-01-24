@@ -1,28 +1,39 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import PhaseLayout from './../PhaseLayout';
+import { useScenarios } from '../../context/ScenarioContext';
 
-const Phase5_Analysis = ({ simulator, activeScenario, setHoveredItem, theme }) => {
+const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
+  const { activeScenario: contextScenario } = useScenarios();
   const { 
     temperature, 
     noise, 
     mlpThreshold, 
     positionWeight, 
-    activeProfileId, 
-    finalOutputs, 
     activeAttention, 
-    selectedToken 
+    selectedToken,
+    finalOutputs,
+    activeScenario: simScenario
   } = simulator;
   
+  const scenario = contextScenario || simScenario;
   const [selectedStep, setSelectedStep] = useState(null);
+  const lastScenarioId = useRef(scenario?.id);
 
   const pipelineSignal = activeAttention?.avgSignal || 1.0;
   const isCritical = pipelineSignal < 0.4;
 
-  if (!finalOutputs || finalOutputs.length === 0) return null;
+  // Szenario-Reset Logik
+  useEffect(() => {
+    if (scenario?.id !== lastScenarioId.current) {
+      setSelectedStep(null);
+      setHoveredItem(null);
+      lastScenarioId.current = scenario?.id;
+    }
+  }, [scenario?.id, setHoveredItem]);
 
   const winner = useMemo(() => {
     let target = selectedToken;
-    if (!target) {
+    if (!target && finalOutputs?.length > 0) {
       target = [...finalOutputs].sort((a, b) => 
         (b.dynamicProb ?? b.probability) - (a.dynamicProb ?? a.probability)
       )[0];
@@ -32,88 +43,79 @@ const Phase5_Analysis = ({ simulator, activeScenario, setHoveredItem, theme }) =
       return {
         ...target,
         safeLabel: target.label || target.text || target.token || "Unbekannt",
-        safeType: target.type || target.category || "Allgemein"
+        safeType: target.category_link || target.type || target.category || "Allgemein"
       };
     }
-    return { safeLabel: "Berechne...", safeType: "N/A", probability: 0 };
+    return { safeLabel: "Berechne...", safeType: "N/A", dynamicProb: 0 };
   }, [finalOutputs, selectedToken]);
 
   const displayProbability = winner.dynamicProb !== undefined ? winner.dynamicProb : (winner.probability || 0);
 
-  const scenario = activeScenario || simulator.activeScenario;
-  const tokens = scenario?.phase_0_tokenization?.tokens || [];
-  const tokenCount = tokens.length;
-
-  // --- AUSFÜHRLICHE NARRATIVE LOGIK ---
+  // --- ERWEITERTE NARRATIVE LOGIK ---
   const getNarrative = () => {
     const label = winner.safeLabel;
-    const mostProbable = [...finalOutputs].sort((a, b) => 
-      (b.dynamicProb || b.probability) - (a.dynamicProb || a.probability)
-    )[0];
-    const mpLabel = mostProbable?.label || mostProbable?.text || mostProbable?.token;
     
-    // Fall 1: Hohe Temperature / Zufallswahl
-    if (mpLabel && label !== mpLabel && temperature > 1.0) {
-        return `Kreative Inferenz: Das Modell hat sich gegen den statistischen Favoriten "${mpLabel}" entschieden. Durch die Temperature von ${temperature.toFixed(1)} wurde der Sampling-Radius erweitert, was die Wahl von "${label}" ermöglichte – ein Zeichen für stochastische Flexibilität.`;
-    }
-
-    // Fall 2: System-Instabilität
     if (isCritical) {
-      return `Kritisches Signal: Bei einer Signal-Integrität von nur ${(pipelineSignal * 100).toFixed(0)}% ist die Entscheidung für "${label}" mathematisch unsicher. Das hohe Grundrauschen (Noise: ${noise.toFixed(1)}) überlagert die gelernten Aufmerksamkeitsmuster.`;
+      return `System-Instabilität detektiert: Bei einer Signal-Integrität von nur ${(pipelineSignal * 100).toFixed(0)}% und einem Noise-Level von ${noise.toFixed(2)} ist die Wahl von "${label}" mathematisch instabil. Die Kausalitätskette ist durch Rauschen unterbrochen.`;
     }
 
-    // Fall 3: Spezifische Szenarien (Schloss / Winograd)
+    if (temperature > 1.2) {
+      return `Stochastische Diversität: Durch die erhöhte Temperature (${temperature.toFixed(1)}) hat das Modell den deterministischen Pfad verlassen. Die Wahl von "${label}" ist ein Ergebnis explorativen Samplings innerhalb des erweiterten Vektorraums.`;
+    }
+
+    // Dynamische Erkennung basierend auf Inhalten
+    if (label.includes("Berlin") || label.includes("Bonn")) {
+      const mode = label === "Berlin" ? "faktisch-geografische" : "historische";
+      return `Kontext-Mixer Erfolg: Das Modell hat die ${mode} Dimension priorisiert. Durch die gezielte Attention-Steuerung wurde die entsprechende Wissenskategorie im FFN aktiviert und als logischer Sieger ermittelt.`;
+    }
+
+    if (label.includes(" plant") || label.includes("Hauptplatz")) {
+      return `Polysemie-Auflösung: Die dreifache Besetzung des Begriffs "Bank" wurde erfolgreich entwirrt. Der gewählte Pfad "${label}" beweist, dass der neuronale Fokus exakt auf dem beabsichtigten Kontext-Szenario liegt.`;
+    }
+
     if (label === "Türschloss") {
       return `Logische Selektion: Der Kontext ("Einbrecher") hat erfolgreich den Logik-Head aktiviert. Dies führte zu einer Verschiebung im Vektorraum, die "${label}" gegenüber der architektonischen Bedeutung priorisierte.`;
     }
-    
-    if (label === "Tasche") {
-      return `Kontextuelle Auflösung: Das Modell hat die Pronomen-Referenz ("sie") erfolgreich aufgelöst. Da die Trophäe physikalisch nicht in die Tasche passt, wurde das Weltwissen im FFN genutzt, um "${label}" als logischen Anker zu setzen.`;
-    }
-    
-    return `Standard-Inferenz: Mit einer Konfidenz von ${(displayProbability * 100).toFixed(1)}% wurde "${label}" als das kohärenteste nächste Token identifiziert. Die Pipeline zeigt eine stabile Verarbeitung über alle Aufmerksamkeits-Layer hinweg.`;
+
+    return `Standard-Inferenz: Mit einer Konfidenz von ${(displayProbability * 100).toFixed(1)}% wurde "${label}" als das kohärenteste nächste Token identifiziert. Die Pipeline zeigt eine stabile Verarbeitung über alle Layer hinweg.`;
   };
 
-  // --- AUSFÜHRLICHES STEPS-MAPPING ---
   const steps = [
     {
-      label: "1. Tokenisierung & Position",
-      val: `${tokenCount} Einheiten`, 
+      label: "1. Tokenisierung",
+      val: `${scenario?.phase_0_tokenization?.tokens?.length || 0} Einheiten`, 
       icon: "📑",
-      story: `Der Eingabetext wurde in ${tokenCount} diskrete Tokens zerlegt. Jedes Element erhielt eine Positions-Kodierung, damit das Modell die syntaktische Struktur (Wortreihenfolge) innerhalb des Vektorraums mathematisch erfassen kann.`,
-      details: { "Szenario": scenario?.name, "Token-Dichte": "Normal" }
+      story: `Der Eingabetext wurde in diskrete Tokens zerlegt. Jedes Element erhielt eine Positions-Kodierung (PE), damit das Modell die Wortreihenfolge mathematisch erfassen kann.`,
+      details: { "Analyse-Details": "Die Segmentierung erfolgte via Byte-Pair-Encoding. Die IDs bilden die Grundlage für den Zugriff auf die Embedding-Matrix." }
     },
     {
-      label: "2. Embedding Modulation",
-      val: noise > 0.5 ? "Instabil" : "Stabil", 
+      label: "2. Embedding Raum",
+      val: noise > 0.5 ? "Diffus" : "Präzise", 
       icon: "📍",
-      story: `Die Initial-Vektoren wurden mit einer Gewichtung von ${(positionWeight * 100).toFixed(0)}% für Positionsdaten angereichert. ${noise > 0.8 ? `Massives Rauschen (${noise.toFixed(2)}) verzerrt aktuell die semantische Klarheit der Einbettungen.` : `Das Signal ist mit einem Noise-Level von ${noise.toFixed(2)} hochgradig präzise.`}`,
-      details: { "Signal-Stärke": (pipelineSignal * 100).toFixed(0) + "%" }
+      story: `Die Tokens wurden in den n-dimensionalen Raum eingebettet. Mit einer Positions-Gewichtung von ${(positionWeight * 100).toFixed(0)}% wurden die Vektoren für die Kontext-Analyse vorbereitet.`,
+      details: { "Vektor-Erkenntnis": `Der Noise-Level von ${noise.toFixed(2)} bestimmt die Schärfe der semantischen Trennung zwischen den Begriffen.` }
     },
     {
-      label: "3. Multi-Head Attention",
-      val: "Kontext-Kopplung",
+      label: "3. Self-Attention",
+      val: "Pfad-Selektion",
       icon: "🔍",
-      story: `In dieser Phase berechnen die Attention-Heads die Relevanz-Beziehungen zwischen den Wörtern. Das Modell fokussiert sich auf Schlüssel-Tokens, um die Polysemie (Mehrdeutigkeit) aufzulösen und den globalen Kontext zu sichern.`,
-      details: { "Active-Heads": "Dynamic", "Context-Window": "Full" }
+      story: `Die Attention-Heads haben Relevanz-Beziehungen berechnet. Hier wurde entschieden, welcher Kontext (z.B. Geografie vs. Geschichte) die höchste Aufmerksamkeit erhält.`,
+      details: { "KI-Begründung": `Das Signal durchlief die Multi-Head-Pipeline. Die gewählte Gewichtung resultiert in einer Signal-Integrität von ${(pipelineSignal * 100).toFixed(0)}%.` }
     },
     {
-      label: "4. FFN (Weltwissen-Abgleich)",
-      val: `Cluster: ${winner.safeType}`, 
+      label: "4. Wissens-FFN",
+      val: winner.safeType, 
       icon: "🧠",
-      story: `Das Feed-Forward-Netzwerk gleicht das kontextualisierte Signal mit internen Kategorien ab. Hier leuchtete das Wissen für "${winner.safeType}" auf. Der MLP-Schwellenwert von ${mlpThreshold.toFixed(2)} filtert irrelevante Assoziationen heraus.`,
-      details: { "Aktivierungs-Stärke": (displayProbability * 0.9).toFixed(2) }
+      story: `Das FFN-Layer hat das Signal mit internen Wissens-Clustern abgeglichen. Die Kategorie "${winner.safeType}" wurde dabei erfolgreich über den Threshold von ${mlpThreshold.toFixed(2)} gehoben.`,
+      details: { "Wissens-Analyse": "Die neuronale Aktivierung transformiert abstrakte Aufmerksamkeit in konkrete semantische Konzepte des Weltwissens." }
     },
     {
-      label: "5. Probabilistischer Output",
+      label: "5. Decoding",
       val: winner.safeLabel, 
-      icon: temperature > 1.2 ? "🎲" : "🎯", 
+      icon: "🎯", 
       highlight: true,
-      story: `Das Decoding liefert "${winner.safeLabel}" als Sieger. Durch die Softmax-Funktion und das gewählte Sampling (${temperature > 1.0 ? 'Kreativ' : 'Präzise'}) wurde dieses Token aus dem Vektorraum in Text zurückverwandelt.`,
-      details: {
-        "Final-Logit": (displayProbability * 12).toFixed(2),
-        "Temperature-Shift": temperature.toFixed(1)
-      }
+      story: `Der Softmax-Prozess hat die Logits normalisiert. "${winner.safeLabel}" ging mit ${(displayProbability * 100).toFixed(1)}% als Sieger hervor und wurde zurück in Text transformiert.`,
+      details: { "Inferenz-Interpretation": `Das Ergebnis ist bei einer Temperature von ${temperature.toFixed(1)} ${temperature > 1.0 ? 'kreativ-variabel' : 'hochgradig deterministisch'}.` }
     }
   ];
 
@@ -123,58 +125,68 @@ const Phase5_Analysis = ({ simulator, activeScenario, setHoveredItem, theme }) =
       setHoveredItem(null);
     } else {
       setSelectedStep(index);
-      setHoveredItem({ title: step.label, subtitle: "Pipeline-Detail", data: step.details });
+      setHoveredItem({ 
+        title: step.label, 
+        subtitle: "Prozess-Parameter", 
+        data: step.details 
+      });
     }
   };
+
+  if (!finalOutputs || finalOutputs.length === 0) return null;
 
   return (
     <PhaseLayout
       title="Phase 5: Pipeline-Analyse"
-      subtitle="Zusammenfassender Entscheidungspfad"
+      subtitle="Zusammenfassender Entscheidungspfad des Modells"
       theme={theme}
       badges={[
-        { text: `Signal: ${(pipelineSignal * 100).toFixed(0)}%`, className: isCritical ? "bg-red-500/20 text-red-400" : "bg-blue-500/10 text-blue-400" },
-        { text: `${(displayProbability * 100).toFixed(1)}% Konfidenz`, className: "bg-green-500/10 text-green-400" }
+        { text: `Integrität: ${(pipelineSignal * 100).toFixed(0)}%`, className: isCritical ? "bg-red-500/20 text-red-400" : "bg-blue-500/10 text-blue-400" },
+        { text: `${(displayProbability * 100).toFixed(1)}% Konfidenz`, className: "bg-green-500/10 text-green-400 border-green-500/20" }
       ]}
       visualization={
         <div className="w-full flex flex-col items-center px-2 py-4" onClick={() => { setSelectedStep(null); setHoveredItem(null); }}>
           
-          <div className="mb-10 text-center max-w-3xl mx-auto border-b border-white/10 pb-10">
-            <h3 className={`text-[10px] uppercase font-black tracking-[0.3em] mb-4 ${isCritical ? 'text-red-500' : 'text-blue-400'}`}>
-              Das System-Urteil
+          {/* Narratives System-Urteil */}
+          <div className="mb-12 text-center max-w-3xl mx-auto border-b border-white/5 pb-10">
+            <h3 className={`text-[10px] uppercase font-black tracking-[0.4em] mb-6 ${isCritical ? 'text-red-500' : 'text-blue-500'}`}>
+              System-Interpretation
             </h3>
-            <p className={`text-base lg:text-lg font-light leading-relaxed italic px-8 ${theme === 'dark' ? 'text-slate-200' : 'text-slate-800'}`}>
+            <p className={`text-lg lg:text-xl font-light leading-relaxed italic px-10 transition-all duration-700 ${theme === 'dark' ? 'text-slate-200' : 'text-slate-800'}`}>
               „{getNarrative()}“
             </p>
           </div>
 
+          {/* Vertikale Pipeline-Visualisierung */}
           <div className="flex flex-col items-center w-full max-w-2xl mx-auto relative pb-10">
             {steps.map((step, i) => (
               <React.Fragment key={i}>
                 <div 
-                  className={`relative z-10 flex flex-col w-full p-8 rounded-[2rem] border transition-all duration-500 cursor-pointer group
+                  className={`relative z-10 flex flex-col w-full p-8 rounded-[2.5rem] border-2 transition-all duration-500 cursor-pointer group
                     ${selectedStep === i 
-                      ? 'bg-blue-600/10 border-blue-400 shadow-[0_0_30px_rgba(59,130,246,0.1)] scale-[1.03]' 
-                      : (theme === 'dark' ? 'bg-slate-900/60 border-white/5 hover:border-white/20' : 'bg-white border-slate-200 shadow-md hover:border-blue-300')}`}
+                      ? 'bg-blue-600/10 border-blue-400 shadow-[0_0_40px_rgba(59,130,246,0.15)] scale-[1.04]' 
+                      : (theme === 'dark' ? 'bg-slate-900/60 border-white/5 hover:border-white/20' : 'bg-white border-slate-200 shadow-xl hover:border-blue-300')}`}
                   onClick={(e) => { e.stopPropagation(); handleStepClick(step, i); }}
                 >
-                  <div className="flex items-center gap-6 mb-4">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl transition-transform group-hover:scale-110 ${i === 4 ? 'bg-green-500/20 text-green-400' : 'bg-slate-800 text-slate-300'}`}>
+                  <div className="flex items-center gap-8 mb-4">
+                    <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-3xl transition-all duration-500 group-hover:rotate-6
+                      ${i === 4 ? 'bg-green-500/20 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 'bg-slate-800 text-slate-300'}`}>
                       {step.icon}
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[9px] uppercase font-black tracking-widest text-slate-500 mb-1">{step.label}</span>
-                      <span className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{step.val}</span>
+                      <span className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-500 mb-1">{step.label}</span>
+                      <span className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{step.val}</span>
                     </div>
                   </div>
-                  <p className={`text-[13px] leading-relaxed font-medium italic ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <p className={`text-[14px] leading-relaxed font-medium italic ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
                     {step.story}
                   </p>
                 </div>
                 
+                {/* Verbindungslinie */}
                 {i < steps.length - 1 && (
                   <div className="flex flex-col items-center">
-                    <div className={`w-px h-12 ${selectedStep !== null && selectedStep >= i ? 'bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,1)]' : (theme === 'dark' ? 'bg-slate-800' : 'bg-slate-200')}`}></div>
+                    <div className={`w-1 h-12 transition-all duration-1000 ${selectedStep !== null && selectedStep >= i ? 'bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,1)]' : (theme === 'dark' ? 'bg-slate-800' : 'bg-slate-200')}`}></div>
                   </div>
                 )}
               </React.Fragment>

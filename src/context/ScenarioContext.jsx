@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 
 const ScenarioContext = createContext();
 
-// --- NEU: Der Scenario-Checker als interne Hilfsfunktion ---
+// --- ERWEITERT: Der Scenario-Checker ---
 const validateScenario = (s) => {
   const errors = [];
   const warnings = [];
@@ -18,7 +18,33 @@ const validateScenario = (s) => {
     errors.push("Phase 4: 'top_k_tokens' fehlen");
   }
 
-  // 3. Kausalitäts-Mapping Check
+  // 3. NEU: Phase 1 Achsen-Check
+  const axisMap = s.phase_1_embedding?.axis_map;
+  if (!axisMap) {
+    warnings.push("Phase 1: Keine axis_map definiert (Nutze Standard-Beschriftungen)");
+  }
+
+  // 4. NEU: Goal-Seeking Check (Kausalitäts-Kette Rückwärts)
+  if (s.phase_3_ffn?.activations) {
+    s.phase_3_ffn.activations.forEach(cat => {
+      if (cat.linked_head === undefined) {
+        errors.push(`Phase 3: Kategorie "${cat.id}" hat keinen linked_head (Goal-Seeking unmöglich)`);
+      }
+    });
+
+    // Check, ob Phase 2 Regeln existieren, die auf die Phase 3 IDs matchen
+    const profile = s.phase_2_attention?.attention_profiles?.[0];
+    if (profile) {
+      const p2Labels = profile.rules.map(r => String(r.label).toLowerCase());
+      s.phase_3_ffn.activations.forEach(cat => {
+        if (!p2Labels.includes(String(cat.id).toLowerCase())) {
+          warnings.push(`Phase 2: Keine Regel mit Label "${cat.id}" gefunden. Pfad kann nicht automatisch aktiviert werden.`);
+        }
+      });
+    }
+  }
+
+  // 5. Kausalitäts-Mapping Check (Phase 4 -> Phase 3)
   if (s.phase_3_ffn?.activations && s.phase_4_decoding?.top_k_tokens) {
     const p3Ids = s.phase_3_ffn.activations.map(a => String(a.id).trim().toLowerCase());
 
@@ -34,7 +60,7 @@ const validateScenario = (s) => {
     });
   }
 
-  // 4. NEU: Settings-Check (für Punkt 3: Dokumentations-Modus)
+  // 6. Settings-Check
   const settings = s.phase_4_decoding?.settings;
   if (!settings) {
     warnings.push("Keine Phase 4 Settings gefunden (Nutze globale Defaults)");
@@ -56,7 +82,7 @@ export const ScenarioProvider = ({ children }) => {
   const [activeScenario, setActiveScenario] = useState(null);
   const [loading, setLoading] = useState(true);
   const [scenariosData, setScenariosData] = useState(null);
-  const [validationErrors, setValidationErrors] = useState({}); // NEU: Fehler pro Szenario speichern
+  const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     const baseUrl = import.meta.env.BASE_URL || "/";
@@ -70,13 +96,11 @@ export const ScenarioProvider = ({ children }) => {
       .then((data) => {
         const scenarioArray = data.scenarios || [];
 
-        // --- NEU: Jedes Szenario beim Laden validieren ---
         const validatedScenarios = scenarioArray.map(s => {
           const check = validateScenario(s);
           if (!check.isValid) {
             console.warn(`Szenario "${s.name}" ist fehlerhaft:`, check.errors);
           }
-          // Wir speichern den Validierungsstatus direkt am Objekt für das UI
           return { ...s, isValid: check.isValid, validationErrors: check.errors };
         });
 
@@ -84,7 +108,6 @@ export const ScenarioProvider = ({ children }) => {
         setScenarios(validatedScenarios);
 
         if (validatedScenarios.length > 0) {
-          // Wir setzen das erste VALIDIERTE Szenario als aktiv
           const firstValid = validatedScenarios.find(s => s.isValid) || validatedScenarios[0];
           setActiveScenario(firstValid);
         }
@@ -111,7 +134,7 @@ export const ScenarioProvider = ({ children }) => {
       setActiveScenario,
       handleScenarioChange,
       loading,
-      validationErrors // Falls das UI Fehlermeldungen anzeigen soll
+      validationErrors
     }}>
       {children}
     </ScenarioContext.Provider>

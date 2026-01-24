@@ -1,711 +1,54 @@
 {
   "project": "LLM-Explorer",
-  "version": "4.00",
+  "version": "4.01",
   "scenarios": [
     {
-      "id": "polysemie-schloss-labor",
-      "name": "Mehrdeutigkeit: Das Schloss (Kausalitäts-Modus)",
-      "input_prompt": "Das Schloss war für den Einbrecher kein Hindernis.",
-      "explanation": "Visualisierung der vertikalen Kausalität: Der Kontext 'Einbrecher' (Phase 2) aktiviert die mechanische Kategorie (Phase 3), was in Phase 4 den Token 'Türschloss' gegenüber 'Prachtbau' gewinnen lässt.",
-      "phase_0_tokenization": {
-        "tokens": [
-          {
-            "id": "0",
-            "text": "Das"
-          },
-          {
-            "id": "1",
-            "text": "Schloss"
-          },
-          {
-            "id": "2",
-            "text": "war"
-          },
-          {
-            "id": "3",
-            "text": "für"
-          },
-          {
-            "id": "4",
-            "text": "den"
-          },
-          {
-            "id": "5",
-            "text": "Einbrecher"
-          },
-          {
-            "id": "6",
-            "text": "kein"
-          },
-          {
-            "id": "7",
-            "text": "Hindernis"
-          }
-        ]
-      },
-      "phase_1_embedding": {
-        "token_vectors": [
-          {
-            "token_index": 0,
-            "base_vector": [
-              0.1,
-              0.1
-            ],
-            "positional_vector": [
-              -0.5,
-              0.0
-            ]
-          },
-          {
-            "token_index": 1,
-            "base_vector": [
-              0.5,
-              0.5
-            ],
-            "positional_vector": [
-              -0.3,
-              0.0
-            ]
-          },
-          {
-            "token_index": 5,
-            "base_vector": [
-              0.8,
-              0.7
-            ],
-            "positional_vector": [
-              0.3,
-              0.0
-            ]
-          },
-          {
-            "token_index": 7,
-            "base_vector": [
-              0.1,
-              0.1
-            ],
-            "positional_vector": [
-              0.6,
-              0.0
-            ]
-          }
-        ]
-      },
-      "phase_2_attention": {
-        "attention_profiles": [
-          {
-            "id": "context-check",
-            "label": "Kontext-Analyse",
-            "rules": [
-              {
-                "head": 1,
-                "label": "Semantik",
-                "source": "1",
-                "target": "7",
-                "strength": 1.2
-              },
-              {
-                "head": 3,
-                "label": "Logik/Mechanik",
-                "source": "1",
-                "target": "5",
-                "strength": 1.4
-              }
-            ]
-          }
-        ]
-      },
-      "phase_3_ffn": {
-        "activations": [
-          {
-            "id": "funktional",
-            "label": "Mechanik/Sicherheit",
-            "activation_default": 0.8,
-            "linked_head": 3,
-            "color": "#10b981",
-            "icon": "⚙️",
-            "suggested_token": "Türschloss"
-          },
-          {
-            "id": "akademisch",
-            "label": "Architektur/Pracht",
-            "activation_default": 0.2,
-            "linked_head": 1,
-            "color": "#3b82f6",
-            "icon": "🏛️",
-            "suggested_token": "Prachtbau"
-          },
-          {
-            "id": "neutral",
-            "label": "Grammatik",
-            "activation_default": 1.0,
-            "is_hidden": true,
-            "suggested_token": "Das"
-          }
-        ]
-      },
-      "phase_4_decoding": {
-        "settings": {
-          "sampling_mode": "top_k",
-          "default_temperature": 0.7,
-          "logit_bias_multiplier": 12,
-          "entropy_visual_threshold": 0.3
-        },
-        "top_k_tokens": [
-          {
-            "token": "Türschloss",
-            "base_logit": 4.2,
-            "category_link": "funktional",
-            "noise_sensitivity": 0.5
-          },
-          {
-            "token": "Prachtbau",
-            "base_logit": 4.2,
-            "category_link": "akademisch",
-            "noise_sensitivity": 0.5
-          },
-          {
-            "token": "Das",
-            "base_logit": 3.8,
-            "category_link": "neutral",
-            "noise_sensitivity": 0.1
-          },
-          {
-            "token": "Residenz",
-            "base_logit": 3.5,
-            "category_link": "akademisch",
-            "noise_sensitivity": 0.6
-          },
-          {
-            "token": "Riegel",
-            "base_logit": 3.2,
-            "category_link": "funktional",
-            "noise_sensitivity": 0.7
-          }
-        ]
-      }
-    },
-    {
-      "id": "halluzinations-labor-01",
-      "name": "Halluzinations-Labor: Logik am Limit",
-      "input_prompt": "Die Hauptstadt von Frankreich ist...",
-      "explanation": "Dieses Szenario demonstriert, wie niedrige Wissens-Aktivierung (Phase 3) bei hohem Rauschen (Phase 4) zu Halluzinationen führt. Schiebe den Noise-Regler hoch, um zu sehen, wie 'Paris' seine Dominanz verliert.",
-      "phase_0_tokenization": {
-        "tokens": [
-          {
-            "id": "0",
-            "text": "Die"
-          },
-          {
-            "id": "1",
-            "text": "Hauptstadt"
-          },
-          {
-            "id": "2",
-            "text": "von"
-          },
-          {
-            "id": "3",
-            "text": "Frankreich"
-          },
-          {
-            "id": "4",
-            "text": "ist"
-          }
-        ]
-      },
-      "phase_1_embedding": {
-        "token_vectors": [
-          {
-            "token_index": 1,
-            "base_vector": [
-              0.8,
-              0.2
-            ],
-            "positional_vector": [
-              -0.4,
-              0.1
-            ]
-          },
-          {
-            "token_index": 3,
-            "base_vector": [
-              0.2,
-              0.8
-            ],
-            "positional_vector": [
-              0.3,
-              0.1
-            ]
-          }
-        ]
-      },
-      "phase_2_attention": {
-        "attention_profiles": [
-          {
-            "id": "fact-retrieval",
-            "label": "Fakten-Abruf",
-            "rules": [
-              {
-                "head": 3,
-                "label": "Geografie-Logik",
-                "source": "3",
-                "target": "1",
-                "strength": 1.5
-              },
-              {
-                "head": 1,
-                "label": "Rauschen/Chaos",
-                "source": "4",
-                "target": "0",
-                "strength": 0.2
-              }
-            ]
-          }
-        ]
-      },
-      "phase_3_ffn": {
-        "activations": [
-          {
-            "id": "geografie",
-            "label": "Geografisches Wissen",
-            "activation_default": 0.9,
-            "linked_head": 3,
-            "color": "#10b981",
-            "icon": "🌍",
-            "suggested_token": "Paris"
-          },
-          {
-            "id": "instabil",
-            "label": "Zufällige Assoziationen",
-            "activation_default": 0.1,
-            "linked_head": 1,
-            "color": "#f59e0b",
-            "icon": "🌀",
-            "suggested_token": "Bananenrepublik"
-          }
-        ]
-      },
-      "phase_4_decoding": {
-        "settings": {
-          "sampling_mode": "top_k",
-          "default_temperature": 1.2,
-          "logit_bias_multiplier": 14,
-          "entropy_visual_threshold": 0.4
-        },
-        "top_k_tokens": [
-          {
-            "token": "Paris",
-            "base_logit": 5.0,
-            "category_link": "geografie",
-            "noise_sensitivity": 0.2,
-            "hallucination_risk": 0.1
-          },
-          {
-            "token": "Bananenrepublik",
-            "base_logit": 3.8,
-            "category_link": "instabil",
-            "noise_sensitivity": 0.9,
-            "hallucination_risk": 0.95
-          },
-          {
-            "token": "London",
-            "base_logit": 4.5,
-            "category_link": "geografie",
-            "noise_sensitivity": 0.4,
-            "hallucination_risk": 0.3
-          },
-          {
-            "token": "Baguette",
-            "base_logit": 3.5,
-            "category_link": "instabil",
-            "noise_sensitivity": 0.8,
-            "hallucination_risk": 0.8
-          }
-        ]
-      }
-    },
-    {
-      "id": "gender-bias-chirurgie-01",
-      "name": "Gender-Bias: Das Skalpell",
-      "input_prompt": "Die Person führt das Skalpell. Es handelt sich um eine...",
-      "explanation": "Dieses Szenario zeigt, wie ein trainierter Bias (Head 1) die neutrale Kategorie 'Medizin' in Phase 3 maskulin einfärbt. In Phase 4 gewinnt 'Arzt' gegenüber 'Ärztin', obwohl der Text geschlechtsneutral ist.",
-      "phase_0_tokenization": {
-        "tokens": [
-          {
-            "id": "0",
-            "text": "Die"
-          },
-          {
-            "id": "1",
-            "text": "Person"
-          },
-          {
-            "id": "2",
-            "text": "führt"
-          },
-          {
-            "id": "3",
-            "text": "das"
-          },
-          {
-            "id": "4",
-            "text": "Skalpell"
-          },
-          {
-            "id": "5",
-            "text": "."
-          }
-        ]
-      },
-      "phase_1_embedding": {
-        "token_vectors": [
-          {
-            "token_index": 1,
-            "base_vector": [
-              0.4,
-              0.4
-            ],
-            "positional_vector": [
-              0.0,
-              0.0
-            ]
-          },
-          {
-            "token_index": 4,
-            "base_vector": [
-              0.6,
-              0.7
-            ],
-            "positional_vector": [
-              0.2,
-              0.1
-            ]
-          }
-        ]
-      },
-      "phase_2_attention": {
-        "attention_profiles": [
-          {
-            "id": "stereotypes",
-            "label": "Soziale Muster (Stereotype)",
-            "rules": [
-              {
-                "head": 1,
-                "label": "Maskuliner Bias",
-                "source": "4",
-                "target": "1",
-                "strength": 1.4
-              },
-              {
-                "head": 3,
-                "label": "Berufs-Logik",
-                "source": "4",
-                "target": "1",
-                "strength": 0.9
-              }
-            ]
-          }
-        ]
-      },
-      "phase_3_ffn": {
-        "activations": [
-          {
-            "id": "maskulin",
-            "label": "Kategorie: Maskulin",
-            "activation_default": 0.8,
-            "linked_head": 1,
-            "color": "#3b82f6",
-            "icon": "👨",
-            "suggested_token": "Arzt"
-          },
-          {
-            "id": "feminin",
-            "label": "Kategorie: Feminin",
-            "activation_default": 0.2,
-            "linked_head": 4,
-            "color": "#ec4899",
-            "icon": "👩",
-            "suggested_token": "Ärztin"
-          },
-          {
-            "id": "medizin",
-            "label": "Kategorie: Medizin",
-            "activation_default": 0.9,
-            "linked_head": 3,
-            "color": "#10b981",
-            "icon": "🏥",
-            "suggested_token": "Chirurg"
-          }
-        ]
-      },
-      "phase_4_decoding": {
-        "settings": {
-          "sampling_mode": "top_k",
-          "default_temperature": 0.7,
-          "logit_bias_multiplier": 12,
-          "entropy_visual_threshold": 0.3
-        },
-        "top_k_tokens": [
-          {
-            "token": "Arzt",
-            "base_logit": 4.8,
-            "category_link": "maskulin",
-            "noise_sensitivity": 0.3
-          },
-          {
-            "token": "Ärztin",
-            "base_logit": 4.8,
-            "category_link": "feminin",
-            "noise_sensitivity": 0.3
-          },
-          {
-            "token": "Chirurg",
-            "base_logit": 3.5,
-            "category_link": "maskulin",
-            "noise_sensitivity": 0.4
-          }
-        ]
-      }
-    },
-    {
-      "id": "hauptstadt-multi-kontext-01",
+      "id": "hauptstadt-multi-kontext-v02",
       "name": "Hauptstadt: Der Kontext-Mixer",
       "input_prompt": "Die Hauptstadt von Deutschland ist...",
-      "explanation": "Dieses Szenario demonstriert Multi-Head-Inferenz. Jeder Head repräsentiert einen anderen Fokus: Fakten (Berlin), Geschichte (Bonn), Ästhetik (schön), Umgebung (laut) oder Distanz (weit weg).",
+      "explanation": "Dieses Szenario demonstriert, wie ein Transformer-Modell zwischen faktischem Wissen, historischem Archiv-Wissen und subjektiven Bewertungen (Emotion/Sensorik) wechselt, je nachdem, welcher Attention-Pfad durch den Nutzer oder den Kontext verstärkt wird.",
       "phase_0_tokenization": {
         "tokens": [
           {
             "id": "0",
-            "text": "Die"
+            "text": "Die",
+            "explanation": "Bestimmter Artikel, Feminin. In diesem Kontext fungiert er als struktureller Anker. Linguistisch leitet er das Subjekt ein und dient im Modell oft als Träger für den übergeordneten Satz-Modus (z.B. historisch vs. aktuell)."
           },
           {
             "id": "1",
-            "text": "Hauptstadt"
+            "text": "Hauptstadt",
+            "explanation": "Ein relationales Nomen, das zwingend eine Ergänzung (von X) erfordert. Es aktiviert im FFN-Layer komplexe Wissensstrukturen über Geografie, Verwaltung und nationale Identität."
           },
           {
             "id": "2",
-            "text": "von"
+            "text": "von",
+            "explanation": "Präposition zur Einleitung des Genitiv-Attributs. Sie stellt die logische Verbindung zwischen dem Konzept 'Hauptstadt' und der spezifischen Entität 'Deutschland' her."
           },
           {
             "id": "3",
-            "text": "Deutschland"
+            "text": "Deutschland",
+            "explanation": "Eigennamen-Entität. Dies ist der primäre Fakten-Anker im Vektorraum. Er liefert die notwendigen Koordinaten, um aus der allgemeinen Kategorie 'Hauptstadt' einen spezifischen geografischen Punkt zu extrahieren."
           },
           {
             "id": "4",
-            "text": "ist"
+            "text": "ist",
+            "explanation": "Kopula-Verb (Sein). Es dient als Prädikat und stellt die Äquivalenz zwischen dem Subjekt und dem kommenden Prädikatsnomen her. Im Decoding-Prozess ist dies der Moment der höchsten Entropie vor der Entscheidung."
           }
         ]
       },
       "phase_1_embedding": {
-        "token_vectors": [
-          {
-            "token_index": 0,
-            "text": "Die",
-            "base_vector": [
-              -0.9,
-              0.8
-            ],
-            "positional_vector": [
-              -0.1,
-              0.1
-            ],
-            "explanation": "Ein bestimmter Artikel: Er hat fast keinen Weltbezug (X=-0.9) und existiert nur, um auf ein folgendes Nomen zu verweisen (Y=0.8). Der Positions-Shift ist minimal, da der Satzstart oft generisch ist."
+        "axis_map": {
+          "x_axis": {
+            "positive": "Fakten & Entitäten",
+            "negative": "Syntax & Funktion",
+            "description": "Die X-Achse trennt inhaltliche Ankerpunkte (Berlin, Deutschland) von rein funktionalen Sprachelementen (ist, von)."
           },
-          {
-            "token_index": 1,
-            "text": "Hauptstadt",
-            "base_vector": [
-              0.2,
-              0.6
-            ],
-            "positional_vector": [
-              0.1,
-              -0.1
-            ],
-            "explanation": "Ein relationales Konzept (X=0.2, Y=0.6). Durch seine Position an Index 1 wird der Vektor leicht Richtung 'Weltbezug' gezogen, da hier die semantische Auflösung des Satzthemas beginnt."
-          },
-          {
-            "token_index": 2,
-            "text": "von",
-            "base_vector": [
-              -0.7,
-              0.9
-            ],
-            "positional_vector": [
-              -0.2,
-              0.2
-            ],
-            "explanation": "Ein logischer Connector (X=-0.7). Die Position verstärkt die funktionale Brückenrolle (Y steigt), um die Verbindung zwischen 'Hauptstadt' und dem folgenden Zielobjekt zu festigen."
-          },
-          {
-            "token_index": 3,
-            "text": "Deutschland",
-            "base_vector": [
-              0.95,
-              -0.8
-            ],
-            "positional_vector": [
-              0.3,
-              -0.2
-            ],
-            "explanation": "Massive geografische Entität (X=0.95, Y=-0.8). An Index 3 erhält das Token einen starken Positions-Shift nach rechts-unten, was die 'Verankerung' des Satzes im Faktenwissen visualisiert."
-          },
-          {
-            "token_index": 4,
-            "text": "ist",
-            "base_vector": [
-              -0.85,
-              0.7
-            ],
-            "positional_vector": [
-              -0.15,
-              0.3
-            ],
-            "explanation": "Strukturelles Gleichheitszeichen (X=-0.85). Der Positions-Shift nach oben (Y=+0.3) signalisiert die Erwartungshaltung: Das Modell 'wartet' an dieser Stelle maximal auf den finalen Output (Berlin)."
+          "y_axis": {
+            "positive": "Kontext-Abhängigkeit",
+            "negative": "Semantische Dichte",
+            "description": "Die Y-Achse zeigt, ob ein Token aktiv nach Informationen in der Umgebung sucht oder selbst eine abgeschlossene Bedeutung trägt."
           }
-        ]
-      },
-      "phase_2_attention": {
-        "attention_profiles": [
-          {
-            "id": "mindset-selector",
-            "label": "KI-Aufmerksamkeits-Fokus",
-            "rules": [
-              {
-                "head": 3,
-                "label": "Fakten-Abruf",
-                "source": "3",
-                "target": "1",
-                "strength": 1.4,
-                "explanation": "Logik-Check: Das Modell verknüpft die Entität 'Deutschland' (Source) mit dem Konzept 'Hauptstadt' (Target). Head 3 erkennt, dass hier ein geografischer Fakt abgefragt wird, und bereitet im FFN den Zugriff auf das Cluster 'Berlin' vor."
-              },
-              {
-                "head": 4,
-                "label": "Historisches Wissen",
-                "source": "3",
-                "target": "0",
-                "strength": 1.1,
-                "explanation": "Struktur-Analyse: Dieser Head prüft die historische Bestimmtheit des Satzes. Durch die Kopplung von 'Deutschland' mit dem Artikel 'Die' wird sichergestellt, dass es sich um eine spezifische, singuläre Institution handelt, was den Pfad zu historisch relevanten Alternativen wie 'Bonn' öffnet."
-              },
-              {
-                "head": 2,
-                "label": "Ästhetik/Gefühl",
-                "source": "4",
-                "target": "1",
-                "strength": 1.2,
-                "explanation": "Syntax-Brücke: Das Verb 'ist' (Source) fokussiert auf das Nomen 'Hauptstadt' (Target). Head 2 analysiert hier die prädikative Beziehung und aktiviert Pfade für qualitative Beschreibungen (z.B. 'schön'), falls die Temperature erhöht wird."
-              },
-              {
-                "head": 1,
-                "label": "Sensorik/Umgebung",
-                "source": "4",
-                "target": "2",
-                "strength": 1.1,
-                "explanation": "Semantische Weitung: Das Modell verbindet 'ist' mit der Präposition 'von'. Dies signalisiert dem Decoder, dass eine räumliche oder sensorische Beschreibung folgen könnte, wodurch Wörter wie 'laut' oder 'weit weg' eine höhere Grundwahrscheinlichkeit erhalten."
-              }
-            ]
-          }
-        ]
-      },
-      "phase_3_ffn": {
-        "activations": [
-          {
-            "id": "geografie",
-            "label": "Fakten-Speicher",
-            "linked_head": 3,
-            "color": "#10b981",
-            "icon": "📚"
-          },
-          {
-            "id": "geschichte",
-            "label": "Archiv-Wissen",
-            "linked_head": 4,
-            "color": "#8b5cf6",
-            "icon": "⏳"
-          },
-          {
-            "id": "emotion",
-            "label": "Affektive Ebene",
-            "linked_head": 2,
-            "color": "#ec4899",
-            "icon": "💖"
-          },
-          {
-            "id": "sensorik",
-            "label": "Umgebung/Lärm",
-            "linked_head": 1,
-            "color": "#f59e0b",
-            "icon": "🚗"
-          }
-        ]
-      },
-      "phase_4_decoding": {
-        "settings": {
-          "default_temperature": 0.7,
-          "default_noise": 0.0,
-          "default_mlp_threshold": 0.3,
-          "logit_bias_multiplier": 16
         },
-        "top_k_tokens": [
-          {
-            "token": "Berlin",
-            "base_logit": 5.2,
-            "category_link": "geografie"
-          },
-          {
-            "token": "Bonn",
-            "base_logit": 4.0,
-            "category_link": "geschichte"
-          },
-          {
-            "token": "schön",
-            "base_logit": 4.5,
-            "category_link": "emotion"
-          },
-          {
-            "token": "laut",
-            "base_logit": 4.3,
-            "category_link": "sensorik"
-          },
-          {
-            "token": "weit weg",
-            "base_logit": 3.5,
-            "category_link": "sensorik"
-          }
-        ]
-      }
-    },
-    {
-      "id": "hauptstadt-multi-kontext-02",
-      "name": "Hauptstadt: Der Kontext-Mixer 2",
-      "input_prompt": "Die Hauptstadt von Deutschland ist...",
-      "explanation": "V11.5: Harmonisiertes Gating mit vollständigen Vektordaten. 'Die' (ID 0) steuert via Head 4 die Geschichte. Alle Pfade via Source-Gating isoliert.",
-      "phase_0_tokenization": {
-        "tokens": [
-          {
-            "id": "0",
-            "text": "Die"
-          },
-          {
-            "id": "1",
-            "text": "Hauptstadt"
-          },
-          {
-            "id": "2",
-            "text": "von"
-          },
-          {
-            "id": "3",
-            "text": "Deutschland"
-          },
-          {
-            "id": "4",
-            "text": "ist"
-          }
-        ]
-      },
-      "phase_1_embedding": {
         "token_vectors": [
           {
             "token_index": 0,
@@ -718,7 +61,7 @@
               -0.1,
               0.1
             ],
-            "explanation": "Struktureller Artikel: Dient hier als Source für den historischen Pfad (Head 4)."
+            "explanation": "Struktureller Artikel: Dient hier als primäre Quelle für den historischen Pfad (Head 4), um Zustände wie 'ehemalig' zu adressieren."
           },
           {
             "token_index": 1,
@@ -731,7 +74,7 @@
               0.1,
               -0.1
             ],
-            "explanation": "Relationales Nomen: Löst bei Fokus die ästhetische Bewertung aus (Head 2)."
+            "explanation": "Relationales Nomen: Besetzt eine zentrale Position im Vektorraum und wartet auf die Spezifizierung durch die 'Deutschland'-Entität."
           },
           {
             "token_index": 2,
@@ -744,7 +87,7 @@
               -0.2,
               0.2
             ],
-            "explanation": "Connector: Fungiert als exklusiver Query-Token für räumliche Distanz (Head 1)."
+            "explanation": "Connector: Erzeugt ein starkes Signal für geografische Relationen und Distanzberechnungen (Head 1)."
           },
           {
             "token_index": 3,
@@ -757,7 +100,7 @@
               0.3,
               -0.2
             ],
-            "explanation": "Entität: Hauptquelle für Faktenwissen (Head 3) und Ziel für Historie."
+            "explanation": "Massive Entität: Liefert die höchste semantische Dichte und fungiert als Zielpunkt für fast alle Attention-Heads."
           },
           {
             "token_index": 4,
@@ -770,7 +113,7 @@
               -0.15,
               0.3
             ],
-            "explanation": "Verb: Fungiert als exklusiver Query-Token für Sensorik (Head 1)."
+            "explanation": "Verb-Knoten: Erzeugt die Spannung für das nachfolgende Token und steuert via Head 1 sensorische Assoziationen (laut/schön)."
           }
         ]
       },
@@ -785,35 +128,40 @@
                 "label": "geografie",
                 "source": "3",
                 "target": "1",
-                "strength": 1.5
+                "strength": 1.5,
+                "explanation": "Fokussiert die geografische Identität. Die Entität 'Deutschland' sucht nach ihrer funktionalen Entsprechung 'Hauptstadt'."
               },
               {
                 "head": 4,
                 "label": "geschichte",
                 "source": "0",
                 "target": "3",
-                "strength": 1.5
+                "strength": 1.5,
+                "explanation": "Aktiviert den Archiv-Modus. Der Artikel 'Die' blickt zurück auf die Geschichte der deutschen Entität."
               },
               {
                 "head": 2,
                 "label": "emotion",
                 "source": "1",
                 "target": "4",
-                "strength": 1.5
+                "strength": 1.5,
+                "explanation": "Verschiebt den Fokus auf die ästhetische Bewertung des Konzepts 'Hauptstadt' durch das Kopula-Verb."
               },
               {
                 "head": 1,
                 "label": "sensorik",
                 "source": "4",
                 "target": "2",
-                "strength": 1.5
+                "strength": 1.5,
+                "explanation": "Sucht nach unmittelbaren Umgebungseindrücken (Lärm, Licht) im Kontext der räumlichen Verbindung."
               },
               {
                 "head": 1,
                 "label": "distanz",
                 "source": "2",
                 "target": "3",
-                "strength": 1.5
+                "strength": 1.5,
+                "explanation": "Berechnet die räumliche Entfernung zwischen dem Sprecherstandpunkt und der Entität Deutschland."
               }
             ]
           }
@@ -826,35 +174,40 @@
             "label": "Fakten-Speicher",
             "linked_head": 3,
             "color": "#10b981",
-            "icon": "📚"
+            "icon": "📚",
+            "explanation": "Diese Wissens-Aktivierung greift auf den aktuellen geopolitischen Datensatz zu. Die Analyse ergibt eine Übereinstimmung zwischen der Entität Deutschland und dem Status von Berlin als Regierungssitz. Es handelt sich um ein rein faktisches Signal ohne subjektive Wertung."
           },
           {
             "id": "geschichte",
             "label": "Archiv-Wissen",
             "linked_head": 4,
             "color": "#8b5cf6",
-            "icon": "⏳"
+            "icon": "⏳",
+            "explanation": "Hier wird das historische Gedächtnis des Modells angesprochen. Der Kontext-Mixer erkennt, dass Deutschland eine geteilte Geschichte hat. Dies verschiebt die Wahrscheinlichkeit in Phase 4 zugunsten von Bonn, da der historische Head die zeitliche Dimension priorisiert."
           },
           {
             "id": "emotion",
             "label": "Affektive Ebene",
             "linked_head": 2,
             "color": "#ec4899",
-            "icon": "💖"
+            "icon": "💖",
+            "explanation": "Die KI-Analyse wechselt hier von Fakten zu Empfindungen. Durch die Verknüpfung von 'Hauptstadt' und 'ist' werden ästhetische Prädikate aktiviert. Das Modell greift auf gängige menschliche Bewertungen über die Lebensqualität und Schönheit von Metropolen zu."
           },
           {
             "id": "sensorik",
             "label": "Umgebung/Lärm",
             "linked_head": 1,
             "color": "#f59e0b",
-            "icon": "🚗"
+            "icon": "🚗",
+            "explanation": "Dieses Cluster simuliert sensorisches Feedback. Die neuronale Interpretation konzentriert sich auf die physischen Eigenschaften einer Großstadt: Lärmbelastung, Verkehrsdichte und urbane Hektik. Es unterdrückt faktisches Wissen zugunsten von Adjektiven der Wahrnehmung."
           },
           {
             "id": "distanz",
             "label": "Geografische Distanz",
             "linked_head": 1,
             "color": "#6366f1",
-            "icon": "📏"
+            "icon": "📏",
+            "explanation": "Berechnung der räumlichen Tiefe. Das Modell analysiert die Relation 'von Deutschland' als Indikator für eine geografische Entfernung zum implizierten Beobachter. Dies aktiviert Begriffe, die die Lage im Raum beschreiben."
           }
         ]
       },
@@ -890,6 +243,314 @@
             "token": "weit weg",
             "base_logit": 4.7,
             "category_link": "distanz"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bankraeuber-polysemie-komplett-2026",
+      "name": "Die dreifache Bank: Kontext-Analyse",
+      "input_prompt": "Der Bankräuber sitzt auf einer Bank vor der Bank.",
+      "explanation": "Dieses Szenario demonstriert die Auflösung extremer Polysemie. Drei identische Token 'Bank' werden durch Positional Encoding unterscheidbar gemacht und durch Attention in völlig unterschiedliche semantische Bereiche verschoben.",
+      "phase_0_tokenization": {
+        "tokens": [
+          {
+            "id": "0",
+            "text": "Der",
+            "explanation": "Der bestimmte Artikel im Nominativ Maskulin. Er fungiert hier als Determiner für das komplexe Subjekt. In der Tokenisierung wird er oft als Startpunkt für die syntaktische Abhängigkeitsanalyse genutzt."
+          },
+          {
+            "id": "1",
+            "text": "Bank",
+            "explanation": "Die erste Instanz des Polysems 'Bank'. Ohne Kontext ist sie semantisch unterbestimmt. Da sie jedoch direkt mit 'räuber' verknüpft wird, findet eine morphologische Attraktion zum Finanzwesen statt."
+          },
+          {
+            "id": "2",
+            "text": "räuber",
+            "explanation": "Das semantisch dominante Token des Subjekts. Es aktiviert im neuronalen Netzwerk sofort Cluster, die mit Kriminalität, Agitator-Rollen und dem Entzug von Werten assoziiert sind."
+          },
+          {
+            "id": "3",
+            "text": "sitzt",
+            "explanation": "Ein statisches Verb, das eine räumliche Relation zwischen dem Agens (Räuber) und einem Lokativ (auf einer Bank) fordert. Es erzeugt eine Erwartungshaltung für ein physisches Objekt im Vektorraum."
+          },
+          {
+            "id": "4",
+            "text": "auf",
+            "explanation": "Eine lokale Präposition, die einen Kontakt zu einer Oberfläche impliziert. Linguistisch gesehen ist dies der 'Trigger', der das nachfolgende Token 'Bank' in den Bereich des Mobiliars zwingt."
+          },
+          {
+            "id": "5",
+            "text": "einer",
+            "explanation": "Ein unbestimmter Artikel im Dativ. Er signalisiert dem Modell, dass ein neues, bisher nicht erwähntes physisches Objekt in den Kontext eingeführt wird."
+          },
+          {
+            "id": "6",
+            "text": "Bank",
+            "explanation": "Die zweite Instanz. Durch die unmittelbare Nähe zur Präposition 'auf' wird der Vektor in Phase 2 stark in Richtung der physischen, greifbaren Objekte verschoben."
+          },
+          {
+            "id": "7",
+            "text": "vor",
+            "explanation": "Eine relationale Präposition, die eine räumliche Nähe beschreibt. Sie dient hier als Brücke, um die Szenerie von einem punktuellen Objekt (Parkbank) zu einem größeren architektonischen Kontext (Gebäude) zu erweitern."
+          },
+          {
+            "id": "8",
+            "text": "der",
+            "explanation": "Bestimmter Artikel im Dativ. Im Gegensatz zu 'einer' (Token 5) impliziert 'der' hier eine Bekanntheit oder Einzigartigkeit des Objekts im weiteren Kontext der Erzählung."
+          },
+          {
+            "id": "9",
+            "text": "Bank",
+            "explanation": "Die dritte Instanz. Sie steht am Ende der Kausalkette. Da der Räuber 'vor' ihr sitzt, wird dieses Token als massives, ortsfestes Gebäude interpretiert, das den institutionellen Rahmen der Szene bildet."
+          },
+          {
+            "id": "10",
+            "text": ".",
+            "explanation": "Satzende-Marker. Er signalisiert dem Decoder, dass die semantische Integration der vorangegangenen Tokens abgeschlossen ist und die Wahrscheinlichkeitsverteilung für den nächsten Satz berechnet werden kann."
+          }
+        ]
+      },
+      "phase_1_embedding": {
+        "axis_map": {
+          "x_axis": {
+            "positive": "Abstrakt & Finanziell",
+            "negative": "Physisch & Greifbar",
+            "description": "Die X-Achse trennt die funktionale Welt des Geldes (Kreditinstitute) von der materiellen Welt der Objekte (Möbel)."
+          },
+          "y_axis": {
+            "positive": "Aktion & Dynamik",
+            "negative": "Statik & Ort",
+            "description": "Die Y-Achse unterscheidet zwischen handelnden Subjekten/Prozessen und festen, unbeweglichen Verortungen im Raum."
+          }
+        },
+        "token_vectors": [
+          {
+            "token_index": 0,
+            "text": "Der",
+            "base_vector": [
+              -0.5,
+              0.0
+            ],
+            "positional_vector": [
+              0.0,
+              0.1
+            ],
+            "explanation": "Grammatischer Wegweiser. Das Positional Encoding markiert die Startposition der Sequenz."
+          },
+          {
+            "token_index": 1,
+            "text": "Bank (1)",
+            "base_vector": [
+              0.8,
+              -0.4
+            ],
+            "positional_vector": [
+              0.05,
+              0.09
+            ],
+            "explanation": "Finanz-Kontext. Das Modell platziert dieses Token initial im abstrakten Quadranten."
+          },
+          {
+            "token_index": 2,
+            "text": "räuber",
+            "base_vector": [
+              0.3,
+              0.9
+            ],
+            "positional_vector": [
+              0.1,
+              0.08
+            ],
+            "explanation": "Akteur-Token. Besetzt den dynamischen Quadranten durch die implizierte Handlungskraft (Y+)."
+          },
+          {
+            "token_index": 3,
+            "text": "sitzt",
+            "base_vector": [
+              -0.2,
+              0.6
+            ],
+            "positional_vector": [
+              0.15,
+              0.07
+            ],
+            "explanation": "Zustandsverb. Es sucht im Vektorraum nach einer Unterlage für die physische Positionierung."
+          },
+          {
+            "token_index": 4,
+            "text": "auf",
+            "base_vector": [
+              -0.7,
+              -0.1
+            ],
+            "positional_vector": [
+              0.2,
+              0.06
+            ],
+            "explanation": "Räumlicher Connector. Zieht nachfolgende Tokens in den Bereich der physischen Interaktion."
+          },
+          {
+            "token_index": 5,
+            "text": "einer",
+            "base_vector": [
+              -0.4,
+              0.0
+            ],
+            "positional_vector": [
+              0.25,
+              0.05
+            ],
+            "explanation": "Artikel zur Objekt-Einleitung im physischen Raum."
+          },
+          {
+            "token_index": 6,
+            "text": "Bank (2)",
+            "base_vector": [
+              0.8,
+              -0.4
+            ],
+            "positional_vector": [
+              0.3,
+              0.04
+            ],
+            "explanation": "Identische Basis wie [1], aber das PE signalisiert eine räumlich getrennte, neue Entität."
+          },
+          {
+            "token_index": 7,
+            "text": "vor",
+            "base_vector": [
+              -0.6,
+              -0.2
+            ],
+            "positional_vector": [
+              0.35,
+              0.03
+            ],
+            "explanation": "Relations-Token für die Umgebung. Es bereitet den Raum für eine architektonische Einordnung vor."
+          },
+          {
+            "token_index": 8,
+            "text": "der",
+            "base_vector": [
+              -0.5,
+              0.0
+            ],
+            "positional_vector": [
+              0.4,
+              0.02
+            ],
+            "explanation": "Bestimmter Artikel, der eine spezifische Referenz im Weltwissen des Modells anspricht."
+          },
+          {
+            "token_index": 9,
+            "text": "Bank (3)",
+            "base_vector": [
+              0.8,
+              -0.4
+            ],
+            "positional_vector": [
+              0.45,
+              0.01
+            ],
+            "explanation": "Dritte Instanz. Durch die Satzposition und die Präposition 'vor' wird ein massives Objekt erwartet."
+          },
+          {
+            "token_index": 10,
+            "text": ".",
+            "base_vector": [
+              0.0,
+              -1.0
+            ],
+            "positional_vector": [
+              0.5,
+              0.0
+            ],
+            "explanation": "Stopp-Signal. Es schließt die semantische Energie des aktuellen Satzes ab."
+          }
+        ]
+      },
+      "phase_2_attention": {
+        "attention_profiles": [
+          {
+            "id": "triple-context-resolver",
+            "label": "Polysemie-Entwirrung",
+            "rules": [
+              {
+                "head": 1,
+                "label": "finance_crime",
+                "source": "2",
+                "target": "1",
+                "strength": 2.0
+              },
+              {
+                "head": 2,
+                "label": "outdoor_furniture",
+                "source": "4",
+                "target": "6",
+                "strength": 1.8
+              },
+              {
+                "head": 3,
+                "label": "architecture",
+                "source": "7",
+                "target": "9",
+                "strength": 1.5
+              }
+            ]
+          }
+        ]
+      },
+      "phase_3_ffn": {
+        "activations": [
+          {
+            "id": "finance_crime",
+            "label": "Finanzdelikt",
+            "linked_head": 1,
+            "color": "#dc2626",
+            "icon": "💸",
+            "explanation": "Diese Wissens-Kategorie wird aktiviert, wenn das Token 'Bank' semantisch mit einem Täter-Token wie 'Räuber' verschmilzt. Die neuronale Analyse erkennt hier keine Sitzgelegenheit, sondern ein Zielobjekt für eine kriminelle Handlung innerhalb des Wirtschaftssystems."
+          },
+          {
+            "id": "outdoor_furniture",
+            "label": "Parkmobiliar",
+            "linked_head": 2,
+            "color": "#16a34a",
+            "icon": "🌳",
+            "explanation": "Die Kombination aus der Präposition 'auf' und dem Verb 'sitzen' triggert dieses Wissens-Cluster. Es repräsentiert das Konzept von hölzernen oder metallischen Sitzgelegenheiten im öffentlichen Raum. Die abstrakte Bank-Bedeutung wird hier fast vollständig unterdrückt."
+          },
+          {
+            "id": "architecture",
+            "label": "Städtische Architektur",
+            "linked_head": 3,
+            "color": "#2563eb",
+            "icon": "🏛️",
+            "explanation": "Dieses Cluster reagiert auf räumliche Lagebeschreibungen von großen Objekten. Wenn etwas 'vor' einer Bank geschieht, identifiziert das MLP-Layer das Gebäude als architektonischen Fixpunkt. Es aktiviert Wissen über Fassaden, Institutionen und Stadtplanung."
+          }
+        ]
+      },
+      "phase_4_decoding": {
+        "settings": {
+          "default_temperature": 0.6,
+          "default_noise": 0.0,
+          "default_mlp_threshold": 0.5,
+          "logit_bias_multiplier": 20
+        },
+        "top_k_tokens": [
+          {
+            "token": "und plant die Flucht.",
+            "base_logit": 5.9,
+            "category_link": "finance_crime"
+          },
+          {
+            "token": "in der Mittagssonne.",
+            "base_logit": 5.4,
+            "category_link": "outdoor_furniture"
+          },
+          {
+            "token": "am Hauptplatz.",
+            "base_logit": 5.1,
+            "category_link": "architecture"
           }
         ]
       }

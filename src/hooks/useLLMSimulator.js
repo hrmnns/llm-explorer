@@ -9,7 +9,7 @@ export const useLLMSimulator = (activeScenario) => {
   const [headOverrides, setHeadOverrides] = useState({});
   const [selectedToken, setSelectedToken] = useState(null);
 
-  // Hilfsfunktion zur Ermittlung der Slider-Werte aus Phase 2
+  // Hilfsfunktion zur Ermittlung der Slider-Werte aus Phase 2 (Wichtig für UI-Sync)
   const getSliderVal = (hNum) => {
     const targetSuffix = `_h${hNum}`;
     const allKeys = Object.keys(headOverrides);
@@ -31,14 +31,10 @@ export const useLLMSimulator = (activeScenario) => {
     setHeadOverrides(prev => ({ ...prev, [key]: value }));
   };
 
-  // In useLLMSimulator.js
-
-  // In useLLMSimulator.js
-
+  // Reset-Logik bei Szenario-Wechsel
   useEffect(() => {
     if (!activeScenario) return;
 
-    // 1. Die Browser-Speicher-Keys für dieses Szenario löschen
     const SESSION_STORAGE_KEY = `sim_overrides_${activeScenario.id}`;
     const PERSIST_HEAD_KEY = `sim_lastHead_${activeScenario.id}`;
     const PERSIST_TOKEN_KEY = `sim_lastToken_${activeScenario.id}`;
@@ -47,13 +43,11 @@ export const useLLMSimulator = (activeScenario) => {
     sessionStorage.removeItem(PERSIST_HEAD_KEY);
     sessionStorage.removeItem(PERSIST_TOKEN_KEY);
 
-    // 2. Globalen State zurücksetzen
     const settings = activeScenario.phase_4_decoding?.settings || {};
     setTemperature(settings.default_temperature || 0.7);
     setNoise(settings.default_noise || 0.0);
     setMlpThreshold(settings.default_mlp_threshold || 0.5);
 
-    // 3. Head-Overrides im State leeren
     setHeadOverrides({});
     setSelectedToken(null);
 
@@ -73,9 +67,12 @@ export const useLLMSimulator = (activeScenario) => {
       const yBase = v.base_vector[1];
       const xPos = (v.positional_vector?.[0] || 0) * positionWeight;
       const yPos = (v.positional_vector?.[1] || 0) * positionWeight;
+      
+      // Jitter wird 0, wenn Noise 0 ist (deterministisch)
       const noiseX = (Math.random() - 0.5) * noise * 25;
       const noiseY = (Math.random() - 0.5) * noise * 25;
       const signalQuality = Math.max(0, 1 - (noise / 5));
+      
       return {
         ...v,
         displayX: (xBase + xPos) * 150 + noiseX,
@@ -92,7 +89,7 @@ export const useLLMSimulator = (activeScenario) => {
     return { avgSignal, profiles: activeScenario.phase_2_attention.attention_profiles };
   }, [activeScenario, processedVectors]);
 
-  // --- NEU & ZENTRAL: PHASE 3 BERECHNUNG DIREKT IM HOOK ---
+  // 3. PHASE 3: FFN (Reagiert auf headOverrides durch Goal-Seeking)
   const activeFFN = useMemo(() => {
     const activationsSource = activeScenario?.phase_3_ffn?.activations;
     const tokens = activeScenario?.phase_0_tokenization?.tokens;
@@ -109,15 +106,15 @@ export const useLLMSimulator = (activeScenario) => {
       tokens.forEach(t => {
         const tokenKey = `${activeProfileId}_s${t.id}_h${linkedHeadId}`;
 
+        // Hier fließen die Overrides vom 🎯-Button ein
         const sliderVal = headOverrides[tokenKey] !== undefined
           ? parseFloat(headOverrides[tokenKey])
           : 0.7;
 
-        // KORREKTUR: Zusätzlicher Check auf cat.id
         const rule = rules.find(r =>
           Number(r.head) === Number(linkedHeadId) &&
           String(r.source) === String(t.id) &&
-          r.label === cat.id // Die Regel muss vom Label her zur Kategorie-ID passen
+          String(r.label).toLowerCase() === String(cat.id).toLowerCase()
         );
 
         if (rule) {
@@ -136,29 +133,29 @@ export const useLLMSimulator = (activeScenario) => {
     });
   }, [activeScenario, headOverrides, activeProfileId, mlpThreshold, activeAttention]);
 
-  // 4. PHASE 4: DECODING (Reagiert nun SOFORT auf das berechnete activeFFN)
+  // 4. PHASE 4: DECODING (Reagiert auf activeFFN, Noise und Temperature)
   const finalOutputs = useMemo(() => {
     if (!activeScenario?.phase_4_decoding) return [];
     const tokens = activeScenario.phase_4_decoding.top_k_tokens || [];
     const multiplier = activeScenario.phase_4_decoding.settings?.logit_bias_multiplier || 12;
 
     const calculatedData = tokens.map(tokenItem => {
-      // Suche Live-Aktivierung aus Phase 3 (oben berechnet)
-      const matchingCat = activeFFN.find(f => f.id === tokenItem.category_link);
+      const matchingCat = activeFFN.find(f => String(f.id).toLowerCase() === String(tokenItem.category_link).toLowerCase());
       const liveActivation = matchingCat ? matchingCat.activation : 0.5;
 
-      // Logit-Bias Formel
+      // Logit-Bias Berechnung
       const bias = (liveActivation - 0.5) * multiplier;
-      const currentLogit = tokenItem.base_logit !== undefined ? tokenItem.base_logit : 4.0;
+      const baseLogit = tokenItem.base_logit !== undefined ? tokenItem.base_logit : 4.0;
 
+      // Wenn Noise 0 ist, ist decay 1.0 (keine Dämpfung)
       const decay = 1 - (Math.min(1, noise / 2) * (tokenItem.noise_sensitivity || 0.5));
-      const adjustedLogit = (currentLogit + bias) * decay;
+      const adjustedLogit = (baseLogit + bias) * decay;
 
       return {
         ...tokenItem,
         logit: adjustedLogit,
-        liveActivation, // Für den Inspektor
-        ffnBoost: bias,  // Für den Inspektor
+        liveActivation,
+        ffnBoost: bias,
         exp: Math.exp(adjustedLogit / Math.max(temperature, 0.01))
       };
     });
@@ -172,24 +169,26 @@ export const useLLMSimulator = (activeScenario) => {
   }, [activeScenario, activeFFN, temperature, noise]);
 
   const resetParameters = () => {
-    setNoise(0);
-    setPositionWeight(1.0);
+    const settings = activeScenario?.phase_4_decoding?.settings || {};
+    setNoise(settings.default_noise || 0);
+    setTemperature(settings.default_temperature || 0.7);
+    setMlpThreshold(settings.default_mlp_threshold || 0.5);
     setHeadOverrides({});
-    setMlpThreshold(0.5);
-    setTemperature(0.7);
+    setPositionWeight(0);
     setSelectedToken(null);
-    setActiveProfileId(activeScenario?.phase_2_attention?.attention_profiles[0]?.id || 'default');
+    setActiveProfileId(activeScenario?.phase_2_attention?.attention_profiles[0]?.id || 'scientific');
   };
 
   return {
     phase_0_tokenization: activeScenario?.phase_0_tokenization,
     processedVectors,
-    activeFFN, // Jetzt ein berechnetes Memo, kein manueller State mehr!
+    activeFFN,
     finalOutputs,
     activeAttention,
     headOverrides,
     setHeadOverrides,
     updateHeadWeight,
+    getSliderVal,
     noise, setNoise,
     temperature, setTemperature,
     activeProfileId, setActiveProfileId,

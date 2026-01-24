@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import PhaseLayout from './../PhaseLayout';
+import { useScenarios } from '../../context/ScenarioContext';
 
-const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) => {
+const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
+  const { activeScenario } = useScenarios();
   const {
-    temperature, setTemperature, finalOutputs, activeAttention,
-    setSelectedToken, mlpThreshold, setMlpThreshold, activeFFN, noise, setNoise,
-    headOverrides, setHeadOverrides, activeProfileId, sourceTokenId, setSourceTokenId,
-    selectedToken // Wichtig: Wir nutzen den globalen Zustand
+    temperature, setTemperature, activeAttention,
+    setSelectedToken, mlpThreshold, activeFFN, noise, setNoise,
+    headOverrides, setHeadOverrides, activeProfileId, 
+    selectedToken
   } = simulator;
 
   const [selectedLabel, setSelectedLabel] = useState(null);
@@ -14,149 +16,133 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
   const [minPThreshold, setMinPThreshold] = useState(0.05);
   const [simulationState, setSimulationState] = useState({ outputs: [], winner: null });
   const [isShuffling, setIsShuffling] = useState(false);
+  const lastScenarioId = useRef(activeScenario?.id);
 
-  const getItemVisuals = (item) => {
+  // --- Goal-Seeking Logik (🎯) unverändert ---
+  const handleForceOutcome = useCallback((target) => {
+    const categoryId = target.category_link;
+    const scenario = activeScenario;
+    const biasMultiplier = scenario?.phase_4_decoding?.settings?.logit_bias_multiplier || 12;
+
+    const targetFFN = activeFFN?.find(f => String(f.id).toLowerCase() === String(categoryId).toLowerCase());
+    const linkedHeadId = targetFFN?.linked_head;
+
+    const profiles = activeScenario?.phase_2_attention?.attention_profiles || [];
+    const activeProfile = profiles.find(p => String(p.id) === String(activeProfileId));
+    
+    const rule = activeProfile?.rules?.find(r =>
+      String(r.label).toLowerCase() === String(categoryId).toLowerCase() &&
+      Number(r.head) === Number(linkedHeadId)
+    );
+
+    if (!rule || !linkedHeadId) {
+      setHoveredItem({
+        title: "Pfad blockiert 🚫",
+        subtitle: "Keine logische Verbindung",
+        data: { "Ursache": "Keine Attention-Regel für diese Kategorie im Profil gefunden." }
+      });
+      return;
+    }
+
+    const tokenKey = `${activeProfileId}_s${rule.source}_h${linkedHeadId}`;
+    setHeadOverrides({ [tokenKey]: 1.0 });
+    if (setNoise) setNoise(0);
+
+    setHoveredItem({
+      title: "Pfad kalibriert 🎯",
+      subtitle: `Ziel: ${target.token}`,
+      data: { "Status": "SUCCESS", "Kausalität": `Head ${linkedHeadId} aktiviert` }
+    });
+  }, [activeScenario, activeFFN, activeProfileId, setHeadOverrides, setHoveredItem, setNoise]);
+
+  const getItemVisuals = useCallback((item) => {
     const matchingCategory = activeFFN?.find(cat =>
       String(cat.id).toLowerCase() === String(item.category_link || "").toLowerCase()
     );
-
     return {
       color: item?.color || matchingCategory?.color || "#475569",
       icon: item?.icon || matchingCategory?.icon || "📄"
     };
-  };
+  }, [activeFFN]);
 
   const calculateLogic = useCallback(() => {
-    const scenario = activeScenario || simulator?.activeScenario;
+    const scenario = activeScenario;
     const sourceTokens = scenario?.phase_4_decoding?.top_k_tokens;
-
-    if (!sourceTokens || sourceTokens.length === 0 || !scenario) {
-      return null;
-    }
+    if (!sourceTokens || sourceTokens.length === 0) return [];
 
     const T = Math.max(0.01, parseFloat(temperature) || 0.7);
     const biasMultiplier = scenario?.phase_4_decoding?.settings?.logit_bias_multiplier || 12;
 
     const results = sourceTokens.map(item => {
-      const liveFFNData = simulator?.activeFFN?.find(f =>
-        String(f.id).toLowerCase().trim() === String(item.category_link).toLowerCase().trim()
-      );
-
+      const liveFFNData = activeFFN?.find(f => String(f.id).toLowerCase().trim() === String(item.category_link).toLowerCase().trim());
       const liveActivation = liveFFNData ? liveFFNData.activation : 0.5;
       const ffnBias = (liveActivation - 0.5) * biasMultiplier;
       const baseLogit = item.base_logit !== undefined ? item.base_logit : 5.0;
-
       const jitter = (Math.random() - 0.5) * (noise || 0) * 2.0;
       const effectiveLogit = baseLogit + ffnBias + jitter;
 
       return {
         ...item,
-        label: item.token, 
         effectiveLogit,
         liveActivation,
         actingHead: liveFFNData?.linked_head ? `Head ${liveFFNData.linked_head}` : "Default",
         ffnBoost: ffnBias,
-        isBlockedByMLP: liveActivation < mlpThreshold,
+        isBlockedByMLP: (liveActivation * (activeAttention?.avgSignal || 1.0)) < mlpThreshold,
         exp: Math.exp(effectiveLogit / T)
       };
     });
 
     const sumExp = results.reduce((acc, curr) => acc + curr.exp, 0);
-    
     return results.map(item => ({
       ...item,
       dynamicProb: sumExp > 0 ? item.exp / sumExp : 0
     }));
+  }, [activeFFN, activeScenario, temperature, noise, mlpThreshold, activeAttention]);
 
-  }, [activeFFN, simulator?.activeFFN, activeScenario, temperature, noise, mlpThreshold]);
-
-  const findTopResult = (results) => {
-    if (!results || results.length === 0) return null;
-    return [...results].sort((a, b) => b.dynamicProb - a.dynamicProb)[0];
-  };
-
-  // KORREKTUR: Synchronisation mit dem globalen selectedToken
-  useEffect(() => {
-    const results = calculateLogic();
-    if (results) {
-      const topRes = findTopResult(results);
-      // Priorität: 1. Globaler selectedToken, 2. lokaler winner, 3. mathematischer Top-Result
-      const currentWinner = results.find(r => r.token === selectedToken?.token) || 
-                            results.find(r => r.token === simulationState.winner?.token) || 
-                            topRes;
-
-      setSimulationState({
-        outputs: results.slice(0, 10),
-        winner: currentWinner
-      });
-    }
-  }, [calculateLogic, selectedToken]); // Lauscht auf globalen Token-Wechsel
-
-  const getInspectorData = useCallback((out, index) => {
+  const getInspectorData = useCallback((out) => {
     if (!out) return null;
     const { icon } = getItemVisuals(out);
-    const isHallucination = out.hallucination_risk > 0.8 || (noise > 0.8 && out.noise_sensitivity > 0.7);
-
-    const results = calculateLogic() || [];
-    const sortedForRank = [...results].sort((a, b) => b.dynamicProb - a.dynamicProb);
-    const rank = sortedForRank.findIndex(r => r.token === out.token);
-
     return {
       title: `${icon} Decoding: ${out.token}`,
       subtitle: `Kategorie: ${out.category_link}`,
       data: {
-        "Status": out.isBlockedByMLP ? "BLOCKIERT (MLP)" : (rank < topK ? "AKTIV" : "GEFILTERT"),
         "Wahrscheinlichkeit": (out.dynamicProb * 100).toFixed(2) + "%",
-        "Einfluss durch": out.actingHead,
         "Logit-Shift": (out.ffnBoost >= 0 ? "+" : "") + out.ffnBoost?.toFixed(2),
-        "Halluzinations-Risiko": isHallucination ? "HOCH ⚠️" : "NIEDRIG",
         "Aktivierung (Live)": (out.liveActivation * 100).toFixed(0) + "%"
       }
     };
-  }, [topK, activeFFN, noise, calculateLogic]);
-
-  const updateInspector = useCallback((token) => {
-    const results = calculateLogic();
-    const out = results?.find(o => o.token === token);
-    const idx = results?.findIndex(o => o.token === token);
-    if (out) setHoveredItem(getInspectorData(out, idx));
-  }, [calculateLogic, getInspectorData, setHoveredItem]);
+  }, [getItemVisuals]);
 
   useEffect(() => {
-    if (selectedLabel) updateInspector(selectedLabel);
-  }, [headOverrides, mlpThreshold, noise, temperature, selectedLabel, updateInspector]);
-
-  // Effekt für Live-Updates (Slider etc.) ohne Resampling
-  useEffect(() => {
+    if (activeScenario?.id !== lastScenarioId.current) {
+      setSelectedLabel(null);
+      lastScenarioId.current = activeScenario?.id;
+    }
+    
     if (!isShuffling) {
       const results = calculateLogic();
-      if (results) {
-        const topRes = findTopResult(results);
-        setSimulationState(prev => {
-          const syncWinner = results.find(r => r.token === (selectedToken?.token || prev.winner?.token)) || topRes;
-
-          return {
-            outputs: results.slice(0, 10),
-            winner: (syncWinner && !syncWinner.isBlockedByMLP) ? syncWinner : topRes
-          };
+      if (results.length > 0) {
+        const sorted = [...results].sort((a, b) => b.dynamicProb - a.dynamicProb);
+        setSimulationState({
+          outputs: results.slice(0, 10),
+          winner: results.find(r => r.token === selectedToken?.token) || sorted[0]
         });
       }
     }
-  }, [calculateLogic, activeScenario?.id, isShuffling, headOverrides, simulator?.activeFFN, selectedToken]);
+  }, [calculateLogic, activeScenario?.id, isShuffling, headOverrides, selectedToken]);
 
   const triggerResample = () => {
     setIsShuffling(true);
     setTimeout(() => {
       const results = calculateLogic();
-      if (results) {
-        let win = findTopResult(results);
+      if (results.length > 0) {
+        let win = results[0];
         const r = Math.random();
         let cum = 0;
         for (let o of results) {
           cum += o.dynamicProb;
           if (r <= cum) { win = o; break; }
         }
-
         setSimulationState({ outputs: results.slice(0, 10), winner: win });
         if (setSelectedToken) setSelectedToken(win);
         setSelectedLabel(win.token);
@@ -168,7 +154,6 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
   const activeOptionsCount = useMemo(() => {
     const sorted = [...simulationState.outputs].sort((a, b) => b.dynamicProb - a.dynamicProb);
     const topKTokens = sorted.slice(0, topK).map(t => t.token);
-
     return simulationState.outputs.filter((out) =>
       topKTokens.includes(out.token) && out.dynamicProb >= minPThreshold && !out.isBlockedByMLP
     ).length;
@@ -180,68 +165,85 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
       subtitle="Physikalische Signal-Modulation & Sampling"
       theme={theme}
       badges={[
-        { text: `Entropy: ${(noise || 0).toFixed(2)}`, className: noise > 1 ? "text-red-500 font-bold" : "text-slate-400" },
-        { text: `MLP Filter: ${mlpThreshold.toFixed(2)}`, className: "text-blue-500 font-bold" }
+        { text: `Entropy: ${noise.toFixed(2)}`, className: noise > 1 ? "text-orange-500" : "text-slate-400" },
+        { text: `Aktiv: ${activeOptionsCount}`, className: "text-blue-500" }
       ]}
       visualization={
-        <div className="flex flex-row h-full w-full gap-4 relative pt-12 px-2" onClick={() => { setSelectedLabel(null); setHoveredItem(null); }}>
-          <div className={`flex flex-col justify-between items-end pb-10 pt-4 text-[8px] font-black w-8 shrink-0 ${theme === 'light' ? 'text-slate-500' : 'text-slate-600'}`}>
-            <span>1.0</span><span>0.5</span><span>0.0</span>
+        /* Äußerer Container mit festem Padding für die Beschriftungen unten */
+        <div className="flex flex-row min-h-[550px] lg:h-full w-full gap-4 relative pt-12 pb-24 px-4" onClick={() => { setSelectedLabel(null); setHoveredItem(null); }}>
+          
+          {/* Y-Achse: Fest positioniert, Höhe entspricht exakt dem Graphen-Bereich */}
+          <div className="flex flex-col justify-between items-end pb-0 pt-0 text-[9px] font-black w-8 shrink-0 opacity-40 h-[calc(100%-24px)]">
+            <span>100%</span>
+            <span>50%</span>
+            <span className="translate-y-2">0%</span>
           </div>
 
-          <div className="relative flex-1 h-full flex flex-col justify-end">
-            <div className="absolute inset-0 pb-10 pt-4 pointer-events-none opacity-20">
-              <div className="absolute top-4 w-full border-t border-current opacity-20" />
-              <div className="absolute top-1/2 w-full border-t border-current opacity-20" />
-              <div className="absolute bottom-10 w-full border-t-2 border-current opacity-50" />
+          <div className="relative flex-1 h-[calc(100%-24px)] flex flex-col justify-end border-b-2 border-slate-500/20">
+            
+            {/* Grid Lines innerhalb der Graphen-Fläche */}
+            <div className="absolute inset-0 pointer-events-none opacity-10">
+              <div className="absolute top-0 w-full border-t border-current" />
+              <div className="absolute top-1/2 w-full border-t border-current" />
             </div>
 
-            <div className="absolute left-0 w-full border-t-2 border-dashed border-red-500 z-30 transition-all duration-500 pointer-events-none"
-              style={{ bottom: `calc(${(minPThreshold * 85)}% + 40px)` }}>
+            {/* Min-P Gate Line */}
+            <div className="absolute left-0 w-full border-t-2 border-dashed border-red-500/50 z-30 transition-all duration-500 pointer-events-none"
+              style={{ bottom: `${minPThreshold * 100}%` }}>
               <div className="absolute right-0 -top-2.5 px-1.5 py-0.5 bg-red-600 text-[7px] text-white rounded font-black uppercase shadow-lg">
-                Gate: {(minPThreshold * 100).toFixed(0)}%
+                Min-P: {(minPThreshold * 100).toFixed(0)}%
               </div>
             </div>
 
-            <div className="relative flex items-end justify-around gap-1 lg:gap-2 h-full pb-10">
+            {/* Balken-Container: Nutzt items-end, um von der 0-Linie nach oben zu wachsen */}
+            <div className="relative flex items-end justify-around gap-2 lg:gap-4 h-full w-full">
               {simulationState.outputs.map((out) => {
                 const isWinner = simulationState.winner?.token === out.token;
-                
                 const sorted = [...simulationState.outputs].sort((a, b) => b.dynamicProb - a.dynamicProb);
                 const rank = sorted.findIndex(r => r.token === out.token);
                 const isActive = rank < topK && out.dynamicProb >= minPThreshold && !out.isBlockedByMLP;
-                
                 const { color, icon } = getItemVisuals(out);
 
                 return (
-                  <div key={out.token} className={`relative flex flex-col items-center flex-1 h-full justify-end transition-all duration-500 ${selectedLabel === out.token ? 'z-30' : 'z-10'} ${(!isActive && !isWinner) ? 'opacity-30 grayscale' : 'opacity-100'}`}
-                    onMouseEnter={() => setHoveredItem(getInspectorData(out, rank))}
-                    onMouseLeave={() => selectedLabel ? updateInspector(selectedLabel) : setHoveredItem(null)}
+                  <div key={out.token}
+                    className={`relative group flex flex-col items-center flex-1 h-full justify-end transition-all duration-500 ${selectedLabel === out.token ? 'z-30' : 'z-10'} ${(!isActive && !isWinner) ? 'opacity-20 grayscale' : 'opacity-100'}`}
+                    onMouseEnter={() => setHoveredItem(getInspectorData(out))}
+                    onMouseLeave={() => !selectedLabel && setHoveredItem(null)}
                     onClick={(e) => { e.stopPropagation(); setSelectedLabel(out.token); }}
                   >
+                    {/* Goal-Seek Button */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleForceOutcome(out); }}
+                      className="absolute -top-10 opacity-0 group-hover:opacity-100 hover:scale-125 transition-all z-50 p-2 bg-blue-600 rounded-full border-2 border-white shadow-xl text-[14px]"
+                    >
+                      🎯
+                    </button>
+
                     {isWinner && !isShuffling && (
-                      <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[20px] animate-bounce z-40 bg-slate-900/50 rounded-full p-1 border border-white/20 shadow-xl">
+                      <div className="absolute -top-14 left-1/2 -translate-x-1/2 text-2xl animate-bounce z-40 drop-shadow-lg">
                         {noise > 1.2 ? '🥴' : '🎯'}
                       </div>
                     )}
-                    
-                    {out.isBlockedByMLP && (
-                      <div className="absolute top-0 text-[10px] animate-pulse text-red-500 font-bold z-50">⚠️</div>
-                    )}
 
-                    <div className="mb-1 text-[10px]">{icon}</div>
-                    <span className={`text-[8px] font-black mb-1 ${(isActive || isWinner) ? (theme === 'light' ? 'text-slate-900' : 'text-blue-400') : 'text-slate-500'}`}>
-                      {isShuffling ? (Math.random() * 100).toFixed(0) : (out.dynamicProb * 100).toFixed(0)}%
-                    </span>
-                    <div className={`w-full max-w-[40px] rounded-t-lg transition-all duration-300 ${isWinner && !isShuffling ? 'ring-2 ring-blue-500 shadow-lg' : ''} ${isShuffling ? 'animate-pulse opacity-50' : ''}`}
+                    <div className="mb-2 text-xs">{icon}</div>
+                    
+                    {/* Der eigentliche Balken: Wächst von unten nach oben */}
+                    <div className={`w-full max-w-[44px] rounded-t-xl transition-all duration-700 ${isWinner ? 'ring-2 ring-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : ''}`}
                       style={{
-                        height: isShuffling ? `${Math.random() * 85}%` : `${out.dynamicProb * 85}%`,
+                        height: isShuffling ? `${Math.random() * 100}%` : `${out.dynamicProb * 100}%`,
                         backgroundColor: (isActive || isWinner) ? color : (theme === 'light' ? '#cbd5e1' : '#334155'),
-                        transform: noise > 0.8 ? `translateX(${(Math.random() - 0.5) * noise * 2}px)` : 'none'
+                        transform: noise > 0.8 ? `translateX(${(Math.random() - 0.5) * noise * 4}px)` : 'none'
                       }}
                     />
-                    <div className="absolute top-full pt-2 w-full text-center">
-                      <span className={`text-[9px] uppercase tracking-tighter block truncate px-0.5 ${isWinner ? 'font-black text-blue-600' : 'text-slate-500'}`}>{out.token}</span>
+                    
+                    {/* Beschriftung: Liegt außerhalb des h-full Containers durch absolute Positionierung unter der Basis */}
+                    <div className="absolute top-[calc(100%+10px)] w-full text-center">
+                      <span className={`text-[9px] font-black uppercase mb-1 block ${isActive || isWinner ? 'text-blue-400' : 'text-slate-500'}`}>
+                        {(out.dynamicProb * 100).toFixed(0)}%
+                      </span>
+                      <span className={`text-[10px] font-black uppercase truncate block ${isWinner ? 'text-blue-500 scale-110' : 'text-slate-500'}`}>
+                        {out.token}
+                      </span>
                     </div>
                   </div>
                 );
@@ -251,33 +253,33 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme, activeScenario }) =
         </div>
       }
       controls={[
-        <div key="c-1" className="px-4 py-3 rounded-xl border border-white/5 bg-slate-900 flex flex-col justify-center h-full">
+        <div key="c-temp" className="px-4 py-3 rounded-2xl bg-slate-900/50 border border-white/5 flex flex-col justify-center h-full">
           <div className="flex justify-between items-center mb-2">
-            <label className="text-[9px] uppercase font-black text-blue-500">Creativity (Temp)</label>
-            <div className="text-xs font-mono font-black text-blue-500">{temperature.toFixed(2)}</div>
+            <label className="text-[9px] uppercase font-black text-blue-500 tracking-widest">Temperature</label>
+            <div className="text-xs font-mono font-black text-blue-400">{temperature.toFixed(2)}</div>
           </div>
-          <input type="range" min="0.1" max="2.0" step="0.1" value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-full h-1.5 accent-blue-500" />
+          <input type="range" min="0.1" max="2.0" step="0.1" value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-full h-1.5 accent-blue-500 cursor-pointer" />
         </div>,
-        <div key="c-2" className="px-4 py-3 rounded-xl border border-white/5 bg-slate-900 flex flex-col justify-center h-full">
+        <div key="c-topk" className="px-4 py-3 rounded-2xl bg-slate-900/50 border border-white/5 flex flex-col justify-center h-full">
           <div className="flex justify-between items-center mb-2">
-            <label className="text-[9px] uppercase font-black text-green-600">Filter (Top-K)</label>
-            <div className="text-xs font-mono font-black text-green-600">{topK}</div>
+            <label className="text-[9px] uppercase font-black text-green-500 tracking-widest">Top-K Filter</label>
+            <div className="text-xs font-mono font-black text-green-400">{topK}</div>
           </div>
-          <input type="range" min="1" max="10" step="1" value={topK} onChange={(e) => setTopK(parseInt(e.target.value))} className="w-full h-1.5 accent-green-600" />
+          <input type="range" min="1" max="10" step="1" value={topK} onChange={(e) => setTopK(parseInt(e.target.value))} className="w-full h-1.5 accent-green-500 cursor-pointer" />
         </div>,
-        <div key="c-3" className="px-4 py-3 rounded-xl border border-white/5 bg-slate-900 flex flex-col justify-center h-full">
+        <div key="c-minp" className="px-4 py-3 rounded-2xl bg-slate-900/50 border border-white/5 flex flex-col justify-center h-full">
           <div className="flex justify-between items-center mb-2">
-            <label className="text-[9px] uppercase font-black text-red-600">Min-P Quality</label>
-            <div className="text-xs font-mono font-black text-red-600">{(minPThreshold * 100).toFixed(0)}%</div>
+            <label className="text-[9px] uppercase font-black text-red-500 tracking-widest">Min-P Threshold</label>
+            <div className="text-xs font-mono font-black text-red-400">{(minPThreshold * 100).toFixed(0)}%</div>
           </div>
-          <input type="range" min="0.01" max="0.25" step="0.01" value={minPThreshold} onChange={(e) => setMinPThreshold(parseFloat(e.target.value))} className="w-full h-1.5 accent-red-600" />
+          <input type="range" min="0.01" max="0.25" step="0.01" value={minPThreshold} onChange={(e) => setMinPThreshold(parseFloat(e.target.value))} className="w-full h-1.5 accent-red-500 cursor-pointer" />
         </div>,
-        <div key="c-4" className="h-full">
+        <div key="c-sample" className="h-full">
           <button
             disabled={isShuffling || activeOptionsCount <= 1}
             onClick={triggerResample}
-            className={`w-full h-full min-h-[56px] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2
-            ${(isShuffling || activeOptionsCount <= 1) ? 'bg-slate-800 text-slate-500 opacity-50' : 'bg-blue-600 text-white border-blue-500/50 shadow-lg'}`}
+            className={`w-full h-full min-h-[56px] rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all border-2
+            ${(isShuffling || activeOptionsCount <= 1) ? 'bg-slate-800 text-slate-600 border-transparent' : 'bg-blue-600 text-white border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-[1.02]'}`}
           >
             {isShuffling ? "Sampling..." : "🎲 Re-Sample"}
           </button>
