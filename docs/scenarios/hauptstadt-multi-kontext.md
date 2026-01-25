@@ -5,7 +5,6 @@
 * **ID:** `hauptstadt-multi-kontext-v02`
 * **Prompt:** *"Die Hauptstadt von Deutschland ist..."*
 
-
 **Lernziel:**
 1. **Kontextuelle Polysemie:** Verstehen, wie ein und derselbe Satzanfang durch unterschiedliche Attention-Fokusse (Heads) völlig verschiedene semantische Pfade (Fakt vs. Wertung) einschlagen kann.
 2. **Zeitliche Dimensionierung:** Lernen, wie das Modell durch spezifische Heads zwischen aktuellem "Weltwissen" (Berlin) und historischem "Archiv-Wissen" (Bonn) unterscheidet.
@@ -35,9 +34,9 @@ Hier entscheiden die Attention-Heads, welche Informationen verknüpft werden:
 
 Basierend auf dem stärksten Signal aus Phase 2 feuert das neuronale Netzwerk:
 
-* Dominirt **Head 3**, aktiviert sich der **Fakten-Speicher** (Geografie).
-* Dominirt **Head 4**, aktiviert sich das **Archiv-Wissen** (Geschichte).
-* Dominirt **Head 2**, aktiviert sich die **Affektive Ebene** (Emotion).
+* Dominiert **Head 3**, aktiviert sich der **Fakten-Speicher** (Geografie).
+* Dominiert **Head 4**, aktiviert sich das **Archiv-Wissen** (Geschichte).
+* Dominiert **Head 2**, aktiviert sich die **Affektive Ebene** (Emotion).
 
 ### Phase 4 (Decoding): Der Logit-Shift
 
@@ -300,49 +299,89 @@ Die physische Wahrscheinlichkeit des nächsten Wortes wird durch den Bias berech
 
 ## 4. Testplan: Szenarien & Experimente
 
-### ### Fall 1: Der aktuelle Fakten-Check
+### ### Testfall 1: Das Resultat "Berlin" (Der Fakten-Check)
 
-* **Situation:** Simulation einer Standard-Suchanfrage ("Was ist die Hauptstadt?"). Das Modell soll rein faktisch antworten.
-* **Experiment (UI-Eingriff):**
-* Setze **Head 3 (Geografie)** auf `1.0` (Max).
-* Setze Head 1, 2 und 4 auf `0.0`.
-* `Position Weight` auf Standard (`1.0`).
-
-
-* **Beobachtung (Phase 3):** Die Kategorie **"Fakten-Speicher"** leuchtet in **Grün (#10b981)** auf. Das Icon 📚 erscheint.
-* **Ergebnis (Phase 4):** Das Token **"Berlin"** gewinnt. Durch die volle Aktivierung erhält es einen Logit-Boost von  (da ). Andere Tokens fallen stark zurück.
-
-### ### Fall 2: Der historische Rückblick
-
-* **Situation:** Der Kontext impliziert eine historische Betrachtung ("Früher war...").
-* **Experiment (UI-Eingriff):**
-* Setze **Head 4 (Geschichte)** auf `1.0` (Max).
-* Reduziere Head 3 (Geografie) auf `0.0`.
+* **Ziel:** Die KI soll logisch/geografisch antworten.
+* **Mechanik:** Aktivierung der Kategorie geografie über Head 3.
+* **Trigger-Token:** "Deutschland" (ID: 3)
+* **Aktion:**
+1. Fokussiere/Klicke auf das Token "Deutschland".
+2. Setze Head 3 auf Maximum (1.0).
+3. Setze alle anderen Heads auf diesem Token auf Minimum (0.0).
 
 
-* **Beobachtung (Phase 3):** Die Kategorie **"Archiv-Wissen"** aktiviert sich in **Violett (#8b5cf6)**. Das Icon ⏳ wird sichtbar.
-* **Ergebnis (Phase 4):** Das Token **"Bonn"** übernimmt die Führung. Obwohl "Berlin" ein höheres Base-Logit hat (5.2 vs 5.0), sorgt der massive Shift durch den Kategorie-Link "geschichte" dafür, dass Bonn gewählt wird.
-
-### ### Fall 3: Die subjektive Wahrnehmung
-
-* **Situation:** Der Satz wird nicht als Fakt, sondern als Meinung oder Beschreibung verstanden.
-* **Experiment (UI-Eingriff):**
-* Setze **Head 2 (Emotion)** auf `1.0`.
-* Alle anderen Heads auf `0.0`.
+* **Erwartetes Verhalten:**
+* Phase 3: Kategorie "Fakten-Speicher" wird grün (Aktivierung > 0.5).
+* Phase 4: "Berlin" gewinnt (da Base-Logit 5.2 + massiver Boost).
 
 
-* **Beobachtung (Phase 3):** Die **"Affektive Ebene"** (Pink, 💖) leuchtet auf.
-* **Ergebnis (Phase 4):** Das Adjektiv **"schön"** gewinnt. Das Modell vervollständigt den Satz zu "Die Hauptstadt von Deutschland ist schön". Fakten werden irrelevant.
 
-### ### Fall 4: Sensorischer Overload (Konflikt)
+### ### Testfall 2: Das Resultat "Bonn" (Der Historiker)
 
-* **Situation:** Das Modell achtet auf physische Attribute und Distanz.
-* **Experiment (UI-Eingriff):**
-* Setze **Head 1 (Sensorik/Distanz)** auf `1.0`.
+* **Ziel:** Die KI soll in die Vergangenheit blicken (Bonner Republik).
+* **Mechanik:** Aktivierung der Kategorie geschichte über Head 4.
+* **Trigger-Token:** "Die" (ID: 0)
+* **Aktion:**
+1. Fokussiere/Klicke auf das Token "Die".
+2. Setze Head 4 auf Maximum (1.0).
+3. **Wichtig:** Stelle sicher, dass Head 3 bei "Deutschland" (aus Test 1) wieder neutral oder niedrig ist, sonst gewinnt Berlin wegen des höheren Base-Logits.
 
 
-* **Beobachtung (Phase 3):** Hier leuchten **zwei** Kategorien gleichzeitig auf: **"Umgebung/Lärm"** (Orange 🚗) und **"Geografische Distanz"** (Indigo 📏), da beide an Head 1 gekoppelt sind.
-* **Ergebnis (Phase 4):** Es entsteht ein enges Rennen zwischen **"weit weg"** (Base Logit 4.7) und **"laut"** (Base Logit 4.6). Da beide den Boost erhalten, gewinnt knapp **"weit weg"**, gefolgt von "laut". "Berlin" fällt weit zurück.
+* **Erwartetes Verhalten:**
+* Phase 3: Kategorie "Archiv-Wissen" wird grün.
+* Phase 4: "Bonn" überholt Berlin.
+
+
+
+### ### Testfall 3: Das Resultat "schön" (Der Ästhet)
+
+* **Ziel:** Die KI soll das Wort "Hauptstadt" emotional bewerten.
+* **Mechanik:** Aktivierung der Kategorie emotion über Head 2.
+* **Trigger-Token:** "Hauptstadt" (ID: 1)
+* **Aktion:**
+1. Fokussiere/Klicke auf das Token "Hauptstadt".
+2. Setze Head 2 auf Maximum (1.0).
+
+
+* **Erwartetes Verhalten:**
+* Phase 3: Kategorie "Affektive Ebene" wird grün.
+* Phase 4: Das Adjektiv "schön" gewinnt.
+
+
+
+### ### Testfall 4: Das Resultat "laut" (Der Sensoriker)
+
+* **Ziel:** Die KI soll auf das "ist" (Zustand/Gegenwart) reagieren und Lärm assoziieren. (Dies ist der erste Test für Head 1).
+* **Mechanik:** Aktivierung der Kategorie sensorik über Head 1.
+* **Trigger-Token:** "ist" (ID: 4)
+* **Aktion:**
+1. Fokussiere/Klicke auf das Token "ist".
+2. Setze Head 1 auf Maximum (1.0).
+
+
+* **Erwartetes Verhalten:**
+* Phase 3: Kategorie "Umgebung/Lärm" wird grün.
+* Phase 4: "laut" gewinnt.
+* **Check:** Die Kategorie "Geografische Distanz" (auch Head 1) darf nicht angehen, da wir auf Token "ist" sind, nicht auf "von".
+
+
+
+### ### Testfall 5: Das Resultat "weit weg" (Der Distanz-Messer)
+
+* **Ziel:** Die KI soll die Präposition "von" als räumliche Trennung interpretieren. (Dies ist der zweite Test für Head 1).
+* **Mechanik:** Aktivierung der Kategorie distanz über Head 1.
+* **Trigger-Token:** "von" (ID: 2)
+* **Aktion:**
+1. Fokussiere/Klicke auf das Token "von".
+2. Setze Head 1 auf Maximum (1.0).
+3. Stelle sicher, dass Head 1 beim Token "ist" (aus Test 4) wieder auf 0.0 oder 0.7 steht.
+
+
+* **Erwartetes Verhalten:**
+* Phase 3: Kategorie "Geografische Distanz" wird grün.
+* Phase 4: "weit weg" gewinnt.
+
+
 
 ## 5. UI/UX & Besonderheiten
 
