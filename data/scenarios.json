@@ -467,75 +467,51 @@
             "rules": [
               {
                 "head": 1,
-                "label": "finance_context",
+                "label": "context_r_b",
                 "source": 2,
                 "target": 1,
                 "strength": 2.0,
-                "explanation": "Kontextualisierung"
+                "explanation": "Kontext: Räuber -> Bank (1)"
               },
               {
                 "head": 1,
-                "label": "finance_visual",
+                "label": "readout_crime",
                 "source": 10,
                 "target": 1,
                 "strength": 2.0,
-                "explanation": "VISUELL: Pfeil vom Punkt zurück zur Bank"
-              },
-              {
-                "head": 1,
-                "label": "finance_crime",
-                "source": 1,
-                "target": 10,
-                "strength": 2.0,
-                "explanation": "LOGIK: Identisch mit Phase 3 ID 'finance_crime'"
+                "explanation": "Readout: Punkt -> Bank (1)"
               },
               {
                 "head": 2,
-                "label": "furniture_context",
+                "label": "context_a_b",
                 "source": 4,
                 "target": 6,
                 "strength": 1.8,
-                "explanation": "Kontextualisierung"
+                "explanation": "Kontext: auf -> Bank (2)"
               },
               {
                 "head": 2,
-                "label": "furniture_visual",
+                "label": "readout_furniture",
                 "source": 10,
                 "target": 6,
                 "strength": 1.8,
-                "explanation": "VISUELL: Pfeil vom Punkt zurück zur Bank"
-              },
-              {
-                "head": 2,
-                "label": "outdoor_furniture",
-                "source": 6,
-                "target": 10,
-                "strength": 1.8,
-                "explanation": "LOGIK: Identisch mit Phase 3 ID 'outdoor_furniture'"
+                "explanation": "Readout: Punkt -> Bank (2)"
               },
               {
                 "head": 3,
-                "label": "architecture_context",
+                "label": "context_v_b",
                 "source": 7,
                 "target": 9,
                 "strength": 1.5,
-                "explanation": "Kontextualisierung"
+                "explanation": "Kontext: vor -> Bank (3)"
               },
               {
                 "head": 3,
-                "label": "architecture_visual",
+                "label": "readout_arch",
                 "source": 10,
                 "target": 9,
                 "strength": 1.5,
-                "explanation": "VISUELL: Pfeil vom Punkt zurück zur Bank"
-              },
-              {
-                "head": 3,
-                "label": "architecture",
-                "source": 9,
-                "target": 10,
-                "strength": 1.5,
-                "explanation": "LOGIK: Identisch mit Phase 3 ID 'architecture'"
+                "explanation": "Readout: Punkt -> Bank (3)"
               }
             ]
           }
