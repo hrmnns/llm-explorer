@@ -257,57 +257,57 @@
           {
             "id": "0",
             "text": "Der",
-            "explanation": "Der bestimmte Artikel im Nominativ Maskulin. Er fungiert hier als Determiner für das komplexe Subjekt. In der Tokenisierung wird er oft als Startpunkt für die syntaktische Abhängigkeitsanalyse genutzt."
+            "explanation": "Start-Token."
           },
           {
             "id": "1",
             "text": "Bank",
-            "explanation": "Die erste Instanz des Polysems 'Bank'. Ohne Kontext ist sie semantisch unterbestimmt. Da sie jedoch direkt mit 'räuber' verknüpft wird, findet eine morphologische Attraktion zum Finanzwesen statt."
+            "explanation": "Polysem 1 (Finanz)."
           },
           {
             "id": "2",
             "text": "räuber",
-            "explanation": "Das semantisch dominante Token des Subjekts. Es aktiviert im neuronalen Netzwerk sofort Cluster, die mit Kriminalität, Agitator-Rollen und dem Entzug von Werten assoziiert sind."
+            "explanation": "Kontext-Geber für Verbrechen."
           },
           {
             "id": "3",
             "text": "sitzt",
-            "explanation": "Ein statisches Verb, das eine räumliche Relation zwischen dem Agens (Räuber) und einem Lokativ (auf einer Bank) fordert. Es erzeugt eine Erwartungshaltung für ein physisches Objekt im Vektorraum."
+            "explanation": "Verb."
           },
           {
             "id": "4",
             "text": "auf",
-            "explanation": "Eine lokale Präposition, die einen Kontakt zu einer Oberfläche impliziert. Linguistisch gesehen ist dies der 'Trigger', der das nachfolgende Token 'Bank' in den Bereich des Mobiliars zwingt."
+            "explanation": "Präposition."
           },
           {
             "id": "5",
             "text": "einer",
-            "explanation": "Ein unbestimmter Artikel im Dativ. Er signalisiert dem Modell, dass ein neues, bisher nicht erwähntes physisches Objekt in den Kontext eingeführt wird."
+            "explanation": "Artikel."
           },
           {
             "id": "6",
             "text": "Bank",
-            "explanation": "Die zweite Instanz. Durch die unmittelbare Nähe zur Präposition 'auf' wird der Vektor in Phase 2 stark in Richtung der physischen, greifbaren Objekte verschoben."
+            "explanation": "Polysem 2 (Möbel)."
           },
           {
             "id": "7",
             "text": "vor",
-            "explanation": "Eine relationale Präposition, die eine räumliche Nähe beschreibt. Sie dient hier als Brücke, um die Szenerie von einem punktuellen Objekt (Parkbank) zu einem größeren architektonischen Kontext (Gebäude) zu erweitern."
+            "explanation": "Präposition."
           },
           {
             "id": "8",
             "text": "der",
-            "explanation": "Bestimmter Artikel im Dativ. Im Gegensatz zu 'einer' (Token 5) impliziert 'der' hier eine Bekanntheit oder Einzigartigkeit des Objekts im weiteren Kontext der Erzählung."
+            "explanation": "Artikel."
           },
           {
             "id": "9",
             "text": "Bank",
-            "explanation": "Die dritte Instanz. Sie steht am Ende der Kausalkette. Da der Räuber 'vor' ihr sitzt, wird dieses Token als massives, ortsfestes Gebäude interpretiert, das den institutionellen Rahmen der Szene bildet."
+            "explanation": "Polysem 3 (Gebäude)."
           },
           {
             "id": "10",
             "text": ".",
-            "explanation": "Satzende-Marker. Er signalisiert dem Decoder, dass die semantische Integration der vorangegangenen Tokens abgeschlossen ist und die Wahrscheinlichkeitsverteilung für den nächsten Satz berechnet werden kann."
+            "explanation": "Query-Token / Satzende."
           }
         ]
       },
@@ -316,12 +316,12 @@
           "x_axis": {
             "positive": "Abstrakt & Finanziell",
             "negative": "Physisch & Greifbar",
-            "description": "Die X-Achse trennt die funktionale Welt des Geldes (Kreditinstitute) von der materiellen Welt der Objekte (Möbel)."
+            "description": "X-Achse"
           },
           "y_axis": {
             "positive": "Aktion & Dynamik",
             "negative": "Statik & Ort",
-            "description": "Die Y-Achse unterscheidet zwischen handelnden Subjekten/Prozessen und festen, unbeweglichen Verortungen im Raum."
+            "description": "Y-Achse"
           }
         },
         "token_vectors": [
@@ -335,8 +335,7 @@
             "positional_vector": [
               0.0,
               0.1
-            ],
-            "explanation": "Grammatischer Wegweiser. Das Positional Encoding markiert die Startposition der Sequenz."
+            ]
           },
           {
             "token_index": 1,
@@ -348,8 +347,7 @@
             "positional_vector": [
               0.05,
               0.09
-            ],
-            "explanation": "Finanz-Kontext. Das Modell platziert dieses Token initial im abstrakten Quadranten."
+            ]
           },
           {
             "token_index": 2,
@@ -361,8 +359,7 @@
             "positional_vector": [
               0.1,
               0.08
-            ],
-            "explanation": "Akteur-Token. Besetzt den dynamischen Quadranten durch die implizierte Handlungskraft (Y+)."
+            ]
           },
           {
             "token_index": 3,
@@ -374,8 +371,7 @@
             "positional_vector": [
               0.15,
               0.07
-            ],
-            "explanation": "Zustandsverb. Es sucht im Vektorraum nach einer Unterlage für die physische Positionierung."
+            ]
           },
           {
             "token_index": 4,
@@ -387,8 +383,7 @@
             "positional_vector": [
               0.2,
               0.06
-            ],
-            "explanation": "Räumlicher Connector. Zieht nachfolgende Tokens in den Bereich der physischen Interaktion."
+            ]
           },
           {
             "token_index": 5,
@@ -400,8 +395,7 @@
             "positional_vector": [
               0.25,
               0.05
-            ],
-            "explanation": "Artikel zur Objekt-Einleitung im physischen Raum."
+            ]
           },
           {
             "token_index": 6,
@@ -413,8 +407,7 @@
             "positional_vector": [
               0.3,
               0.04
-            ],
-            "explanation": "Identische Basis wie [1], aber das PE signalisiert eine räumlich getrennte, neue Entität."
+            ]
           },
           {
             "token_index": 7,
@@ -426,8 +419,7 @@
             "positional_vector": [
               0.35,
               0.03
-            ],
-            "explanation": "Relations-Token für die Umgebung. Es bereitet den Raum für eine architektonische Einordnung vor."
+            ]
           },
           {
             "token_index": 8,
@@ -439,8 +431,7 @@
             "positional_vector": [
               0.4,
               0.02
-            ],
-            "explanation": "Bestimmter Artikel, der eine spezifische Referenz im Weltwissen des Modells anspricht."
+            ]
           },
           {
             "token_index": 9,
@@ -452,8 +443,7 @@
             "positional_vector": [
               0.45,
               0.01
-            ],
-            "explanation": "Dritte Instanz. Durch die Satzposition und die Präposition 'vor' wird ein massives Objekt erwartet."
+            ]
           },
           {
             "token_index": 10,
@@ -465,8 +455,7 @@
             "positional_vector": [
               0.5,
               0.0
-            ],
-            "explanation": "Stopp-Signal. Es schließt die semantische Energie des aktuellen Satzes ab."
+            ]
           }
         ]
       },
@@ -478,24 +467,51 @@
             "rules": [
               {
                 "head": 1,
-                "label": "finance_crime",
-                "source": "2",
-                "target": "1",
-                "strength": 2.0
+                "label": "context_r_b",
+                "source": 2,
+                "target": 1,
+                "strength": 2.0,
+                "explanation": "Kontext: Räuber -> Bank (1)"
+              },
+              {
+                "head": 1,
+                "label": "readout_crime",
+                "source": 10,
+                "target": 1,
+                "strength": 2.0,
+                "explanation": "Readout: Punkt -> Bank (1)"
               },
               {
                 "head": 2,
-                "label": "outdoor_furniture",
-                "source": "4",
-                "target": "6",
-                "strength": 1.8
+                "label": "context_a_b",
+                "source": 4,
+                "target": 6,
+                "strength": 1.8,
+                "explanation": "Kontext: auf -> Bank (2)"
+              },
+              {
+                "head": 2,
+                "label": "readout_furniture",
+                "source": 10,
+                "target": 6,
+                "strength": 1.8,
+                "explanation": "Readout: Punkt -> Bank (2)"
               },
               {
                 "head": 3,
-                "label": "architecture",
-                "source": "7",
-                "target": "9",
-                "strength": 1.5
+                "label": "context_v_b",
+                "source": 7,
+                "target": 9,
+                "strength": 1.5,
+                "explanation": "Kontext: vor -> Bank (3)"
+              },
+              {
+                "head": 3,
+                "label": "readout_arch",
+                "source": 10,
+                "target": 9,
+                "strength": 1.5,
+                "explanation": "Readout: Punkt -> Bank (3)"
               }
             ]
           }
@@ -509,7 +525,7 @@
             "linked_head": 1,
             "color": "#dc2626",
             "icon": "💸",
-            "explanation": "Diese Wissens-Kategorie wird aktiviert, wenn das Token 'Bank' semantisch mit einem Täter-Token wie 'Räuber' verschmilzt. Die neuronale Analyse erkennt hier keine Sitzgelegenheit, sondern ein Zielobjekt für eine kriminelle Handlung innerhalb des Wirtschaftssystems."
+            "explanation": "Aktiviert durch Rule 'finance_crime' (Head 1)."
           },
           {
             "id": "outdoor_furniture",
@@ -517,7 +533,7 @@
             "linked_head": 2,
             "color": "#16a34a",
             "icon": "🌳",
-            "explanation": "Die Kombination aus der Präposition 'auf' und dem Verb 'sitzen' triggert dieses Wissens-Cluster. Es repräsentiert das Konzept von hölzernen oder metallischen Sitzgelegenheiten im öffentlichen Raum. Die abstrakte Bank-Bedeutung wird hier fast vollständig unterdrückt."
+            "explanation": "Aktiviert durch Rule 'outdoor_furniture' (Head 2)."
           },
           {
             "id": "architecture",
@@ -525,7 +541,7 @@
             "linked_head": 3,
             "color": "#2563eb",
             "icon": "🏛️",
-            "explanation": "Dieses Cluster reagiert auf räumliche Lagebeschreibungen von großen Objekten. Wenn etwas 'vor' einer Bank geschieht, identifiziert das MLP-Layer das Gebäude als architektonischen Fixpunkt. Es aktiviert Wissen über Fassaden, Institutionen und Stadtplanung."
+            "explanation": "Aktiviert durch Rule 'architecture' (Head 3)."
           }
         ]
       },
@@ -534,12 +550,12 @@
           "default_temperature": 0.6,
           "default_noise": 0.0,
           "default_mlp_threshold": 0.5,
-          "logit_bias_multiplier": 20
+          "logit_bias_multiplier": 25
         },
         "top_k_tokens": [
           {
             "token": "und plant die Flucht.",
-            "base_logit": 5.9,
+            "base_logit": 5.6,
             "category_link": "finance_crime"
           },
           {

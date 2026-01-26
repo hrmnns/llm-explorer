@@ -56,7 +56,6 @@ export const useLLMSimulator = (activeScenario) => {
       setActiveProfileId(firstProfileId);
     }
 
-    console.log(`♻️ Globaler Reset für ${activeScenario.id} durchgeführt.`);
   }, [activeScenario?.id]);
 
   // 1. PHASE 1: ARBEITSVEKTOREN
@@ -67,12 +66,12 @@ export const useLLMSimulator = (activeScenario) => {
       const yBase = v.base_vector[1];
       const xPos = (v.positional_vector?.[0] || 0) * positionWeight;
       const yPos = (v.positional_vector?.[1] || 0) * positionWeight;
-      
+
       // Jitter wird 0, wenn Noise 0 ist (deterministisch)
       const noiseX = (Math.random() - 0.5) * noise * 25;
       const noiseY = (Math.random() - 0.5) * noise * 25;
       const signalQuality = Math.max(0, 1 - (noise / 5));
-      
+
       return {
         ...v,
         displayX: (xBase + xPos) * 150 + noiseX,
@@ -89,7 +88,7 @@ export const useLLMSimulator = (activeScenario) => {
     return { avgSignal, profiles: activeScenario.phase_2_attention.attention_profiles };
   }, [activeScenario, processedVectors]);
 
-  // 3. PHASE 3: FFN (Reagiert auf headOverrides durch Goal-Seeking)
+  // 3. PHASE 3: FFN (Optimierte Logik: Aggregation aller Signale)
   const activeFFN = useMemo(() => {
     const activationsSource = activeScenario?.phase_3_ffn?.activations;
     const tokens = activeScenario?.phase_0_tokenization?.tokens;
@@ -106,23 +105,27 @@ export const useLLMSimulator = (activeScenario) => {
       tokens.forEach(t => {
         const tokenKey = `${activeProfileId}_s${t.id}_h${linkedHeadId}`;
 
-        // Hier fließen die Overrides vom 🎯-Button ein
+        // Override-Werte abrufen (z.B. vom Goal-Seeking)
         const sliderVal = headOverrides[tokenKey] !== undefined
           ? parseFloat(headOverrides[tokenKey])
           : 0.7;
 
-        const rule = rules.find(r =>
+        // --- UPDATE: .filter statt .find ---
+        // Wir suchen ALLE Regeln für diesen Head & Token.
+        // Das macht das System immun gegen doppelte Regeln oder Sortier-Reihenfolge.
+        const relevantRules = rules.filter(r =>
           Number(r.head) === Number(linkedHeadId) &&
-          String(r.source) === String(t.id) &&
-          String(r.label).toLowerCase() === String(cat.id).toLowerCase()
+          String(r.source) === String(t.id)
         );
 
-        if (rule) {
+        // Summiere die Stärke aller gefundenen Regeln auf
+        relevantRules.forEach(rule => {
           totalActivation += (sliderVal / 0.7) * parseFloat(rule.strength) * globalSignal;
-        }
+        });
       });
 
-      const finalActivation = Math.max(0, Math.min(1.0, totalActivation * 0.35));
+      // Clamp auf 0.0 bis 1.0 mit Scaling-Faktor
+      const finalActivation = Math.max(0, Math.min(1.0, totalActivation * 0.33));
 
       return {
         ...cat,

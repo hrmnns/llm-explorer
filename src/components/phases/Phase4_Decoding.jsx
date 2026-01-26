@@ -7,7 +7,7 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
   const {
     temperature, setTemperature, activeAttention,
     setSelectedToken, mlpThreshold, activeFFN, noise, setNoise,
-    headOverrides, setHeadOverrides, activeProfileId, 
+    headOverrides, setHeadOverrides, activeProfileId,
     selectedToken
   } = simulator;
 
@@ -18,42 +18,71 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
   const [isShuffling, setIsShuffling] = useState(false);
   const lastScenarioId = useRef(activeScenario?.id);
 
-  // --- Goal-Seeking Logik (🎯) unverändert ---
+  // --- Goal-Seeking Logik (🎯) ---
   const handleForceOutcome = useCallback((target) => {
     const categoryId = target.category_link;
-    const scenario = activeScenario;
-    const biasMultiplier = scenario?.phase_4_decoding?.settings?.logit_bias_multiplier || 12;
 
+    // 1. Wir finden die Ziel-Kategorie in Phase 3
     const targetFFN = activeFFN?.find(f => String(f.id).toLowerCase() === String(categoryId).toLowerCase());
+
+    // 2. Wir holen uns den verknüpften Head
     const linkedHeadId = targetFFN?.linked_head;
 
     const profiles = activeScenario?.phase_2_attention?.attention_profiles || [];
     const activeProfile = profiles.find(p => String(p.id) === String(activeProfileId));
-    
-    const rule = activeProfile?.rules?.find(r =>
-      String(r.label).toLowerCase() === String(categoryId).toLowerCase() &&
+
+    // Statt nur EINE Regel zu suchen, suchen wir ALLE Regeln für diesen Head
+    const relevantRules = activeProfile?.rules?.filter(r =>
       Number(r.head) === Number(linkedHeadId)
     );
 
-    if (!rule || !linkedHeadId) {
+    if (!relevantRules || relevantRules.length === 0 || !linkedHeadId) {
       setHoveredItem({
         title: "Pfad blockiert 🚫",
         subtitle: "Keine logische Verbindung",
-        data: { "Ursache": "Keine Attention-Regel für diese Kategorie im Profil gefunden." }
+        data: {
+          "Ursache": "Keine Attention-Regeln für diesen Head gefunden.",
+          "Head-ID": linkedHeadId || "Unbekannt"
+        }
       });
       return;
     }
 
-    const tokenKey = `${activeProfileId}_s${rule.source}_h${linkedHeadId}`;
-    setHeadOverrides({ [tokenKey]: 1.0 });
+    // Wir bauen ein Override-Objekt, das ALLE Quellen für diesen Head auf 1.0 setzt.
+    const newOverrides = {};
+    const allRules = activeProfile?.rules || [];
+
+    allRules.forEach(rule => {
+      const tokenKey = `${activeProfileId}_s${rule.source}_h${rule.head}`;
+
+      if (Number(rule.head) === Number(linkedHeadId)) {
+        // Das ist unser Gewinner -> Volle Kraft
+        newOverrides[tokenKey] = 1.0;
+      } else {
+        // Das ist Konkurrenz -> Mundtot machen
+        newOverrides[tokenKey] = 0.0;
+      }
+    });
+
+    setHeadOverrides(newOverrides);
+
+    // --- RESET: Damit der neue Gewinner (sorted[0]) übernehmen kann ---
+    if (setSelectedToken) setSelectedToken(null);
+    if (setSelectedLabel) setSelectedLabel(null);
+
+    // Noise entfernen
     if (setNoise) setNoise(0);
 
     setHoveredItem({
       title: "Pfad kalibriert 🎯",
       subtitle: `Ziel: ${target.token}`,
-      data: { "Status": "SUCCESS", "Kausalität": `Head ${linkedHeadId} aktiviert` }
+      data: {
+        "Status": "SUCCESS",
+        "Strategie": `Head ${linkedHeadId} maximiert`,
+        "Quellen": relevantRules.map(r => `T${r.source}`).join(', ')
+      }
     });
-  }, [activeScenario, activeFFN, activeProfileId, setHeadOverrides, setHoveredItem, setNoise]);
+  }, [activeScenario, activeFFN, activeProfileId, setHeadOverrides, setHoveredItem, setNoise, setSelectedToken]);
 
   const getItemVisuals = useCallback((item) => {
     const matchingCategory = activeFFN?.find(cat =>
@@ -118,11 +147,12 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
       setSelectedLabel(null);
       lastScenarioId.current = activeScenario?.id;
     }
-    
+
     if (!isShuffling) {
       const results = calculateLogic();
       if (results.length > 0) {
         const sorted = [...results].sort((a, b) => b.dynamicProb - a.dynamicProb);
+        // WICHTIG: Wenn ein Token selektiert ist, ist es der Gewinner. Sonst der Wahrscheinlichste.
         setSimulationState({
           outputs: results.slice(0, 10),
           winner: results.find(r => r.token === selectedToken?.token) || sorted[0]
@@ -171,8 +201,8 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
       visualization={
         /* Äußerer Container mit festem Padding für die Beschriftungen unten */
         <div className="flex flex-row min-h-[550px] lg:h-full w-full gap-4 relative pt-12 pb-24 px-4" onClick={() => { setSelectedLabel(null); setHoveredItem(null); }}>
-          
-          {/* Y-Achse: Fest positioniert, Höhe entspricht exakt dem Graphen-Bereich */}
+
+          {/* Y-Achse */}
           <div className="flex flex-col justify-between items-end pb-0 pt-0 text-[9px] font-black w-8 shrink-0 opacity-40 h-[calc(100%-24px)]">
             <span>100%</span>
             <span>50%</span>
@@ -180,8 +210,8 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
           </div>
 
           <div className="relative flex-1 h-[calc(100%-24px)] flex flex-col justify-end border-b-2 border-slate-500/20">
-            
-            {/* Grid Lines innerhalb der Graphen-Fläche */}
+
+            {/* Grid Lines */}
             <div className="absolute inset-0 pointer-events-none opacity-10">
               <div className="absolute top-0 w-full border-t border-current" />
               <div className="absolute top-1/2 w-full border-t border-current" />
@@ -195,7 +225,7 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
               </div>
             </div>
 
-            {/* Balken-Container: Nutzt items-end, um von der 0-Linie nach oben zu wachsen */}
+            {/* Balken-Container */}
             <div className="relative flex items-end justify-around gap-2 lg:gap-4 h-full w-full">
               {simulationState.outputs.map((out) => {
                 const isWinner = simulationState.winner?.token === out.token;
@@ -209,7 +239,13 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
                     className={`relative group flex flex-col items-center flex-1 h-full justify-end transition-all duration-500 ${selectedLabel === out.token ? 'z-30' : 'z-10'} ${(!isActive && !isWinner) ? 'opacity-20 grayscale' : 'opacity-100'}`}
                     onMouseEnter={() => setHoveredItem(getInspectorData(out))}
                     onMouseLeave={() => !selectedLabel && setHoveredItem(null)}
-                    onClick={(e) => { e.stopPropagation(); setSelectedLabel(out.token); }}
+                    /* --- HIER IST DER UI-FIX: setSelectedToken hinzugefügt --- */
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedLabel(out.token);
+                      if (setSelectedToken) setSelectedToken(out);
+                    }}
+                  /* --------------------------------------------------------- */
                   >
                     {/* Goal-Seek Button */}
                     <button
@@ -226,8 +262,8 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
                     )}
 
                     <div className="mb-2 text-xs">{icon}</div>
-                    
-                    {/* Der eigentliche Balken: Wächst von unten nach oben */}
+
+                    {/* Der eigentliche Balken */}
                     <div className={`w-full max-w-[44px] rounded-t-xl transition-all duration-700 ${isWinner ? 'ring-2 ring-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : ''}`}
                       style={{
                         height: isShuffling ? `${Math.random() * 100}%` : `${out.dynamicProb * 100}%`,
@@ -235,8 +271,8 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
                         transform: noise > 0.8 ? `translateX(${(Math.random() - 0.5) * noise * 4}px)` : 'none'
                       }}
                     />
-                    
-                    {/* Beschriftung: Liegt außerhalb des h-full Containers durch absolute Positionierung unter der Basis */}
+
+                    {/* Beschriftung */}
                     <div className="absolute top-[calc(100%+10px)] w-full text-center">
                       <span className={`text-[9px] font-black uppercase mb-1 block ${isActive || isWinner ? 'text-blue-400' : 'text-slate-500'}`}>
                         {(out.dynamicProb * 100).toFixed(0)}%
@@ -253,6 +289,7 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
         </div>
       }
       controls={[
+        /* Controls unverändert */
         <div key="c-temp" className="px-4 py-3 rounded-2xl bg-slate-900/50 border border-white/5 flex flex-col justify-center h-full">
           <div className="flex justify-between items-center mb-2">
             <label className="text-[9px] uppercase font-black text-blue-500 tracking-widest">Temperature</label>
