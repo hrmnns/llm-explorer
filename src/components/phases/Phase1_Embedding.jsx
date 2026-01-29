@@ -4,26 +4,27 @@ import { useScenarios } from '../../context/ScenarioContext';
 
 const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
   const { activeScenario } = useScenarios();
-  const { 
-    noise, setNoise, 
-    positionWeight, setPositionWeight, 
+  const {
+    noise, setNoise,
+    positionWeight, setPositionWeight,
     processedVectors,
-    activeAttention 
+    activeAttention
   } = simulator;
 
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  // KORREKTUR: e.clientX/Y entfernt, da diese hier nicht definiert sind
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [selectedTokenId, setSelectedTokenId] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
   const containerRef = useRef(null);
-  
+
   const lastScenarioId = useRef(activeScenario?.id);
 
   const tokens = activeScenario?.phase_0_tokenization?.tokens || [];
-  const GRID_SCALE = 150; 
+  const GRID_SCALE = 150;
 
   const axisConfig = useMemo(() => {
     const customMap = activeScenario?.phase_1_embedding?.axis_map;
@@ -78,12 +79,12 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
         "Position": getSemanticPosition(vec.displayX, vec.displayY),
         "X-Wert (Semantik)": (vec.displayX / GRID_SCALE).toFixed(3),
         "Y-Wert (Kontext)": (vec.displayY / GRID_SCALE).toFixed(3),
-        
+
         "--- Einflüsse": "---",
         "Base Vector": `[${baseVec[0].toFixed(2)}, ${baseVec[1].toFixed(2)}]`,
         "Positional Shift": `+${(posVec[0] * positionWeight).toFixed(3)}`,
         "Rausch-Faktor": noise > 0 ? `±${(noise * 0.05).toFixed(3)}` : "Stabil (0.0)",
-        
+
         "--- Analyse": "---",
         "Stabilität": stabilityValue.toFixed(0) + "%",
         "Interpretation": rawVector?.explanation || "Token ohne spezifische Kontext-Analyse."
@@ -119,12 +120,11 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
       subtitle="Einbettung der Tokens in n-Dimensionen"
       theme={theme}
       badges={[
-        { text: `Vektoren: ${tokens.length}`, className: "bg-blue-500/10 text-blue-400" },
-        { text: `Zoom: ${(transform.scale * 100).toFixed(0)}%`, className: "bg-slate-500/10 text-slate-400" }
+        { text: `Vektoren: ${tokens.length}`, className: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+        { text: `Zoom: ${(transform.scale * 100).toFixed(0)}%`, className: "bg-explore-item text-content-muted border-explore-border" }
       ]}
       visualization={
-        /* MOBILE OPTIMIERUNG: min-h-[500px] hinzugefügt */
-        <div className="relative w-full min-h-[500px] lg:h-full overflow-hidden bg-slate-950/20 rounded-[2rem]"
+        <div className="relative w-full min-h-[500px] lg:h-full overflow-hidden bg-explore-viz rounded-lg"
           ref={containerRef}
           onMouseDown={(e) => {
             if (e.target.closest('.token-point')) return;
@@ -139,7 +139,7 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
           onMouseLeave={() => setIsDragging(false)}
           onWheel={(e) => zoom(-e.deltaY * 0.001)}
         >
-          {/* Achsenbeschriftung - Mobile-Padding optimiert */}
+          {/* Achsenbeschriftung */}
           <div className="absolute inset-0 pointer-events-none z-10 px-2 py-2">
             <div className="absolute top-4 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-widest text-blue-500/60 flex flex-col items-center">
               <span>↑ {axisConfig.y.pos}</span>
@@ -156,38 +156,43 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
           </div>
 
           <div className="absolute top-6 right-6 flex flex-col gap-2 z-[60]">
-             <button onClick={() => zoom(0.2)} className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white hover:bg-blue-600 transition-all shadow-xl">+</button>
-             <button onClick={() => zoom(-0.2)} className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white hover:bg-blue-600 transition-all shadow-xl">−</button>
-             <button onClick={() => setTransform({ x: 0, y: 0, scale: 1 })} className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-[8px] text-white hover:bg-slate-700 transition-all shadow-xl font-bold">AUTO</button>
-             <button onClick={() => setShowInfo(!showInfo)} className="w-10 h-10 rounded-full bg-slate-900 border border-white/10 text-slate-400 hover:text-white transition-all">{showInfo ? '✕' : 'ℹ'}</button>
+            <button onClick={() => zoom(0.2)} className="w-10 h-10 rounded-xl bg-explore-nav border border-explore-border text-content-main hover:bg-blue-600 hover:text-white transition-all shadow-xl font-bold">+</button>
+            <button onClick={() => zoom(-0.2)} className="w-10 h-10 rounded-xl bg-explore-nav border border-explore-border text-content-main hover:bg-blue-600 hover:text-white transition-all shadow-xl font-bold">−</button>
+            <button onClick={() => setTransform({ x: 0, y: 0, scale: 1 })} className="w-10 h-10 rounded-xl bg-explore-nav border border-explore-border text-[8px] text-content-main hover:bg-explore-item transition-all shadow-xl font-black">AUTO</button>
+            <button onClick={() => setShowInfo(!showInfo)} className="w-10 h-10 rounded-full bg-explore-nav border border-explore-border text-content-dim hover:text-content-main transition-all shadow-xl">{showInfo ? '✕' : 'ℹ'}</button>
           </div>
 
           {showInfo && (
-            <div className="absolute top-20 right-2 right-6 lg:right-20 z-[60] w-64 p-5 rounded-2xl bg-slate-900/95 border border-blue-500/30 shadow-2xl backdrop-blur-md">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-2">Vektor-Orientierung</h4>
-              <p className="text-[11px] leading-relaxed text-slate-300 mb-2">{axisConfig.x.desc}</p>
-              <p className="text-[11px] leading-relaxed text-slate-300">{axisConfig.y.desc}</p>
+            <div className="absolute top-20 right-6 lg:right-20 z-[60] w-64 p-5 rounded-2xl bg-explore-nav border border-explore-border shadow-2xl backdrop-blur-md animate-in zoom-in-95 duration-200">
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-2">Vektor-Orientierung</h4>
+              <p className="text-[11px] leading-relaxed text-content-muted mb-2">{axisConfig.x.desc}</p>
+              <p className="text-[11px] leading-relaxed text-content-muted">{axisConfig.y.desc}</p>
             </div>
           )}
 
           <div
             className="absolute inset-0"
             style={{
-              transform: `translate(${transform.x + dimensions.width/2}px, ${transform.y + dimensions.height/2}px) scale(${transform.scale})`,
+              transform: `translate(${transform.x + dimensions.width / 2}px, ${transform.y + dimensions.height / 2}px) scale(${transform.scale})`,
               transformOrigin: '0 0'
             }}
           >
             {/* SVG Grid */}
-            
             <svg className="absolute inset-0 pointer-events-none overflow-visible" style={{ width: '1px', height: '1px' }}>
-              <line x1="-3000" y1="0" x2="3000" y2="0" stroke="white" strokeWidth="0.5" opacity="0.1" />
-              <line x1="0" y1="-3000" x2="0" y2="3000" stroke="white" strokeWidth="0.5" opacity="0.1" />
+              {/* Hauptachsen - etwas kräftiger */}
+              <line x1="-3000" y1="0" x2="3000" y2="0" stroke="currentColor" className="text-explore-border" strokeWidth="1" opacity="0.8" />
+              <line x1="0" y1="-3000" x2="0" y2="3000" stroke="currentColor" className="text-explore-border" strokeWidth="1" opacity="0.8" />
+
+              {/* Hilfslinien und Skalierung */}
               {[-2, -1, 1, 2].map(val => (
                 <React.Fragment key={val}>
-                  <line x1={val * GRID_SCALE} y1="-10" x2={val * GRID_SCALE} y2="10" stroke="white" strokeWidth="1" opacity="0.2" />
-                  <text x={val * GRID_SCALE} y="25" fill="white" fontSize="9" opacity="0.3" textAnchor="middle">{val}</text>
-                  <line x1="-10" y1={val * GRID_SCALE * -1} x2="10" y2={val * GRID_SCALE * -1} stroke="white" strokeWidth="1" opacity="0.2" />
-                  <text x="-20" y={val * GRID_SCALE * -1 + 3} fill="white" fontSize="9" opacity="0.3" textAnchor="end">{val}</text>
+                  {/* Vertikale Hilfslinien */}
+                  <line x1={val * GRID_SCALE} y1="-15" x2={val * GRID_SCALE} y2="15" stroke="currentColor" className="text-explore-border" strokeWidth="1.5" opacity="0.6" />
+                  <text x={val * GRID_SCALE} y="30" fill="currentColor" className="text-content-dim font-bold" fontSize="10" textAnchor="middle">{val}</text>
+
+                  {/* Horizontale Hilfslinien */}
+                  <line x1="-15" y1={val * GRID_SCALE * -1} x2="15" y2={val * GRID_SCALE * -1} stroke="currentColor" className="text-explore-border" strokeWidth="1.5" opacity="0.6" />
+                  <text x="-25" y={val * GRID_SCALE * -1 + 4} fill="currentColor" className="text-content-dim font-bold" fontSize="10" textAnchor="end">{val}</text>
                 </React.Fragment>
               ))}
             </svg>
@@ -197,7 +202,6 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
               const token = tokens.find(t => Number(t.id) === Number(vec.id) || Number(t.id) === Number(vec.token_index));
               if (!token) return null;
               const isSelected = selectedTokenId === token.id;
-              const isHovered = hoveredIndex === i;
 
               return (
                 <div key={token.id} className="absolute token-point group z-20 cursor-pointer"
@@ -206,8 +210,8 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
                   onMouseLeave={() => { setHoveredIndex(null); setHoveredItem(getInspectorData(selectedTokenId)); }}
                   onClick={(e) => { e.stopPropagation(); setSelectedTokenId(token.id); }}
                 >
-                  <div className={`w-3 h-3 rounded-full transition-all duration-300 border-2 ${isSelected ? 'scale-150 bg-white border-blue-400 shadow-[0_0_15px_#3b82f6]' : 'bg-blue-600 border-transparent opacity-60 hover:opacity-100'}`} />
-                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900/90 px-2 py-0.5 rounded text-[10px] text-blue-200 font-bold border border-white/5 whitespace-nowrap pointer-events-none shadow-xl" style={{ transform: `translateX(-50%) scale(${1 / transform.scale})` }}>
+                  <div className={`w-3 h-3 rounded-full transition-all duration-300 border-2 ${isSelected ? 'scale-150 bg-white border-blue-500 shadow-[0_0_15px_#3b82f6]' : 'bg-blue-600 border-transparent opacity-60 hover:opacity-100'}`} />
+                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-explore-nav/90 px-2 py-0.5 rounded text-[10px] text-blue-500 font-bold border border-explore-border whitespace-nowrap pointer-events-none shadow-xl" style={{ transform: `translateX(-50%) scale(${1 / transform.scale})` }}>
                     {token.text}
                   </div>
                 </div>
@@ -217,32 +221,32 @@ const Phase1_Embedding = ({ simulator, theme, setHoveredItem }) => {
         </div>
       }
       controls={[
-        <div key="ctrl-noise" className="px-4 py-3 bg-slate-900/80 rounded-lg border border-white/5 shadow-inner">
+        <div key="ctrl-noise" className="px-4 py-3 bg-explore-card rounded-xl border border-explore-border shadow-sm">
           <div className="flex justify-between items-center mb-2">
             <label className="text-[8px] uppercase font-black text-blue-500 tracking-widest">Semantic Noise</label>
-            <div className="text-[10px] font-mono text-blue-400">{noise.toFixed(2)}</div>
+            <div className="text-[10px] font-mono text-blue-500 font-bold">{noise.toFixed(2)}</div>
           </div>
-          <input type="range" min="0" max="5" step="0.1" value={noise} onChange={(e) => setNoise(parseFloat(e.target.value))} className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+          <input type="range" min="0" max="5" step="0.1" value={noise} onChange={(e) => setNoise(parseFloat(e.target.value))} className="w-full h-1 bg-explore-border rounded-lg appearance-none cursor-pointer accent-blue-500" />
         </div>,
-        <div key="ctrl-pos" className="px-4 py-3 bg-slate-900/80 rounded-lg border border-white/5 shadow-inner">
+        <div key="ctrl-pos" className="px-4 py-3 bg-explore-card rounded-xl border border-explore-border shadow-sm">
           <div className="flex justify-between items-center mb-2">
             <label className="text-[8px] uppercase font-black text-purple-500 tracking-widest">Position Weight</label>
-            <div className="text-[10px] font-mono text-purple-400">{(positionWeight * 100).toFixed(0)}%</div>
+            <div className="text-[10px] font-mono text-purple-500 font-bold">{(positionWeight * 100).toFixed(0)}%</div>
           </div>
-          <input type="range" min="0" max="1" step="0.01" value={positionWeight} onChange={(e) => setPositionWeight(parseFloat(e.target.value))} className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500" />
+          <input type="range" min="0" max="1" step="0.01" value={positionWeight} onChange={(e) => setPositionWeight(parseFloat(e.target.value))} className="w-full h-1 bg-explore-border rounded-lg appearance-none cursor-pointer accent-purple-500" />
         </div>,
-        <div key="ctrl-nav" className="px-4 py-3 bg-slate-900/80 rounded-lg border border-white/5">
-          <label className="text-[8px] uppercase font-black text-slate-500 tracking-widest block mb-2">Navigation & View</label>
+        <div key="ctrl-nav" className="px-4 py-3 bg-explore-card rounded-xl border border-explore-border shadow-sm">
+          <label className="text-[8px] uppercase font-black text-content-dim tracking-widest block mb-2">Navigation & View</label>
           <div className="flex items-center gap-4">
-            <div className="grid grid-cols-3 gap-0.5 bg-slate-800/50 p-0.5 rounded-lg border border-white/5">
-              <div /> <button onClick={() => move(0, 1)} className="w-6 h-6 flex items-center justify-center bg-slate-900 rounded-sm hover:bg-slate-700 text-[8px]">▲</button> <div />
-              <button onClick={() => move(1, 0)} className="w-6 h-6 flex items-center justify-center bg-slate-900 rounded-sm hover:bg-slate-700 text-[8px]">◀</button>
-              <button onClick={() => move(0, -1)} className="w-6 h-6 flex items-center justify-center bg-slate-900 rounded-sm hover:bg-slate-700 text-[8px]">▼</button>
-              <button onClick={() => move(-1, 0)} className="w-6 h-6 flex items-center justify-center bg-slate-900 rounded-sm hover:bg-slate-700 text-[8px]">▶</button>
+            <div className="grid grid-cols-3 gap-0.5 bg-explore-item p-0.5 rounded-lg border border-explore-border">
+              <div /> <button onClick={() => move(0, 1)} className="w-6 h-6 flex items-center justify-center bg-explore-nav text-content-main rounded-sm hover:bg-blue-500 hover:text-white text-[8px] transition-colors">▲</button> <div />
+              <button onClick={() => move(1, 0)} className="w-6 h-6 flex items-center justify-center bg-explore-nav text-content-main rounded-sm hover:bg-blue-500 hover:text-white text-[8px] transition-colors">◀</button>
+              <button onClick={() => move(0, -1)} className="w-6 h-6 flex items-center justify-center bg-explore-nav text-content-main rounded-sm hover:bg-blue-500 hover:text-white text-[8px] transition-colors">▼</button>
+              <button onClick={() => move(-1, 0)} className="w-6 h-6 flex items-center justify-center bg-explore-nav text-content-main rounded-sm hover:bg-blue-500 hover:text-white text-[8px] transition-colors">▶</button>
             </div>
             <div className="flex flex-col gap-1 flex-1">
-              <button onClick={() => zoom(0.1)} className="h-6 bg-slate-800 rounded border border-white/5 hover:bg-blue-600/20 text-[10px] font-bold">+</button>
-              <button onClick={() => zoom(-0.1)} className="h-6 bg-slate-800 rounded border border-white/5 hover:bg-blue-600/20 text-[10px] font-bold">−</button>
+              <button onClick={() => zoom(0.1)} className="h-6 bg-explore-nav text-content-main rounded border border-explore-border hover:bg-blue-500 hover:text-white text-[10px] font-bold transition-colors">+</button>
+              <button onClick={() => zoom(-0.1)} className="h-6 bg-explore-nav text-content-main rounded border border-explore-border hover:bg-blue-500 hover:text-white text-[10px] font-bold transition-colors">−</button>
             </div>
           </div>
         </div>

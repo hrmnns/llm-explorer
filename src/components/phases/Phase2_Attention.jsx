@@ -63,7 +63,6 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
         const [, sId, hId] = match;
         const headNum = parseInt(hId);
 
-        // Nur synchronisieren, wenn es ein ANDERER Pfad ist als der aktuell aktive
         if ((!idsMatch(sId, selectedTokenId) || activeHead !== headNum) && key !== lastSyncedKey.current) {
           lastSyncedKey.current = key;
           setSelectedTokenId(sId);
@@ -89,7 +88,6 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
   const [hoveredTokenId, setHoveredTokenId] = useState(null);
   const [zoom, setZoom] = useState(1);
 
-  // Storage-Initialisierung
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem(SESSION_STORAGE_KEY);
@@ -101,7 +99,6 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
 
   const lastScenarioId = useRef(activeScenario?.id);
 
-  // Szenario-Reset & Default Token
   useEffect(() => {
     if (!activeScenario) return;
     const isNewScenario = lastScenarioId.current !== activeScenario.id;
@@ -169,7 +166,6 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
     return { x, y, xPct: ((V_CENTER + x) / V_SIZE) * 100, yPct: ((V_CENTER + y) / V_SIZE) * 100 };
   }, [V_DYNAMIC_RADIUS]);
 
-  // KORREKTUR: Stabilere Source-ID Logik verhindert das Springen
   const currentSourceTokenId = useMemo(() => {
     if (selectedTokenId !== null) return selectedTokenId;
     return tokens[tokens.length - 2]?.id || tokens[0]?.id;
@@ -249,7 +245,6 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
   const handleSliderChange = (headId, val) => {
     const newVal = parseFloat(val);
     const key = generateKey(activeProfileId, currentSourceTokenId, headId);
-    
     lastSyncedKey.current = key;
     if (simulator.updateHeadWeight) simulator.updateHeadWeight(key, newVal);
     const next = { ...(headOverrides || {}), [key]: newVal };
@@ -264,16 +259,16 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
       subtitle="Justierung der Multi-Head Gewichtung"
       theme={theme}
       badges={[
-        { text: headDefinitions[activeHead].label, className: "bg-blue-500/10 text-blue-400" },
-        { text: Object.keys(headOverrides || {}).length > 0 ? "User Modus" : "Auto-Pilot", className: "bg-amber-500/10 text-amber-400" }
+        { text: headDefinitions[activeHead].label, className: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+        { text: Object.keys(headOverrides || {}).length > 0 ? "User Modus" : "Auto-Pilot", className: "bg-amber-500/10 text-amber-500 border-amber-500/20" }
       ]}
       visualization={
-        <div className="relative w-full h-full min-h-[420px] flex items-center justify-center overflow-hidden bg-slate-950/10 rounded-[2rem]">
+        <div className="relative w-full h-full min-h-[420px] flex items-center justify-center overflow-hidden bg-explore-viz rounded-lg">
           <div className="absolute top-6 right-6 flex flex-col gap-2 z-50">
-            <button onClick={() => setZoom(z => Math.min(z + 0.2, 2.5))} className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white hover:bg-blue-600 transition-all shadow-xl">+</button>
-            <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))} className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white hover:bg-blue-600 transition-all shadow-xl">-</button>
-            <button title="Alle Heads auf 0" onClick={handleZeroAll} className="w-10 h-10 rounded-xl bg-slate-900 border border-white/10 text-white flex items-center justify-center mt-2 hover:bg-orange-600 transition-all font-black text-xs">Ø</button>
-            <button title="Reset" onClick={handleReset} className="w-10 h-10 rounded-xl bg-red-900/20 border border-red-500/30 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-xl">
+            <button onClick={() => setZoom(z => Math.min(z + 0.2, 2.5))} className="w-10 h-10 rounded-xl bg-explore-nav border border-explore-border text-content-main hover:bg-blue-600 hover:text-white transition-all shadow-xl font-bold">+</button>
+            <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))} className="w-10 h-10 rounded-xl bg-explore-nav border border-explore-border text-content-main hover:bg-blue-600 hover:text-white transition-all shadow-xl">-</button>
+            <button title="Alle Heads auf 0" onClick={handleZeroAll} className="w-10 h-10 rounded-xl bg-explore-nav border border-explore-border text-content-main flex items-center justify-center mt-2 hover:bg-orange-600 hover:text-white transition-all font-black text-xs">Ø</button>
+            <button title="Reset" onClick={handleReset} className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-xl">
               <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-1.103 4.116c-.806 1.347-2.277 2.25-3.965 2.25-2.5 0-4.5-2.03-4.5-4.5s2.03-4.5 4.5-4.5c1.75 0 3.27 1 4.026 2.484.061.121.23.13.34.023l.592-.572a.124.124 0 0 0 .03-.127C10.17 3.501 8.25 2 6 2 2.69 2 0 4.69 0 8s2.69 6 6 6c2.123 0 3.997-1.123 5.062-2.803.047-.074.024-.173-.05-.223l-.56-.381a.125.125 0 0 0-.121-.011z" /></svg>
             </button>
           </div>
@@ -290,13 +285,13 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
                 const y2 = V_CENTER + y;
                 return (
                   <g key={`att-line-${token.id}`}>
-                    <line x1={V_CENTER} y1={V_CENTER} x2={x2} y2={y2} stroke={themeColor} strokeWidth={1 + strength * 16} opacity={0.2 + strength * 0.8} strokeLinecap="round" />
-                    <circle r={2 + strength * 3} fill="white" style={{ filter: 'url(#glow)' }}>
+                    <line x1={V_CENTER} y1={V_CENTER} x2={x2} y2={y2} stroke={themeColor} strokeWidth={1 + strength * 16} opacity={0.3 + strength * 0.7} strokeLinecap="round" />
+                    <circle r={2 + strength * 3} fill="currentColor" className="text-white" style={{ filter: 'url(#glow)' }}>
                       <animateMotion dur={`${4 - strength * 3}s`} repeatCount="indefinite" path={`M ${x2} ${y2} L ${V_CENTER} ${V_CENTER}`} />
                     </circle>
                     <g transform={`translate(${(V_CENTER + x2) / 2}, ${(V_CENTER + y2) / 2})`}>
-                      <rect x="-12" y="-9" width="24" height="16" rx="5" fill="#0f172a" stroke={themeColor} strokeWidth="1" />
-                      <text fill="white" fontSize="9" fontWeight="900" textAnchor="middle" dy="3.5">{(strength * 100).toFixed(0)}</text>
+                      <rect x="-12" y="-9" width="24" height="16" rx="5" fill="currentColor" className="text-explore-nav" stroke={themeColor} strokeWidth="1" />
+                      <text fill="currentColor" className="text-content-main" fontSize="9" fontWeight="900" textAnchor="middle" dy="3.5">{(strength * 100).toFixed(0)}</text>
                     </g>
                   </g>
                 );
@@ -315,8 +310,8 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
                     {isCenter ? (
                       <div className="flex flex-col items-center">
                         <span className="text-[8px] font-black uppercase text-blue-500 mb-2 tracking-widest animate-pulse">Query</span>
-                        <div className="w-20 h-20 rounded-full border-[6px] bg-slate-900 flex items-center justify-center shadow-2xl" style={{ borderColor: themeColor, boxShadow: `0 0 35px ${themeColor}50` }}>
-                          <span className="text-white font-black text-[11px] uppercase text-center px-2">{token.text}</span>
+                        <div className="w-20 h-20 rounded-full border-[6px] bg-explore-nav flex items-center justify-center shadow-2xl" style={{ borderColor: themeColor, boxShadow: `0 0 35px ${themeColor}50` }}>
+                          <span className="text-content-main font-black text-[11px] uppercase text-center px-2">{token.text}</span>
                         </div>
                       </div>
                     ) : (
@@ -324,7 +319,7 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
                         onClick={() => handleTokenSelect(token.id)}
                         onMouseEnter={() => setHoveredTokenId(token.id)}
                         onMouseLeave={() => setHoveredTokenId(null)}
-                        className={`px-4 py-1.5 rounded-2xl border-2 font-mono text-[10px] font-black cursor-pointer transition-all ${strength > 0.1 ? 'bg-slate-900 border-white text-white shadow-2xl scale-110' : 'bg-slate-950/90 border-slate-800 text-slate-500 opacity-50 hover:opacity-100'}`}>
+                        className={`px-4 py-1.5 rounded-2xl border-2 font-mono text-[10px] font-black cursor-pointer transition-all ${strength > 0.1 ? 'bg-explore-nav border-blue-500 text-content-main shadow-2xl scale-110' : 'bg-explore-item border-explore-border text-content-dim opacity-70 hover:opacity-100'}`}>
                         {token.text}
                       </div>
                     )}
@@ -343,11 +338,11 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
               const activeCount = getHeadActiveCount(h);
               const currentVal = headOverrides[`${activeProfileId}_s${currentSourceTokenId}_h${h}`] ?? 0.7;
               return (
-                <div key={h} onClick={() => handleHeadChange(h)} className={`p-3 rounded-2xl border-2 transition-all cursor-pointer ${activeHead === h ? 'bg-blue-600 border-blue-400 text-white shadow-lg' : 'bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700'}`}>
+                <div key={h} onClick={() => handleHeadChange(h)} className={`p-3 rounded-2xl border-2 transition-all cursor-pointer ${activeHead === h ? 'bg-blue-600 border-blue-400 text-white shadow-lg' : 'bg-explore-card border-explore-border text-content-dim hover:border-blue-500/50'}`}>
                   <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black uppercase">{headDefinitions[h].label}</span>
-                      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${activeHead === h ? 'bg-white/20 text-white' : 'bg-black/20 text-slate-400'}`}>
+                      <span className={`text-[10px] font-black uppercase ${activeHead === h ? 'text-white' : 'text-content-main'}`}>{headDefinitions[h].label}</span>
+                      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${activeHead === h ? 'bg-white/20 text-white' : 'bg-explore-item text-content-dim'}`}>
                         {currentVal.toFixed(2)}
                       </span>
                     </div>
@@ -360,17 +355,17 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
                     onMouseUp={() => { isInteracting.current = false; }}
                     onClick={e => e.stopPropagation()} 
                     onInput={e => handleSliderChange(h, e.target.value)} 
-                    className="w-full h-1.5 bg-white/20 rounded-lg appearance-none accent-white cursor-ew-resize" />
+                    className={`w-full h-1.5 rounded-lg appearance-none cursor-ew-resize ${activeHead === h ? 'bg-white/30 accent-white' : 'bg-explore-item accent-blue-500'}`} />
                 </div>
               );
             })}
           </div>
         </div>,
-        <div key="c-profiles" className="flex flex-col gap-3 md:border-l md:border-white/10 md:pl-6">
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Inference Context</span>
+        <div key="c-profiles" className="flex flex-col gap-3 md:border-l border-explore-border md:pl-6">
+          <span className="text-[10px] font-black uppercase tracking-widest text-content-dim">Inference Context</span>
           <div className="grid grid-cols-2 gap-2">
             {profiles.map(p => (
-              <button key={p.id} onClick={() => simulator.setActiveProfileId?.(p.id)} className={`h-12 px-4 rounded-2xl border-2 text-[10px] font-black uppercase transition-all ${activeProfileId === p.id ? 'bg-white/10 border-white/50 text-white shadow-inner' : 'bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700'}`}>
+              <button key={p.id} onClick={() => simulator.setActiveProfileId?.(p.id)} className={`h-12 px-4 rounded-2xl border-2 text-[10px] font-black uppercase transition-all ${activeProfileId === p.id ? 'bg-blue-500/10 border-blue-500 text-blue-500 shadow-inner' : 'bg-explore-card border-explore-border text-content-dim hover:border-blue-500/50'}`}>
                 {p.label}
               </button>
             ))}

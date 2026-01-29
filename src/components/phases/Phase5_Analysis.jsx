@@ -51,7 +51,6 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
 
   const displayProbability = winner.dynamicProb !== undefined ? winner.dynamicProb : (winner.probability || 0);
 
-  // --- ERWEITERTE NARRATIVE LOGIK ---
   const getNarrative = () => {
     const label = winner.safeLabel;
     
@@ -63,7 +62,6 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
       return `Stochastische Diversität: Durch die erhöhte Temperature (${temperature.toFixed(1)}) hat das Modell den deterministischen Pfad verlassen. Die Wahl von "${label}" ist ein Ergebnis explorativen Samplings innerhalb des erweiterten Vektorraums.`;
     }
 
-    // Dynamische Erkennung basierend auf Inhalten
     if (label.includes("Berlin") || label.includes("Bonn")) {
       const mode = label === "Berlin" ? "faktisch-geografische" : "historische";
       return `Kontext-Mixer Erfolg: Das Modell hat die ${mode} Dimension priorisiert. Durch die gezielte Attention-Steuerung wurde die entsprechende Wissenskategorie im FFN aktiviert und als logischer Sieger ermittelt.`;
@@ -141,18 +139,18 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
       subtitle="Zusammenfassender Entscheidungspfad des Modells"
       theme={theme}
       badges={[
-        { text: `Integrität: ${(pipelineSignal * 100).toFixed(0)}%`, className: isCritical ? "bg-red-500/20 text-red-400" : "bg-blue-500/10 text-blue-400" },
-        { text: `${(displayProbability * 100).toFixed(1)}% Konfidenz`, className: "bg-green-500/10 text-green-400 border-green-500/20" }
+        { text: `Integrität: ${(pipelineSignal * 100).toFixed(0)}%`, className: isCritical ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+        { text: `${(displayProbability * 100).toFixed(1)}% Konfidenz`, className: "bg-green-500/10 text-green-500 border-green-500/20" }
       ]}
       visualization={
-        <div className="w-full flex flex-col items-center px-2 py-4" onClick={() => { setSelectedStep(null); setHoveredItem(null); }}>
+        <div className="w-full flex flex-col items-center px-2 py-4 bg-explore-viz rounded-lg" onClick={() => { setSelectedStep(null); setHoveredItem(null); }}>
           
           {/* Narratives System-Urteil */}
-          <div className="mb-12 text-center max-w-3xl mx-auto border-b border-white/5 pb-10">
+          <div className="mb-12 text-center max-w-3xl mx-auto border-b border-explore-border pb-10">
             <h3 className={`text-[10px] uppercase font-black tracking-[0.4em] mb-6 ${isCritical ? 'text-red-500' : 'text-blue-500'}`}>
               System-Interpretation
             </h3>
-            <p className={`text-lg lg:text-xl font-light leading-relaxed italic px-10 transition-all duration-700 ${theme === 'dark' ? 'text-slate-200' : 'text-slate-800'}`}>
+            <p className="text-lg lg:text-xl font-light leading-relaxed italic px-10 transition-all duration-700 text-content-main">
               „{getNarrative()}“
             </p>
           </div>
@@ -164,21 +162,21 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
                 <div 
                   className={`relative z-10 flex flex-col w-full p-8 rounded-[2.5rem] border-2 transition-all duration-500 cursor-pointer group
                     ${selectedStep === i 
-                      ? 'bg-blue-600/10 border-blue-400 shadow-[0_0_40px_rgba(59,130,246,0.15)] scale-[1.04]' 
-                      : (theme === 'dark' ? 'bg-slate-900/60 border-white/5 hover:border-white/20' : 'bg-white border-slate-200 shadow-xl hover:border-blue-300')}`}
+                      ? 'bg-blue-500/10 border-blue-500 shadow-[0_0_40px_rgba(59,130,246,0.15)] scale-[1.04]' 
+                      : 'bg-explore-card border-explore-border hover:border-blue-500/50'}`}
                   onClick={(e) => { e.stopPropagation(); handleStepClick(step, i); }}
                 >
                   <div className="flex items-center gap-8 mb-4">
                     <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-3xl transition-all duration-500 group-hover:rotate-6
-                      ${i === 4 ? 'bg-green-500/20 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 'bg-slate-800 text-slate-300'}`}>
+                      ${i === 4 ? 'bg-green-500/20 text-green-500 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 'bg-explore-item text-content-dim'}`}>
                       {step.icon}
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-500 mb-1">{step.label}</span>
-                      <span className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{step.val}</span>
+                      <span className="text-[10px] uppercase font-black tracking-[0.2em] text-content-dim mb-1">{step.label}</span>
+                      <span className="text-xl font-black text-content-main">{step.val}</span>
                     </div>
                   </div>
-                  <p className={`text-[14px] leading-relaxed font-medium italic ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <p className="text-[14px] leading-relaxed font-medium italic text-content-muted">
                     {step.story}
                   </p>
                 </div>
@@ -186,7 +184,7 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
                 {/* Verbindungslinie */}
                 {i < steps.length - 1 && (
                   <div className="flex flex-col items-center">
-                    <div className={`w-1 h-12 transition-all duration-1000 ${selectedStep !== null && selectedStep >= i ? 'bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,1)]' : (theme === 'dark' ? 'bg-slate-800' : 'bg-slate-200')}`}></div>
+                    <div className={`w-1 h-12 transition-all duration-1000 ${selectedStep !== null && selectedStep >= i ? 'bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,1)]' : 'bg-explore-border'}`}></div>
                   </div>
                 )}
               </React.Fragment>

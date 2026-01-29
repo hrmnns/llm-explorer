@@ -1,71 +1,120 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* Das ersetzt die 'content' Sektion der alten Config und repariert das Layout */
+@source "./src/**/*.{js,ts,jsx,tsx}";
 
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #020617; /* slate-950 */
+@theme {
+  /* Breakpoints für v4 sicherheitshalber explizit definieren */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Mapping deiner Variablen auf Tailwind-Klassen */
+  --color-explore-app: var(--color-bg-app);
+  --color-explore-nav: var(--color-bg-nav);
+  --color-explore-viz: var(--color-bg-viz);
+  --color-explore-card: var(--color-bg-card);
+  --color-explore-item: var(--color-bg-item);
+  --color-explore-border: var(--color-border-main);
+  --color-explore-subtle: var(--color-border-subtle);
+
+  --color-content-main: var(--color-text-main);
+  --color-content-muted: var(--color-text-muted);
+  --color-content-dim: var(--color-text-dim);
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+/* Der Rest deiner Datei ( @layer base etc. ) bleibt wie zuvor */
+
+@layer base {
+  :root {
+    /* --- LIGHT MODE VARIABLES --- */
+    --color-bg-app: #f8fafc;
+    --color-bg-nav: #ffffff;
+    --color-bg-viz: #f1f5f9; /* #ffffff; */
+    --color-bg-card: #f1f5f9;      /* Zurück auf slate-100 (vorher Test-Rot) */
+    --color-bg-item: #ffffff;
+    
+    --color-border-main: #cbd5e1; /* #e2e8f0; */
+    --color-border-subtle: #f1f5f9;
+    
+    --color-text-main: #0f172a;
+    --color-text-muted: #64748b;
+    --color-text-dim: #94a3b8;
+
+    --color-sb-track: #f1f5f9;
+    --color-sb-thumb: #cbd5e1;
+  }
+
+  /* Tailwind v4 erkennt den Darkmode automatisch über diese Klasse */
+.dark {
+    /* --- DARK MODE VARIABLES --- */
+    --color-bg-app: #020617;    /* Sehr dunkles Blau/Schwarz */
+    --color-bg-nav: #0f172a;    /* Slate 900 */
+    
+    /* WICHTIG: Solid statt Transparent, damit kein Weiß durchkommt */
+    --color-bg-viz: #020617; /* #020617;     */
+    --color-bg-card: #0f172a;   
+    --color-bg-item: #1e293b;   /* Etwas heller für Tokens */
+    
+    --color-border-main: #334155; /* rgba(255, 255, 255, 0.1); */
+    --color-border-subtle: rgba(255, 255, 255, 0.05);
+    
+    /* Text-Korrektur (vorher war es fast schwarz) */
+    --color-text-main: #f1f5f9; 
+    --color-text-muted: #94a3b8;
+    --color-text-dim: #64748b;
+
+    --color-sb-track: #020617;
+    --color-sb-thumb: #1e293b;
+  }
+
+  body {
+  background-color: var(--color-bg-app);
+  color: var(--color-text-main);
+}
+/*
+  body {
+    background-color: var(--color-bg-app);
+    color: var(--color-text-main);
+    @apply antialiased overflow-x-hidden transition-colors duration-300;
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }  */
 }
 
-#root {
-  width: 100%;
+@layer components {
+  /* Stil für die Custom-Range-Slider */
+  input[type='range'] {
+    @apply appearance-none bg-transparent cursor-pointer;
+  }
+
+  input[type='range']::-webkit-slider-runnable-track {
+    background-color: var(--color-border-main);
+    @apply h-1.5 rounded-full;
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    @apply appearance-none bg-blue-500 w-4 h-4 rounded-full -mt-1.5 shadow-lg shadow-blue-500/40 hover:scale-110 transition-transform;
+  }
+
+  @keyframes alert-pulse {
+    0%, 100% { opacity: 1; filter: brightness(1); }
+    50% { opacity: 0.7; filter: brightness(1.5) drop-shadow(0 0 10px rgba(220, 38, 38, 0.8)); }
+  }
 }
 
-/* Custom Animation für Halluzinationen in Phase 4 */
-@keyframes pulse-red {
-  0%, 100% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(220, 38, 38, 0.9); }
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-.animate-alert {
-  animation: pulse-red 1s infinite;
-  background-color: #dc2626 !important; /* Force Red */
+::-webkit-scrollbar-track {
+  background-color: var(--color-sb-track);
 }
 
-/* Custom Scrollbar Styling */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 5px;               /* Sehr schmale Breite */
-  height: 5px;
-}
-
-/* Der Hintergrund (Track) - Fast transparent */
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.1); /* Entspricht Slate-900 mit Transparenz */
-  border-radius: 10px;
-}
-
-/* Der Schieber (Thumb) - Dezentes Blau/Slate */
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.2); /* Blau mit geringer Deckkraft */
-  border-radius: 10px;
-  transition: all 0.3s ease;
-}
-
-/* Hover-Effekt: Der Schieber wird deutlicher, wenn man mit der Maus drüberfährt */
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.5); /* Kräftigeres Blau */
-}
-
-/* Für Firefox (eingeschränktes Styling möglich) */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(59, 130, 246, 0.2) rgba(15, 23, 42, 0.1);
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-sb-thumb);
+  @apply rounded-full hover:opacity-80;
 }

@@ -21,17 +21,12 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
   // --- Goal-Seeking Logik (🎯) ---
   const handleForceOutcome = useCallback((target) => {
     const categoryId = target.category_link;
-
-    // 1. Wir finden die Ziel-Kategorie in Phase 3
     const targetFFN = activeFFN?.find(f => String(f.id).toLowerCase() === String(categoryId).toLowerCase());
-
-    // 2. Wir holen uns den verknüpften Head
     const linkedHeadId = targetFFN?.linked_head;
 
     const profiles = activeScenario?.phase_2_attention?.attention_profiles || [];
     const activeProfile = profiles.find(p => String(p.id) === String(activeProfileId));
 
-    // Statt nur EINE Regel zu suchen, suchen wir ALLE Regeln für diesen Head
     const relevantRules = activeProfile?.rules?.filter(r =>
       Number(r.head) === Number(linkedHeadId)
     );
@@ -48,29 +43,21 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
       return;
     }
 
-    // Wir bauen ein Override-Objekt, das ALLE Quellen für diesen Head auf 1.0 setzt.
     const newOverrides = {};
     const allRules = activeProfile?.rules || [];
 
     allRules.forEach(rule => {
       const tokenKey = `${activeProfileId}_s${rule.source}_h${rule.head}`;
-
       if (Number(rule.head) === Number(linkedHeadId)) {
-        // Das ist unser Gewinner -> Volle Kraft
         newOverrides[tokenKey] = 1.0;
       } else {
-        // Das ist Konkurrenz -> Mundtot machen
         newOverrides[tokenKey] = 0.0;
       }
     });
 
     setHeadOverrides(newOverrides);
-
-    // --- RESET: Damit der neue Gewinner (sorted[0]) übernehmen kann ---
     if (setSelectedToken) setSelectedToken(null);
     if (setSelectedLabel) setSelectedLabel(null);
-
-    // Noise entfernen
     if (setNoise) setNoise(0);
 
     setHoveredItem({
@@ -152,7 +139,6 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
       const results = calculateLogic();
       if (results.length > 0) {
         const sorted = [...results].sort((a, b) => b.dynamicProb - a.dynamicProb);
-        // WICHTIG: Wenn ein Token selektiert ist, ist es der Gewinner. Sonst der Wahrscheinlichste.
         setSimulationState({
           outputs: results.slice(0, 10),
           winner: results.find(r => r.token === selectedToken?.token) || sorted[0]
@@ -195,24 +181,23 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
       subtitle="Physikalische Signal-Modulation & Sampling"
       theme={theme}
       badges={[
-        { text: `Entropy: ${noise.toFixed(2)}`, className: noise > 1 ? "text-orange-500" : "text-slate-400" },
-        { text: `Aktiv: ${activeOptionsCount}`, className: "text-blue-500" }
+        { text: `Entropy: ${noise.toFixed(2)}`, className: noise > 1 ? "text-orange-500" : "text-content-dim" },
+        { text: `Aktiv: ${activeOptionsCount}`, className: "text-blue-500 border-blue-500/20 bg-blue-500/5" }
       ]}
       visualization={
-        /* Äußerer Container mit festem Padding für die Beschriftungen unten */
-        <div className="flex flex-row min-h-[550px] lg:h-full w-full gap-4 relative pt-12 pb-24 px-4" onClick={() => { setSelectedLabel(null); setHoveredItem(null); }}>
+        <div className="flex flex-row min-h-[550px] lg:h-full w-full gap-4 relative pt-12 pb-24 px-4 bg-explore-viz rounded-lg" onClick={() => { setSelectedLabel(null); setHoveredItem(null); }}>
 
           {/* Y-Achse */}
-          <div className="flex flex-col justify-between items-end pb-0 pt-0 text-[9px] font-black w-8 shrink-0 opacity-40 h-[calc(100%-24px)]">
+          <div className="flex flex-col justify-between items-end pb-0 pt-0 text-[9px] font-black w-8 shrink-0 text-content-dim h-[calc(100%-24px)]">
             <span>100%</span>
             <span>50%</span>
             <span className="translate-y-2">0%</span>
           </div>
 
-          <div className="relative flex-1 h-[calc(100%-24px)] flex flex-col justify-end border-b-2 border-slate-500/20">
+          <div className="relative flex-1 h-[calc(100%-24px)] flex flex-col justify-end border-b-2 border-explore-border">
 
             {/* Grid Lines */}
-            <div className="absolute inset-0 pointer-events-none opacity-10">
+            <div className="absolute inset-0 pointer-events-none text-explore-border opacity-20">
               <div className="absolute top-0 w-full border-t border-current" />
               <div className="absolute top-1/2 w-full border-t border-current" />
             </div>
@@ -239,13 +224,11 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
                     className={`relative group flex flex-col items-center flex-1 h-full justify-end transition-all duration-500 ${selectedLabel === out.token ? 'z-30' : 'z-10'} ${(!isActive && !isWinner) ? 'opacity-20 grayscale' : 'opacity-100'}`}
                     onMouseEnter={() => setHoveredItem(getInspectorData(out))}
                     onMouseLeave={() => !selectedLabel && setHoveredItem(null)}
-                    /* --- HIER IST DER UI-FIX: setSelectedToken hinzugefügt --- */
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedLabel(out.token);
                       if (setSelectedToken) setSelectedToken(out);
                     }}
-                  /* --------------------------------------------------------- */
                   >
                     {/* Goal-Seek Button */}
                     <button
@@ -264,20 +247,20 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
                     <div className="mb-2 text-xs">{icon}</div>
 
                     {/* Der eigentliche Balken */}
-                    <div className={`w-full max-w-[44px] rounded-t-xl transition-all duration-700 ${isWinner ? 'ring-2 ring-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : ''}`}
+                    <div className={`w-full max-w-[44px] rounded-t-xl transition-all duration-700 ${isWinner ? 'ring-2 ring-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : ''}`}
                       style={{
                         height: isShuffling ? `${Math.random() * 100}%` : `${out.dynamicProb * 100}%`,
-                        backgroundColor: (isActive || isWinner) ? color : (theme === 'light' ? '#cbd5e1' : '#334155'),
+                        backgroundColor: (isActive || isWinner) ? color : 'var(--color-explore-border)',
                         transform: noise > 0.8 ? `translateX(${(Math.random() - 0.5) * noise * 4}px)` : 'none'
                       }}
                     />
 
                     {/* Beschriftung */}
                     <div className="absolute top-[calc(100%+10px)] w-full text-center">
-                      <span className={`text-[9px] font-black uppercase mb-1 block ${isActive || isWinner ? 'text-blue-400' : 'text-slate-500'}`}>
+                      <span className={`text-[9px] font-black uppercase mb-1 block ${isActive || isWinner ? 'text-blue-500' : 'text-content-dim'}`}>
                         {(out.dynamicProb * 100).toFixed(0)}%
                       </span>
-                      <span className={`text-[10px] font-black uppercase truncate block ${isWinner ? 'text-blue-500 scale-110' : 'text-slate-500'}`}>
+                      <span className={`text-[10px] font-black uppercase truncate block ${isWinner ? 'text-blue-500 scale-110' : 'text-content-dim'}`}>
                         {out.token}
                       </span>
                     </div>
@@ -289,34 +272,33 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
         </div>
       }
       controls={[
-        /* Controls unverändert */
-        <div key="c-temp" className="px-4 py-3 rounded-2xl bg-slate-900/50 border border-white/5 flex flex-col justify-center h-full">
+        <div key="c-temp" className="px-4 py-3 rounded-2xl bg-explore-card border border-explore-border flex flex-col justify-center h-full">
           <div className="flex justify-between items-center mb-2">
             <label className="text-[9px] uppercase font-black text-blue-500 tracking-widest">Temperature</label>
-            <div className="text-xs font-mono font-black text-blue-400">{temperature.toFixed(2)}</div>
+            <div className="text-xs font-mono font-black text-blue-500">{temperature.toFixed(2)}</div>
           </div>
-          <input type="range" min="0.1" max="2.0" step="0.1" value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-full h-1.5 accent-blue-500 cursor-pointer" />
+          <input type="range" min="0.1" max="2.0" step="0.1" value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-full h-1.5 bg-explore-item accent-blue-500 cursor-pointer" />
         </div>,
-        <div key="c-topk" className="px-4 py-3 rounded-2xl bg-slate-900/50 border border-white/5 flex flex-col justify-center h-full">
+        <div key="c-topk" className="px-4 py-3 rounded-2xl bg-explore-card border border-explore-border flex flex-col justify-center h-full">
           <div className="flex justify-between items-center mb-2">
             <label className="text-[9px] uppercase font-black text-green-500 tracking-widest">Top-K Filter</label>
-            <div className="text-xs font-mono font-black text-green-400">{topK}</div>
+            <div className="text-xs font-mono font-black text-green-500">{topK}</div>
           </div>
-          <input type="range" min="1" max="10" step="1" value={topK} onChange={(e) => setTopK(parseInt(e.target.value))} className="w-full h-1.5 accent-green-500 cursor-pointer" />
+          <input type="range" min="1" max="10" step="1" value={topK} onChange={(e) => setTopK(parseInt(e.target.value))} className="w-full h-1.5 bg-explore-item accent-green-500 cursor-pointer" />
         </div>,
-        <div key="c-minp" className="px-4 py-3 rounded-2xl bg-slate-900/50 border border-white/5 flex flex-col justify-center h-full">
+        <div key="c-minp" className="px-4 py-3 rounded-2xl bg-explore-card border border-explore-border flex flex-col justify-center h-full">
           <div className="flex justify-between items-center mb-2">
             <label className="text-[9px] uppercase font-black text-red-500 tracking-widest">Min-P Threshold</label>
-            <div className="text-xs font-mono font-black text-red-400">{(minPThreshold * 100).toFixed(0)}%</div>
+            <div className="text-xs font-mono font-black text-red-500">{(minPThreshold * 100).toFixed(0)}%</div>
           </div>
-          <input type="range" min="0.01" max="0.25" step="0.01" value={minPThreshold} onChange={(e) => setMinPThreshold(parseFloat(e.target.value))} className="w-full h-1.5 accent-red-500 cursor-pointer" />
+          <input type="range" min="0.01" max="0.25" step="0.01" value={minPThreshold} onChange={(e) => setMinPThreshold(parseFloat(e.target.value))} className="w-full h-1.5 bg-explore-item accent-red-500 cursor-pointer" />
         </div>,
         <div key="c-sample" className="h-full">
           <button
             disabled={isShuffling || activeOptionsCount <= 1}
             onClick={triggerResample}
             className={`w-full h-full min-h-[56px] rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all border-2
-            ${(isShuffling || activeOptionsCount <= 1) ? 'bg-slate-800 text-slate-600 border-transparent' : 'bg-blue-600 text-white border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-[1.02]'}`}
+            ${(isShuffling || activeOptionsCount <= 1) ? 'bg-explore-item text-content-dim border-transparent' : 'bg-blue-600 text-white border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-[1.02]'}`}
           >
             {isShuffling ? "Sampling..." : "🎲 Re-Sample"}
           </button>

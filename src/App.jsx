@@ -20,32 +20,40 @@ import Phase3_FFN from './components/phases/Phase3_FFN';
 import Phase4_Decoding from './components/phases/Phase4_Decoding';
 import Phase5_Analysis from './components/phases/Phase5_Analysis';
 
-// --- HAUPT APP CONTENT ---
-
 function AppContent() {
-  // 1. STATES (Immer ganz oben)
+  // 1. STATES
   const [activePhase, setActivePhase] = useState(-1);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-  const [theme, setTheme] = useState('dark');
   const [glossaryData, setGlossaryData] = useState(null);
   const [hoveredItem, setHoveredItem] = useState(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [showBriefing, setShowBriefing] = useState(false);
   const [briefings, setBriefings] = useState({});
+  
+  // Zentraler Theme-State (Steuert die .dark Klasse am Root)
+  const [theme, setTheme] = useState('dark');
 
-  // Initialisierung aus LocalStorage
   const [autoShowBriefing, setAutoShowBriefing] = useState(() => {
     const saved = localStorage.getItem('llm_explorer_auto_briefing');
     return saved !== null ? JSON.parse(saved) : true;
   });
 
   // 2. CONTEXT & SIMULATOR
-  // Diese Hooks müssen bei JEDEM Render aufgerufen werden
   const { scenarios, activeScenario, handleScenarioChange } = useScenarios();
   const simulator = useLLMSimulator(activeScenario);
 
-  // 3. EFFECTS
+  // 3. EFFECTS: THEME-SYNCHRONISIERUNG
+  // Dies sorgt dafür, dass die index.css Variablen korrekt umschalten
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [theme]);
+
   // Daten laden
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data/glossary.json`)
@@ -59,43 +67,23 @@ function AppContent() {
       .catch(err => console.error("Briefing-Ladefehler:", err));
   }, []);
 
-  // 3. EFFECTS
+  // Szenario-Reset Logik
   useEffect(() => {
     if (!activeScenario || !simulator) return;
+    if (simulator.resetParameters) simulator.resetParameters();
 
-    console.log("🔄 Szenario-Wechsel: Globaler Reset auf Defaults für", activeScenario.name);
-
-    // Nutze die zentrale Reset-Funktion aus dem Hook
-    if (simulator.resetParameters) {
-      simulator.resetParameters();
-    }
-
-    // Setze das erste Profil des neuen Szenarios als aktiv
     const firstProfileId = activeScenario.phase_3_ffn?.activation_profiles?.[0]?.ref_profile_id
       || activeScenario.phase_2_attention?.attention_profiles?.[0]?.id;
 
     if (firstProfileId && simulator.setActiveProfileId) {
       simulator.setActiveProfileId(firstProfileId);
     }
-
   }, [activeScenario?.id]);
 
-  // Automatischer Scroll nach oben bei Phasenwechsel
+  // UI-Utilities
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    const mainElement = document.querySelector('main');
-    if (mainElement) mainElement.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [activePhase]);
-
-  // Briefing automatisch einblenden
-  useEffect(() => {
-    if (activePhase >= 0 && autoShowBriefing) {
-      setShowBriefing(true);
-    }
-  }, [activePhase, autoShowBriefing]);
-
-  // Inspektor bei Phasenwechsel leeren
-  useEffect(() => {
+    if (activePhase >= 0 && autoShowBriefing) setShowBriefing(true);
     setHoveredItem(null);
   }, [activePhase]);
 
@@ -105,15 +93,15 @@ function AppContent() {
     localStorage.setItem('llm_explorer_auto_briefing', JSON.stringify(value));
   };
 
-  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
 
-  // 5. EARLY RETURNS (Erst nachdem alle Hooks initialisiert wurden!)
+  // 5. LOADING STATE
   if (!scenarios || scenarios.length === 0) {
     return (
-      <div className="bg-slate-950 min-h-screen flex items-center justify-center text-blue-500 font-mono uppercase text-xs">
+      <div className="bg-explore-app min-h-screen flex items-center justify-center text-blue-500 font-mono">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
-          <span>Loading Neural Scenarios...</span>
+          <span className="uppercase text-[10px] tracking-widest">Neural Pipeline Loading...</span>
         </div>
       </div>
     );
@@ -121,8 +109,7 @@ function AppContent() {
 
   // 6. RENDER LOGIK
   return (
-    <div className={`min-h-screen lg:h-screen flex flex-col transition-colors duration-700 ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
-      } font-sans overflow-hidden`}>
+    <div className="min-h-screen lg:h-screen flex flex-col transition-colors duration-700 bg-explore-app text-content-main font-sans overflow-hidden">
 
       {/* GLOBALER BRIEFING-DIALOG */}
       {showBriefing && briefings[activePhase] && (
@@ -145,7 +132,6 @@ function AppContent() {
         onScenarioChange={(id) => {
           setActivePhase(0);
           handleScenarioChange(id);
-          if (simulator?.resetParameters) simulator.resetParameters();
         }}
         onReset={simulator?.resetParameters}
         onRestart={() => {
@@ -179,11 +165,9 @@ function AppContent() {
             <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-4 h-auto lg:h-full min-h-0">
 
               {/* VISUALISIERUNGS-PANEL */}
-              <div className={`w-full lg:flex-[2.5] relative border rounded-[2rem] shadow-2xl overflow-hidden backdrop-blur-md transition-all duration-500 flex flex-col min-h-[500px] lg:min-h-0 ${theme === 'dark' ? 'bg-slate-900/40 border-slate-800' : 'bg-white/80 border-slate-200'
-                }`}>
-
+              <div className="w-full lg:flex-[2.5] relative border border-explore-border rounded-[2rem] shadow-2xl overflow-hidden bg-explore-viz backdrop-blur-md transition-all duration-500 flex flex-col min-h-[500px] lg:min-h-0">
                 {(!activeScenario || !simulator) ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/50 backdrop-blur-sm z-50">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-explore-app/50 backdrop-blur-sm z-50">
                     <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
                     <span className="text-[10px] font-mono uppercase text-blue-400 tracking-widest">Reconfiguring Pipeline...</span>
                   </div>

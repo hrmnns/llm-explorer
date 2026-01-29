@@ -1,5 +1,6 @@
 import React from 'react';
-import { useScenarios } from '../context/ScenarioContext';
+import { useScenarios } from '../context/ScenarioContext'; 
+import AppConfig from '../utils/AppConfig'; 
 
 const InfoModal = ({ isOpen, onClose, theme }) => {
   const { scenariosData } = useScenarios();
@@ -14,14 +15,12 @@ const InfoModal = ({ isOpen, onClose, theme }) => {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-300"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
         onClick={onClose}
       />
       
       {/* Modal Content */}
-      <div className={`relative w-full max-w-lg rounded-[2rem] border shadow-2xl overflow-hidden animate-in zoom-in duration-300 ${
-        theme === 'dark' ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'
-      }`}>
+      <div className="relative w-full max-w-lg rounded-[2rem] border border-explore-border shadow-2xl overflow-hidden animate-in zoom-in duration-300 bg-explore-nav text-content-main">
         
         {/* Header mit Branding */}
         <div className="p-8 pb-4 text-center">
@@ -29,21 +28,21 @@ const InfoModal = ({ isOpen, onClose, theme }) => {
             🧠
           </div>
           <h2 className="text-2xl font-black uppercase tracking-tighter text-blue-500">
-            LLM Explorer <span className="font-light opacity-50 text-sm tracking-normal">CHERWARE.DE</span>
+            LLM Explorer <span className="font-light opacity-50 text-sm tracking-normal text-content-dim">CHERWARE.DE</span>
           </h2>
 
           {/* VERSION & BUILD INFO (Synchron zum Footer/IntroScreen) */}
           <div className="flex flex-col items-center mt-2 space-y-1 opacity-60">
             <div className="flex gap-3 items-center">
-              <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">
+              <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-content-muted">
                 Engine: <span className="text-purple-500 font-bold">v{scenariosData?.version || "?.?"}</span>
               </span>
-              <span className="text-slate-800">|</span>
-              <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">
+              <span className="text-content-dim">|</span>
+              <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-content-muted">
                 Build: <span className="text-blue-500 font-bold">{appVersion}</span>
               </span>
             </div>
-            <div className="text-[9px] font-mono uppercase tracking-[0.2em] text-slate-600 opacity-40">
+            <div className="text-[9px] font-mono uppercase tracking-[0.2em] text-content-dim opacity-40">
               {buildDate}
             </div>
           </div>
@@ -52,24 +51,24 @@ const InfoModal = ({ isOpen, onClose, theme }) => {
         {/* Content */}
         <div className="px-8 py-4 space-y-6">
           <div className="space-y-2">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-400">Das Projekt</h4>
-            <p className="text-sm text-slate-400 leading-relaxed font-medium">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-500">Das Projekt</h4>
+            <p className="text-sm text-content-muted leading-relaxed font-medium">
               Dieses Simulation-Tool wurde entwickelt, um die "Black Box" moderner Sprachmodelle (LLMs) zu öffnen. Es macht sichtbar, wie mathematische Vektoren, neuronale Filter und probabilistisches Sampling zusammenwirken, um eine scheinbar menschliche Antwort zu generieren.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-explore-border">
             <div>
-              <h4 className="text-[9px] font-black uppercase text-slate-500 mb-1">Technologie</h4>
-              <ul className="text-[11px] text-slate-400 font-mono">
-                <li>React 18</li>
-                <li>Tailwind CSS</li>
+              <h4 className="text-[9px] font-black uppercase text-content-dim mb-1">Technologie</h4>
+              <ul className="text-[11px] text-content-muted font-mono">
+                <li>React 19</li>
+                <li>Tailwind CSS v4</li>
                 <li>Causal Logic Engine</li>
               </ul>
             </div>
             <div>
-              <h4 className="text-[9px] font-black uppercase text-slate-500 mb-1">Entwicklung</h4>
-              <p className="text-[11px] text-slate-400">
+              <h4 className="text-[9px] font-black uppercase text-content-dim mb-1">Entwicklung</h4>
+              <p className="text-[11px] text-content-muted leading-relaxed">
                 Created as a thought partner <br />
                 for educational purposes.
               </p>
@@ -81,7 +80,7 @@ const InfoModal = ({ isOpen, onClose, theme }) => {
         <div className="p-8 pt-4">
           <button 
             onClick={onClose}
-            className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white text-xs font-black rounded-xl uppercase tracking-widest transition-all"
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl uppercase tracking-widest transition-all shadow-lg shadow-blue-500/10"
           >
             Schließen
           </button>

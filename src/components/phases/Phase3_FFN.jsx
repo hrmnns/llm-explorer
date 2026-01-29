@@ -3,7 +3,6 @@ import PhaseLayout from './../PhaseLayout';
 import { useScenarios } from '../../context/ScenarioContext';
 
 const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
-  // Wir nutzen den Hook für konsistenten Zugriff auf das Szenario
   const { activeScenario } = useScenarios();
 
   const {
@@ -11,7 +10,7 @@ const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
     setMlpThreshold,
     activeFFN,
     activeAttention,
-    noise // Genutzt für Goal-Seek Detektion
+    noise 
   } = simulator;
 
   const [selectedLabel, setSelectedLabel] = useState(null);
@@ -25,7 +24,6 @@ const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
     return (cat.activation || 0) * pipelineSignal;
   }, [pipelineSignal]);
 
-  // --- Szenario-Reset Logik ---
   useEffect(() => {
     if (activeScenario?.id !== lastScenarioId.current) {
       setSelectedLabel(null);
@@ -34,14 +32,12 @@ const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
     }
   }, [activeScenario?.id, setHoveredItem]);
 
-  // --- SYNC-EFFEKT FÜR GOAL-SEEKING ---
   const topCategory = useMemo(() => {
     if (!activeFFN || activeFFN.length === 0) return null;
     return [...activeFFN].sort((a, b) => getEffectiveActivation(b) - getEffectiveActivation(a))[0];
   }, [activeFFN, getEffectiveActivation]);
 
   useEffect(() => {
-    // Wenn Noise 0 ist (Goal-Seek aktiv durch Phase 4)
     if (noise === 0 && topCategory) {
       const effAct = getEffectiveActivation(topCategory);
       if (effAct >= mlpThreshold) {
@@ -96,12 +92,12 @@ const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
       subtitle="Transformation von Aufmerksamkeit in semantische Kategorien"
       theme={theme}
       badges={[
-        { text: `Aktiv: ${activeCategoryLabel}`, className: isCritical ? "bg-red-500/20 text-red-400" : "bg-green-500/20 text-green-400" },
-        { text: `Integrität: ${(pipelineSignal * 100).toFixed(0)}%`, className: isDegraded ? "text-orange-400" : "text-blue-400" }
+        { text: `Aktiv: ${activeCategoryLabel}`, className: isCritical ? "bg-red-500/20 text-red-500 border-red-500/20" : "bg-green-500/20 text-green-500 border-green-500/20" },
+        { text: `Integrität: ${(pipelineSignal * 100).toFixed(0)}%`, className: isDegraded ? "text-orange-500" : "text-blue-500" }
       ]}
       visualization={
-        <div className="w-full h-full flex flex-col justify-center items-center py-4" 
-             onClick={() => { setSelectedLabel(null); setHoveredItem(null); }}>
+        <div className="w-full h-full flex flex-col justify-center items-center py-4 bg-explore-viz rounded-lg" 
+              onClick={() => { setSelectedLabel(null); setHoveredItem(null); }}>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl px-6 relative">
             {activeFFN && activeFFN.map((cat) => {
@@ -114,24 +110,36 @@ const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
               const isActuallyActive = cat.isActive && pipelineSignal > 0.05;
               
               const dynamicStyles = {
-                borderColor: !isActuallyActive ? 'rgba(255,255,255,0.05)' : (isPassed ? baseColor : `${baseColor}44`),
-                backgroundColor: isActuallyActive ? `${baseColor}05` : 'transparent',
-                color: !isActuallyActive ? 'rgba(255,255,255,0.2)' : (isPassed ? 'white' : baseColor),
-                boxShadow: (isActuallyActive && isPassed) ? `0 0 40px ${baseColor}33, inset 0 0 20px ${baseColor}11` : 'none',
-                opacity: isActuallyActive ? 1 : 0.3,
-                transform: isSelected ? 'scale(1.05)' : 'scale(1)'
+                borderColor: !isActuallyActive ? 'var(--color-explore-border)' : (isPassed ? baseColor : `${baseColor}66`),
+                backgroundColor: isActuallyActive ? `var(--color-explore-nav)` : 'transparent',
+                color: !isActuallyActive ? 'var(--color-content-dim)' : (isPassed ? 'var(--color-content-main)' : baseColor),
+                boxShadow: (isActuallyActive && isPassed) ? `0 0 30px ${baseColor}22, inset 0 0 15px ${baseColor}05` : 'none',
+                opacity: isActuallyActive ? 1 : 0.4,
+                transform: isSelected ? 'scale(1.03)' : 'scale(1)'
               };
 
               return (
                 <div key={cat.id || label}
                   style={dynamicStyles}
-                  onMouseEnter={() => !selectedLabel && setHoveredItem(getInspectorData(cat))}
-                  onMouseLeave={() => !selectedLabel && setHoveredItem(null)}
-                  onClick={(e) => { e.stopPropagation(); setSelectedLabel(isSelected ? null : label); }}
-                  className={`relative flex flex-col items-center justify-center p-10 rounded-[2.5rem] border-2 transition-all duration-500 cursor-pointer overflow-hidden ${isSelected ? 'z-20' : 'z-10'}`}
+                  onMouseEnter={() => setHoveredItem(getInspectorData(cat))}
+                  onMouseLeave={() => {
+                    if (!selectedLabel) {
+                      setHoveredItem(null);
+                    } else {
+                      const selectedCat = activeFFN.find(c => (c.label || c.id) === selectedLabel);
+                      if (selectedCat) setHoveredItem(getInspectorData(selectedCat));
+                    }
+                  }}
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    const nextLabel = isSelected ? null : label;
+                    setSelectedLabel(nextLabel);
+                    if (!nextLabel) setHoveredItem(null);
+                  }}
+                  className={`relative flex flex-col items-center justify-center p-10 rounded-[2.5rem] border-2 transition-all duration-500 cursor-pointer overflow-hidden shadow-sm ${isSelected ? 'z-20 border-blue-500' : 'z-10'}`}
                 >
                   {/* Aktivierungs-Balken im Hintergrund */}
-                  <div className="absolute bottom-0 left-0 w-full transition-all duration-1000 opacity-20 pointer-events-none"
+                  <div className="absolute bottom-0 left-0 w-full transition-all duration-1000 opacity-10 pointer-events-none"
                     style={{ height: `${effAct * 100}%`, backgroundColor: baseColor }} />
                   
                   {/* Status-Icon */}
@@ -141,7 +149,7 @@ const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
 
                   <div className="z-10 text-[12px] font-black uppercase tracking-[0.25em] text-center">{label}</div>
                   
-                  <div className={`z-10 text-[9px] font-mono mt-3 px-3 py-1 rounded-full ${isPassed ? 'bg-green-500/20 text-green-400' : 'bg-slate-800 text-slate-500'}`}>
+                  <div className={`z-10 text-[9px] font-mono mt-3 px-3 py-1 rounded-full ${isPassed ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-explore-item text-content-dim'}`}>
                     {isPassed ? "Kausalität aktiv" : (pipelineSignal <= 0.05 ? "Kein Input" : "Gating aktiv")}
                   </div>
                 </div>
@@ -151,20 +159,20 @@ const Phase3_FFN = ({ simulator, setHoveredItem, theme }) => {
         </div>
       }
       controls={
-        <div className="col-span-full px-8 py-6 bg-slate-900/50 rounded-[2rem] border border-white/5 shadow-2xl" 
+        <div className="col-span-full px-8 py-6 bg-explore-card rounded-[2rem] border border-explore-border shadow-xl" 
              onClick={(e) => e.stopPropagation()}>
           <div className="flex justify-between items-end mb-4">
             <div className="flex flex-col gap-1">
               <label className="text-[10px] uppercase font-black text-blue-500 tracking-[0.15em]">MLP Activation Threshold</label>
-              <span className="text-[11px] text-slate-500 italic">Unterdrückt Rauschen und schwache neuronale Pfade</span>
+              <span className="text-[11px] text-content-dim italic">Unterdrückt Rauschen und schwache neuronale Pfade</span>
             </div>
-            <div className="text-xl font-mono font-black text-blue-400 bg-blue-500/10 px-4 py-1 rounded-xl border border-blue-500/20">
+            <div className="text-xl font-mono font-black text-blue-500 bg-blue-500/10 px-4 py-1 rounded-xl border border-blue-500/20">
               {mlpThreshold.toFixed(2)}
             </div>
           </div>
           <input type="range" min="0" max="1" step="0.01" value={mlpThreshold} 
             onChange={(e) => setMlpThreshold(parseFloat(e.target.value))}
-            className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+            className="w-full h-2 bg-explore-item rounded-lg appearance-none cursor-pointer accent-blue-500" />
         </div>
       }
     />
