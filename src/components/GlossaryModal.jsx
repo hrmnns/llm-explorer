@@ -13,7 +13,7 @@ const GlossaryModal = ({ isOpen, onClose, data }) => {
           </h2>
           <button
             onClick={onClose}
-            className="text-3xl font-light text-content-dim hover:text-primary transition-colors"
+            className="text-3xl font-light text-content-dim hover:text-primary transition-colors cursor-pointer"
           >
             &times;
           </button>

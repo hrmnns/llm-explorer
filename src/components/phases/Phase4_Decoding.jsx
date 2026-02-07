@@ -23,7 +23,8 @@ const Phase4_Decoding = ({
   scenarioId,
   theme,
   setHoveredItem,
-  mlpThreshold // Added missing prop
+  mlpThreshold, // Added missing prop
+  resetKey
 }) => {
   // Removed useScenarios
 
@@ -34,6 +35,22 @@ const Phase4_Decoding = ({
   const [simulationState, setSimulationState] = useState({ outputs: [], winner: null });
   const [isShuffling, setIsShuffling] = useState(false);
   const lastScenarioId = useRef(scenarioId);
+  const gumbelSeeds = useRef({});
+
+  // Initialize persistent Gumbel noise for each token to keep sliding smooth
+  useEffect(() => {
+    if (topKTokens?.length > 0) {
+      const seeds = { ...gumbelSeeds.current };
+      topKTokens.forEach(t => {
+        if (seeds[t.token] === undefined) {
+          // Gumbel noise formula: -ln(-ln(U)) where U ~ Uniform(0,1)
+          const u = Math.max(0.00001, Math.random());
+          seeds[t.token] = -Math.log(-Math.log(u));
+        }
+      });
+      gumbelSeeds.current = seeds;
+    }
+  }, [topKTokens]);
 
 
 
@@ -112,7 +129,14 @@ const Phase4_Decoding = ({
       const ffnBias = (liveActivation - 0.5) * biasMultiplier;
       const baseLogit = item.base_logit !== undefined ? item.base_logit : 5.0;
       const jitter = (Math.random() - 0.5) * (noise || 0) * 2.0;
-      const effectiveLogit = baseLogit + ffnBias + jitter;
+
+      // Noise Decay (consistency with LLMEngine)
+      const decay = 1 - (Math.min(1, noise / 2) * (item.noise_sensitivity || 0.5));
+
+      // Gumbel-Max trick: Add temperate-scaled Gumbel noise to create ranking shifts
+      const gumbel = (gumbelSeeds.current[item.token] || 0) * (temperature * 1.5);
+
+      const effectiveLogit = (baseLogit + ffnBias + jitter) * decay + gumbel;
 
       return {
         ...item,
@@ -120,7 +144,7 @@ const Phase4_Decoding = ({
         liveActivation,
         actingHead: liveFFNData?.linked_head ? `Head ${liveFFNData.linked_head}` : "Default",
         ffnBoost: ffnBias,
-        isBlockedByMLP: (liveActivation * (activeAttention?.avgSignal || 1.0)) < mlpThreshold,
+        isBlockedByMLP: (liveActivation * (activeAttention?.avgSignal ?? 1.0)) < mlpThreshold,
         exp: Math.exp(effectiveLogit / T)
       };
     });
@@ -145,6 +169,14 @@ const Phase4_Decoding = ({
       }
     };
   }, [getItemVisuals]);
+
+  useEffect(() => {
+    setSelectedLabel(null);
+    setTopK(5);
+    setMinPThreshold(0.05);
+    setSimulationState({ outputs: [], winner: null });
+    setHoveredItem(null);
+  }, [resetKey, setHoveredItem]);
 
   useEffect(() => {
     if (scenarioId !== lastScenarioId.current) {

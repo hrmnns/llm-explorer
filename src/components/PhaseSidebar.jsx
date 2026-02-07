@@ -13,21 +13,18 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
     ];
 
     const currentPhaseIndex = activePhase === 99 ? 5 : activePhase;
-    const pipelineSignal = simulator?.activeAttention?.avgSignal || 1.0;
+    const pipelineSignal = simulator?.activeAttention?.avgSignal ?? 1.0;
     const isDegraded = pipelineSignal < 0.7;
     const isCritical = pipelineSignal < 0.4;
 
-    const isMultilineBlock = (key, value) => {
-        if (!value) return false;
-        return value.toString().length > 20;
-    };
+
 
     if (!isExpanded) return (
         <div className="w-full h-full flex items-center justify-center bg-explore-nav/20 backdrop-blur-md rounded-2xl border border-explore-border">
             <button
                 onClick={() => setIsExpanded(true)}
                 className={`group relative flex flex-row lg:flex-col items-center justify-center w-full lg:w-12 h-16 lg:h-64 rounded-xl border transition-all duration-500 gap-4
-                    bg-explore-nav border-explore-border hover:bg-blue-500/10
+                    bg-explore-nav border-explore-border hover:bg-blue-500/10 cursor-pointer
                 `}
             >
                 <div className={`absolute top-0 lg:top-auto lg:left-0 w-full lg:w-[2px] h-[2px] lg:h-3/4 rounded-full transition-all duration-500
@@ -54,7 +51,7 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                     <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-primary mb-0.5">System Monitor</h3>
                     <h4 className="text-sm font-bold uppercase tracking-tighter opacity-90">{phaseContent[currentPhaseIndex]?.title}</h4>
                 </div>
-                <button onClick={() => setIsExpanded(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-explore-item transition-colors text-content-dim hover:text-content-main text-xl">×</button>
+                <button onClick={() => setIsExpanded(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-explore-item transition-colors text-content-dim hover:text-content-main text-xl cursor-pointer">×</button>
             </div>
 
             <div className="flex-1 space-y-6 overflow-y-auto pr-1 custom-scrollbar">
@@ -62,7 +59,7 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                 {/* SIGNAL STATUS */}
                 <section className="animate-in fade-in slide-in-from-top-2 duration-700">
                     <div className={`p-3 rounded-xl border transition-all duration-500 ${isCritical ? 'bg-error/10 border-error/40' :
-                            isDegraded ? 'bg-warning/10 border-warning/40' : 'bg-primary/5 border-primary/20'
+                        isDegraded ? 'bg-warning/10 border-warning/40' : 'bg-primary/5 border-primary/20'
                         }`}>
                         <div className="flex justify-between items-center mb-2">
                             <span className={`text-[8px] font-black uppercase tracking-widest ${isCritical ? 'text-error' : isDegraded ? 'text-warning' : 'text-primary'}`}>
@@ -85,7 +82,7 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
 
                 {/* TELEMETRIE */}
                 <section>
-                    <button onClick={() => setShowTech(!showTech)} className="w-full flex justify-between items-center text-[9px] font-black text-content-dim mb-3 uppercase tracking-widest hover:text-content-main transition-colors">
+                    <button onClick={() => setShowTech(!showTech)} className="w-full flex justify-between items-center text-[9px] font-black text-content-dim mb-3 uppercase tracking-widest hover:text-content-main transition-colors cursor-pointer">
                         Live Telemetrie {showTech ? '▼' : '▲'}
                     </button>
 
@@ -126,7 +123,7 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                                     <span>{hoveredItem.title}</span>
                                     {hoveredItem.subtitle && <span className="text-content-dim font-normal lowercase tracking-normal italic">{hoveredItem.subtitle}</span>}
                                 </h6>
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     {Object.entries(hoveredItem.data || {}).map(([key, value]) => {
                                         if (!value || value.toString().includes('---')) {
                                             const cleanKey = key.replace(/-/g, '').trim();
@@ -137,24 +134,15 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                                             ) : <div key={key} className="h-px bg-explore-border my-2" />;
                                         }
 
-                                        if (isMultilineBlock(key, value)) {
-                                            return (
-                                                <div key={key} className="flex flex-col gap-2 group/text">
-                                                    <span className="text-[7px] uppercase font-black text-content-dim tracking-widest group-hover/text:text-primary/60 transition-colors">
-                                                        {key}
-                                                    </span>
-                                                    <p className="text-[10px] leading-relaxed italic text-content-muted font-medium bg-primary/5 p-3 rounded-xl border border-primary/10 shadow-inner group-hover/text:bg-primary/10 transition-all">
-                                                        {value}
-                                                    </p>
-                                                </div>
-                                            );
-                                        }
+                                        const isLong = value && value.toString().length > 25;
 
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 group/row">
-                                                <div className="flex justify-between items-end">
-                                                    <span className="text-[7px] uppercase font-black text-content-dim tracking-tighter group-hover/row:text-content-muted transition-colors">{key}</span>
-                                                    <span className="text-[10px] font-bold text-primary font-mono tracking-tight group-hover/row:scale-105 transition-transform origin-right">{value}</span>
+                                            <div key={key} className="flex flex-col group/row">
+                                                <div className={`flex ${isLong ? 'flex-col gap-0.5' : 'justify-between items-end gap-2'}`}>
+                                                    <span className="text-[7px] uppercase font-black text-content-dim tracking-widest group-hover/row:text-primary transition-colors shrink-0">{key}</span>
+                                                    <div className={`text-[10px] font-bold text-primary font-mono leading-tight break-words ${isLong ? 'ml-3 pl-2 border-l border-primary/20 bg-primary/2 shadow-inner rounded-r-sm py-1' : 'text-right'}`}>
+                                                        {value}
+                                                    </div>
                                                 </div>
                                             </div>
                                         );

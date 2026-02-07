@@ -11,7 +11,8 @@ const Phase1_Embedding = ({
   noise, setNoise,
   positionWeight, setPositionWeight,
   theme,
-  setHoveredItem
+  setHoveredItem,
+  resetKey
 }) => {
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -93,6 +94,12 @@ const Phase1_Embedding = ({
   useEffect(() => {
     if (selectedTokenId) setHoveredItem(getInspectorData(selectedTokenId));
   }, [noise, positionWeight, selectedTokenId, getInspectorData, setHoveredItem]);
+
+  useEffect(() => {
+    setTransform({ x: 0, y: 0, scale: 1 });
+    setSelectedTokenId(null);
+    setHoveredIndex(null);
+  }, [resetKey]);
 
   useEffect(() => {
     if (scenarioId !== lastScenarioId.current) {

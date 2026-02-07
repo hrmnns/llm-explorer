@@ -178,7 +178,7 @@ function AppContent() {
             <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-4 h-auto lg:h-full min-h-0">
 
               {/* VISUALISIERUNGS-PANEL */}
-              <div className="w-full lg:flex-[2.5] relative border border-explore-border rounded-[2rem] shadow-2xl overflow-hidden bg-explore-viz backdrop-blur-md transition-all duration-500 flex flex-col min-h-[500px] lg:min-h-0">
+              <div className="w-full lg:flex-[2.5] relative border border-explore-border rounded-2xl shadow-2xl overflow-hidden bg-explore-viz backdrop-blur-md transition-all duration-500 flex flex-col min-h-[500px] lg:min-h-0">
                 {(!activeScenario || !simulator) ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-explore-app/50 backdrop-blur-sm z-50">
                     <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
@@ -207,6 +207,7 @@ function AppContent() {
                         setPositionWeight={simulator.setPositionWeight}
                         theme={theme}
                         setHoveredItem={setHoveredItem}
+                        resetKey={simulator.resetKey}
                       />
                     )}
                     {activePhase === 2 && (
@@ -222,6 +223,8 @@ function AppContent() {
                         theme={theme}
                         setHoveredItem={setHoveredItem}
                         setSourceTokenId={simulator.setSourceTokenId}
+                        resetKey={simulator.resetKey}
+                        defaultHeadStrength={activeScenario?.phase_2_attention?.settings?.default_head_strength ?? 0.7}
                       />
                     )}
                     {activePhase === 3 && (
@@ -234,6 +237,7 @@ function AppContent() {
                         scenarioId={activeScenario?.id}
                         theme={theme}
                         setHoveredItem={setHoveredItem}
+                        resetKey={simulator.resetKey}
                       />
                     )}
                     {activePhase === 4 && (
@@ -256,6 +260,7 @@ function AppContent() {
                         mlpThreshold={simulator.mlpThreshold}
                         theme={theme}
                         setHoveredItem={setHoveredItem}
+                        resetKey={simulator.resetKey}
                       />
                     )}
                     {activePhase === 5 && (
@@ -270,6 +275,7 @@ function AppContent() {
                         positionWeight={simulator.positionWeight}
                         theme={theme}
                         setHoveredItem={setHoveredItem}
+                        resetKey={simulator.resetKey}
                       />
                     )}
                   </div>
@@ -277,7 +283,7 @@ function AppContent() {
               </div>
 
               {/* INSPEKTOR / SIDEBAR */}
-              <aside className={`w-full lg:w-[360px] h-auto lg:h-full flex-none transition-all duration-500 ${isSidebarExpanded ? 'opacity-100' : 'lg:w-16'}`}>
+              <aside className={`w-full h-auto lg:h-full flex-none transition-all duration-500 ${isSidebarExpanded ? 'lg:w-[360px] opacity-100' : 'lg:w-16'}`}>
                 <PhaseSidebar
                   activePhase={activePhase}
                   activeScenario={activeScenario}

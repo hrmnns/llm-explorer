@@ -80,7 +80,7 @@ const InfoModal = ({ isOpen, onClose, theme }) => {
         <div className="p-8 pt-4">
           <button
             onClick={onClose}
-            className="w-full py-3 bg-primary hover:bg-primary-hover text-white text-xs font-black rounded-xl uppercase tracking-widest transition-all shadow-lg shadow-primary/10"
+            className="w-full py-3 bg-primary hover:bg-primary-hover text-white text-xs font-black rounded-xl uppercase tracking-widest transition-all shadow-lg shadow-primary/10 cursor-pointer"
           >
             Schließen
           </button>

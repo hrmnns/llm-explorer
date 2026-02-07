@@ -12,7 +12,8 @@ const Phase5_Analysis = ({
   mlpThreshold,
   positionWeight,
   theme,
-  setHoveredItem
+  setHoveredItem,
+  resetKey
 }) => {
   // Removed useScenarios
 
@@ -20,8 +21,13 @@ const Phase5_Analysis = ({
   const [selectedStep, setSelectedStep] = useState(null);
   const lastScenarioId = useRef(scenario?.id);
 
-  const pipelineSignal = activeAttention?.avgSignal || 1.0;
+  const pipelineSignal = activeAttention?.avgSignal ?? 1.0;
   const isCritical = pipelineSignal < 0.4;
+
+  useEffect(() => {
+    setSelectedStep(null);
+    setHoveredItem(null);
+  }, [resetKey, setHoveredItem]);
 
   // Szenario-Reset Logik
   useEffect(() => {

@@ -6,11 +6,12 @@ const InternalHeader = ({
   onOpenHelp,
   onOpenInfo,
   onRestart,
+  onReset,
   showScenarioSelector
 }) => {
 
   // Zentrale Stil-Klassen für maximale Konsistenz und Nutzung der neuen Variablen
-  const baseBtnClass = "flex items-center gap-2 px-3 py-1.5 rounded-lg border border-explore-border transition-all duration-300 group shadow-sm bg-explore-item text-content-muted hover:text-content-main";
+  const baseBtnClass = "flex items-center gap-2 px-3 py-1.5 rounded-lg border border-explore-border transition-all duration-300 group shadow-sm bg-explore-item text-content-muted hover:text-content-main cursor-pointer";
   const labelClass = "text-[9px] font-black uppercase tracking-widest hidden lg:inline";
 
   return (
@@ -34,10 +35,7 @@ const InternalHeader = ({
       {/* NAVIGATION */}
       <div className="flex items-center gap-2">
 
-        {/* 1. SZENARIO WECHSELN (Rot-Akzent -> Warning/Error? Let's use Error for 'Reset' vibe or Primary?) 
-            Actually, 'Wechseln' is 'Reform/Restart', often Red or Orange. 
-            Original was Red. Let's use Error.
-        */}
+        {/* 1. SZENARIO WECHSELN */}
         {showScenarioSelector && (
           <button
             onClick={onRestart}
@@ -48,7 +46,19 @@ const InternalHeader = ({
           </button>
         )}
 
-        {/* 2. WISSENS-DB (Blau-Akzent -> Primary) */}
+        {/* 1b. PARAMETER RESET */}
+        {showScenarioSelector && (
+          <button
+            onClick={onReset}
+            className={`${baseBtnClass} hover:border-warning/40 hover:bg-warning/10 hover:text-warning`}
+            title="Parameter zurücksetzen"
+          >
+            <span className="text-xs group-hover:rotate-[360deg] transition-transform duration-700">⚙️</span>
+            <span className={labelClass}>Reset</span>
+          </button>
+        )}
+
+        {/* 2. WISSENS-DB */}
         <button
           onClick={onOpenHelp}
           className={`${baseBtnClass} hover:border-primary/40 hover:bg-primary/10 hover:text-primary`}
@@ -60,7 +70,7 @@ const InternalHeader = ({
         {/* DIVIDER */}
         <div className="h-4 w-px bg-explore-border mx-1 hidden sm:block" />
 
-        {/* 3. THEME TOGGLE (Neutral/Gelb-Akzent) */}
+        {/* 3. THEME TOGGLE */}
         <button
           onClick={toggleTheme}
           className={`${baseBtnClass} hover:border-yellow-500/40 hover:bg-yellow-500/10 hover:text-yellow-500`}
@@ -69,7 +79,7 @@ const InternalHeader = ({
           <span className={labelClass}>{theme === 'dark' ? 'Light' : 'Dark'}</span>
         </button>
 
-        {/* 4. INFO BUTTON (Neutral-Akzent) */}
+        {/* 4. INFO BUTTON */}
         <button
           onClick={onOpenInfo}
           className={`${baseBtnClass} hover:border-content-main/20 hover:bg-explore-item/80`}

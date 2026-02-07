@@ -61,7 +61,7 @@ const PhaseBriefing = ({ data, onClose, theme, autoShow, onToggleAutoShow }) => 
               href={data.externalResource.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 py-3 rounded-xl border border-explore-border bg-explore-item text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-primary/10 hover:text-primary"
+              className="flex items-center justify-center gap-3 py-3 rounded-xl border border-explore-border bg-explore-item text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-primary/10 hover:text-primary cursor-pointer"
             >
               <span className="text-sm">🌐</span> {data.externalResource.label}
             </a>
@@ -88,7 +88,7 @@ const PhaseBriefing = ({ data, onClose, theme, autoShow, onToggleAutoShow }) => 
 
           <button
             onClick={onClose}
-            className="w-full py-4 bg-primary hover:bg-primary-hover text-white text-xs font-black rounded-2xl uppercase tracking-[0.2em] transition-all shadow-lg shadow-primary/20 active:scale-[0.98]"
+            className="w-full py-4 bg-primary hover:bg-primary-hover text-white text-xs font-black rounded-2xl uppercase tracking-[0.2em] transition-all shadow-lg shadow-primary/20 active:scale-[0.98] cursor-pointer"
           >
             Analyse starten
           </button>

@@ -67,8 +67,9 @@
     --color-sb-thumb: #cbd5e1;
 
     /* --- SEMANTIC COLORS (Light Mode) --- */
-    --color-primary: #3b82f6;
-    /* blue-500 */
+    --color-primary-raw: 59, 130, 246;
+    /* Blue 500 equivalent */
+    --color-primary: rgb(var(--color-primary-raw));
     --color-primary-hover: #2563eb;
     /* blue-600 */
     --color-primary-dim: rgba(59, 130, 246, 0.1);
@@ -119,8 +120,9 @@
     --color-sb-thumb: #1e293b;
 
     /* --- SEMANTIC COLORS (Dark Mode) --- */
-    --color-primary: #3b82f6;
-    /* blue-500 */
+    --color-primary-raw: 59, 130, 246;
+    /* Same blue for dark mode */
+    --color-primary: rgb(var(--color-primary-raw));
     --color-primary-hover: #2563eb;
     /* blue-600 */
     --color-primary-dim: rgba(59, 130, 246, 0.1);

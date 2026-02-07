@@ -10,7 +10,8 @@ const Phase3_FFN = ({
   noise,
   scenarioId,
   theme,
-  setHoveredItem
+  setHoveredItem,
+  resetKey
 }) => {
   // Removed useScenarios import
 
@@ -24,6 +25,11 @@ const Phase3_FFN = ({
   const getEffectiveActivation = useCallback((cat) => {
     return (cat.activation || 0) * pipelineSignal;
   }, [pipelineSignal]);
+
+  useEffect(() => {
+    setSelectedLabel(null);
+    setHoveredItem(null);
+  }, [resetKey, setHoveredItem]);
 
   useEffect(() => {
     if (scenarioId !== lastScenarioId.current) {

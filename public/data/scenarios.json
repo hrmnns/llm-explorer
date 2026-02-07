@@ -118,6 +118,9 @@
         ]
       },
       "phase_2_attention": {
+        "settings": {
+          "default_head_strength": 0.85
+        },
         "attention_profiles": [
           {
             "id": "mindset-selector",
@@ -460,6 +463,9 @@
         ]
       },
       "phase_2_attention": {
+        "settings": {
+          "default_head_strength": 0.6
+        },
         "attention_profiles": [
           {
             "id": "triple-context-resolver",

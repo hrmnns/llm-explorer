@@ -54,6 +54,9 @@ const AttentionProfileSchema = z.object({
 });
 
 const Phase2Schema = z.object({
+    settings: z.object({
+        default_head_strength: z.number().optional(),
+    }).optional(),
     attention_profiles: z.array(AttentionProfileSchema),
 });
 

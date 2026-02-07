@@ -36,8 +36,8 @@ const PhaseLayout = ({
 
             {/* HAUPT-VISUALISIERUNG (Die Bühne)
                 Nutzt bg-explore-viz (Weiß im Lightmode / Transparent-Dark im Darkmode)
-                Radius auf rounded-lg angepasst für Konsistenz mit Inspektor */}
-            <div className="flex-1 min-h-0 relative bg-explore-viz rounded-lg border border-explore-border overflow-hidden flex flex-col transition-all duration-300">
+                Radius auf rounded-2xl angepasst für Konsistenz mit Sidebar */}
+            <div className="flex-1 min-h-0 relative bg-explore-viz rounded-2xl border border-explore-border overflow-hidden flex flex-col transition-all duration-300">
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
                     {visualization}
                 </div>

@@ -10,6 +10,7 @@ export const useLLMSimulator = (activeScenario) => {
   const [positionWeight, setPositionWeight] = useState(0);
   const [headOverrides, setHeadOverrides] = useState({});
   const [selectedToken, setSelectedToken] = useState(null);
+  const [resetKey, setResetKey] = useState(0);
 
   // 2. Instanziere die Engine (persistent über Renders hinweg)
   const engineRef = useRef(new LLMEngine({
@@ -18,10 +19,13 @@ export const useLLMSimulator = (activeScenario) => {
     activeProfileId,
     mlpThreshold,
     positionWeight,
-    headOverrides
+    headOverrides,
+    defaultHeadStrength: activeScenario?.phase_2_attention?.settings?.default_head_strength ?? 0.7
   }));
 
   const engine = engineRef.current;
+
+  const defaultHeadStrength = activeScenario?.phase_2_attention?.settings?.default_head_strength ?? 0.7;
 
   // 3. Synchronisiere React State -> Engine Config
   useEffect(() => {
@@ -31,9 +35,10 @@ export const useLLMSimulator = (activeScenario) => {
       activeProfileId,
       mlpThreshold,
       positionWeight,
-      headOverrides
+      headOverrides,
+      defaultHeadStrength
     });
-  }, [noise, temperature, activeProfileId, mlpThreshold, positionWeight, headOverrides]);
+  }, [noise, temperature, activeProfileId, mlpThreshold, positionWeight, headOverrides, defaultHeadStrength]);
 
 
   // 4. Pipeline-Ausführung (Memoized, damit nicht unnötig gerechnet wird)
@@ -50,7 +55,8 @@ export const useLLMSimulator = (activeScenario) => {
       activeProfileId,
       mlpThreshold,
       positionWeight,
-      headOverrides
+      headOverrides,
+      defaultHeadStrength
     });
 
     return engine.runPipeline(activeScenario);
@@ -61,7 +67,8 @@ export const useLLMSimulator = (activeScenario) => {
     activeProfileId,
     mlpThreshold,
     positionWeight,
-    headOverrides
+    headOverrides,
+    defaultHeadStrength
   ]);
 
   // 5. Helper & Utilities für die UI
@@ -79,7 +86,7 @@ export const useLLMSimulator = (activeScenario) => {
       const primaryKey = activeKeys.find(k => k.includes("_s1_")) || activeKeys[0];
       return parseFloat(headOverrides[primaryKey]);
     }
-    return 0.7; // Default Head-Stärke
+    return defaultHeadStrength;
   };
 
   const updateHeadWeight = (key, value) => {
@@ -94,7 +101,8 @@ export const useLLMSimulator = (activeScenario) => {
     setHeadOverrides({});
     setPositionWeight(0);
     setSelectedToken(null);
-    setActiveProfileId(activeScenario?.phase_2_attention?.attention_profiles[0]?.id || 'scientific');
+    setActiveProfileId(activeScenario?.phase_2_attention?.attention_profiles?.[0]?.id || 'scientific');
+    setResetKey(prev => prev + 1);
   };
 
   // 6. Initialer Reset bei Szenario-Wechsel
@@ -126,6 +134,7 @@ export const useLLMSimulator = (activeScenario) => {
     positionWeight, setPositionWeight,
     selectedToken, setSelectedToken,
     activeScenario,
-    resetParameters
+    resetParameters,
+    resetKey
   };
 };

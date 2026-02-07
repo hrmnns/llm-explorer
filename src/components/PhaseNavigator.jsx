@@ -15,8 +15,8 @@ const PhaseNavigator = ({ activePhase, setActivePhase, theme, onOpenBriefing }) 
 
   const current = pipelineFlow[activePhase] || { in: "Debug", op: "Layout Testing", out: "UI Sync" };
 
-  const btnBase = "flex items-center justify-center gap-2 rounded-lg border transition-all duration-300 font-black uppercase tracking-widest text-[10px] shadow-sm";
-  const desktopBtnBase = "px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest transition-all whitespace-nowrap flex items-center justify-center font-bold";
+  const btnBase = "flex items-center justify-center gap-2 rounded-lg border transition-all duration-300 font-black uppercase tracking-widest text-[10px] shadow-sm cursor-pointer disabled:cursor-not-allowed";
+  const desktopBtnBase = "px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest transition-all whitespace-nowrap flex items-center justify-center font-bold cursor-pointer disabled:cursor-not-allowed";
 
   const handleNext = () => { if (activePhase < 5) setActivePhase(activePhase + 1); };
   const handlePrev = () => { if (activePhase > 0) setActivePhase(activePhase - 1); };
@@ -35,7 +35,7 @@ const PhaseNavigator = ({ activePhase, setActivePhase, theme, onOpenBriefing }) 
           <button
             disabled={activePhase === 0}
             onClick={handlePrev}
-            className={`${desktopBtnBase} ${activePhase === 0 ? 'opacity-10 cursor-not-allowed' : inactiveText}`}
+            className={`${desktopBtnBase} ${activePhase === 0 ? 'opacity-20' : inactiveText}`}
           >
             ←
           </button>
@@ -46,8 +46,8 @@ const PhaseNavigator = ({ activePhase, setActivePhase, theme, onOpenBriefing }) 
                 key={index}
                 onClick={() => setActivePhase(index)}
                 className={`${desktopBtnBase} ${activePhase === index
-                    ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                    : inactiveText
+                  ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                  : inactiveText
                   }`}
               >
                 <span className="opacity-50 mr-1">{index}</span> {name}
@@ -58,7 +58,7 @@ const PhaseNavigator = ({ activePhase, setActivePhase, theme, onOpenBriefing }) 
           <button
             disabled={activePhase === 5}
             onClick={handleNext}
-            className={`${desktopBtnBase} ${activePhase === 5 ? 'opacity-10 cursor-not-allowed' : inactiveText}`}
+            className={`${desktopBtnBase} ${activePhase === 5 ? 'opacity-20' : inactiveText}`}
           >
             →
           </button>
@@ -76,9 +76,9 @@ const PhaseNavigator = ({ activePhase, setActivePhase, theme, onOpenBriefing }) 
 
             <button
               onClick={onOpenBriefing}
-              className={`px-4 py-1 rounded-full border transition-all flex items-center gap-2 group ${isDark
-                  ? "border-primary/30 text-primary-hover bg-primary/5 hover:bg-primary/20"
-                  : "border-primary/20 text-primary bg-primary/5 hover:bg-primary/10"
+              className={`px-4 py-1 rounded-full border transition-all flex items-center gap-2 group cursor-pointer ${isDark
+                ? "border-primary/30 text-primary-hover bg-primary/5 hover:bg-primary/20"
+                : "border-primary/20 text-primary bg-primary/5 hover:bg-primary/10"
                 }`}
               title="Phasen-Briefing öffnen"
             >
@@ -128,8 +128,8 @@ const PhaseNavigator = ({ activePhase, setActivePhase, theme, onOpenBriefing }) 
             onClick={handlePrev}
             disabled={activePhase === 0}
             className={`flex-1 py-2.5 ${btnBase} ${activePhase === 0
-                ? 'opacity-10 text-slate-400'
-                : isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'
+              ? 'opacity-10 text-slate-400'
+              : isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'
               }`}
           >
             ←
@@ -147,8 +147,8 @@ const PhaseNavigator = ({ activePhase, setActivePhase, theme, onOpenBriefing }) 
             onClick={handleNext}
             disabled={activePhase === 5}
             className={`flex-[2] py-2.5 ${btnBase} ${activePhase === 5
-                ? 'bg-slate-200 text-slate-400 border-transparent'
-                : 'bg-primary border-primary text-white'
+              ? 'bg-slate-200 text-slate-400 border-transparent'
+              : 'bg-primary border-primary text-white'
               }`}
           >
             {activePhase === 5 ? 'Check' : 'Next →'}

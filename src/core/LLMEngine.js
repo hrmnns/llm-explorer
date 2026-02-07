@@ -14,6 +14,8 @@ export class LLMEngine {
         this.positionWeight = config.positionWeight || 0;
         this.headOverrides = config.headOverrides || {};
         this.activeProfileId = config.activeProfileId || 'scientific';
+        this.defaultHeadStrength = config.defaultHeadStrength ?? 0.7;
+        this.gumbelSeeds = {};
     }
 
     updateConfig(newConfig) {
@@ -89,7 +91,7 @@ export class LLMEngine {
                 // Get override value (from UI sliders) or default
                 const sliderVal = this.headOverrides[tokenKey] !== undefined
                     ? parseFloat(this.headOverrides[tokenKey])
-                    : 0.7;
+                    : this.defaultHeadStrength;
 
                 // Find applicable rules
                 const relevantRules = rules.filter(r =>
@@ -99,7 +101,7 @@ export class LLMEngine {
 
                 // Sum up rule strengths
                 relevantRules.forEach(rule => {
-                    totalActivation += (sliderVal / 0.7) * parseFloat(rule.strength) * globalSignal;
+                    totalActivation += (sliderVal / this.defaultHeadStrength) * parseFloat(rule.strength) * globalSignal;
                 });
             });
 
@@ -135,7 +137,15 @@ export class LLMEngine {
 
             // Noise Decay
             const decay = 1 - (Math.min(1, this.noise / 2) * (tokenItem.noise_sensitivity || 0.5));
-            const adjustedLogit = (baseLogit + bias) * decay;
+
+            // Gumbel noise for dynamic temperature response
+            if (this.gumbelSeeds[tokenItem.token] === undefined) {
+                const u = Math.max(0.00001, Math.random());
+                this.gumbelSeeds[tokenItem.token] = -Math.log(-Math.log(u));
+            }
+            const gumbel = this.gumbelSeeds[tokenItem.token] * (this.temperature * 1.5);
+
+            const adjustedLogit = (baseLogit + bias) * decay + gumbel;
 
             return {
                 ...tokenItem,
