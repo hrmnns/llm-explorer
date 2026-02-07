@@ -30,9 +30,21 @@ function AppContent() {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [showBriefing, setShowBriefing] = useState(false);
   const [briefings, setBriefings] = useState({});
-  
+
   // Zentraler Theme-State (Steuert die .dark Klasse am Root)
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => {
+    // 1. Check LocalStorage
+    const savedTheme = localStorage.getItem('llm_explorer_theme');
+    if (savedTheme) return savedTheme;
+
+    // 2. Check System Preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+
+    // 3. Default
+    return 'light'; // Standard auf Light ändern, da "Explorer" oft clean wirkt, oder bei Dark bleiben? User mochte Dark. Bleiben wir bei Dark fallbacks.
+  });
 
   const [autoShowBriefing, setAutoShowBriefing] = useState(() => {
     const saved = localStorage.getItem('llm_explorer_auto_briefing');
@@ -52,6 +64,7 @@ function AppContent() {
     } else {
       root.classList.remove('dark');
     }
+    localStorage.setItem('llm_explorer_theme', theme);
   }, [theme]);
 
   // Daten laden
@@ -98,9 +111,9 @@ function AppContent() {
   // 5. LOADING STATE
   if (!scenarios || scenarios.length === 0) {
     return (
-      <div className="bg-explore-app min-h-screen flex items-center justify-center text-blue-500 font-mono">
+      <div className="bg-explore-app min-h-screen flex items-center justify-center text-primary font-mono">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
           <span className="uppercase text-[10px] tracking-widest">Neural Pipeline Loading...</span>
         </div>
       </div>
@@ -161,24 +174,104 @@ function AppContent() {
             onOpenBriefing={() => setShowBriefing(true)}
           />
 
-          <main className="flex-1 flex flex-col items-center pt-4 pb-4 px-4 overflow-y-auto lg:overflow-hidden min-h-0">
+          <main className="flex-1 flex flex-col items-center pt-4 pb-32 lg:pb-4 px-4 overflow-y-auto lg:overflow-hidden min-h-0">
             <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-4 h-auto lg:h-full min-h-0">
 
               {/* VISUALISIERUNGS-PANEL */}
               <div className="w-full lg:flex-[2.5] relative border border-explore-border rounded-[2rem] shadow-2xl overflow-hidden bg-explore-viz backdrop-blur-md transition-all duration-500 flex flex-col min-h-[500px] lg:min-h-0">
                 {(!activeScenario || !simulator) ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-explore-app/50 backdrop-blur-sm z-50">
-                    <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-                    <span className="text-[10px] font-mono uppercase text-blue-400 tracking-widest">Reconfiguring Pipeline...</span>
+                    <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+                    <span className="text-[10px] font-mono uppercase text-primary tracking-widest">Reconfiguring Pipeline...</span>
                   </div>
                 ) : (
                   <div key={activeScenario.id} className="flex-1 flex flex-col min-h-0 animate-in fade-in duration-700">
-                    {activePhase === 0 && <Phase0_Tokenization simulator={simulator} theme={theme} setHoveredItem={setHoveredItem} />}
-                    {activePhase === 1 && <Phase1_Embedding simulator={simulator} theme={theme} setHoveredItem={setHoveredItem} />}
-                    {activePhase === 2 && <Phase2_Attention simulator={simulator} theme={theme} setHoveredItem={setHoveredItem} />}
-                    {activePhase === 3 && <Phase3_FFN simulator={simulator} theme={theme} setHoveredItem={setHoveredItem} />}
-                    {activePhase === 4 && <Phase4_Decoding simulator={simulator} activeScenario={activeScenario} theme={theme} setHoveredItem={setHoveredItem} />}
-                    {activePhase === 5 && <Phase5_Analysis simulator={simulator} activeScenario={activeScenario} theme={theme} setHoveredItem={setHoveredItem} />}
+                    {activePhase === 0 && (
+                      <Phase0_Tokenization
+                        tokens={activeScenario?.phase_0_tokenization?.tokens}
+                        rawText={activeScenario?.input_prompt}
+                        scenarioId={activeScenario?.id}
+                        setHoveredItem={setHoveredItem}
+                      />
+                    )}
+                    {activePhase === 1 && (
+                      <Phase1_Embedding
+                        tokens={activeScenario?.phase_0_tokenization?.tokens}
+                        processedVectors={simulator.processedVectors}
+                        rawVectors={activeScenario?.phase_1_embedding?.token_vectors}
+                        axisMap={activeScenario?.phase_1_embedding?.axis_map}
+                        scenarioId={activeScenario?.id}
+                        noise={simulator.noise}
+                        setNoise={simulator.setNoise}
+                        positionWeight={simulator.positionWeight}
+                        setPositionWeight={simulator.setPositionWeight}
+                        theme={theme}
+                        setHoveredItem={setHoveredItem}
+                      />
+                    )}
+                    {activePhase === 2 && (
+                      <Phase2_Attention
+                        tokens={activeScenario?.phase_0_tokenization?.tokens}
+                        activeAttention={simulator.activeAttention}
+                        activeProfileId={simulator.activeProfileId}
+                        setActiveProfileId={simulator.setActiveProfileId}
+                        headOverrides={simulator.headOverrides}
+                        setHeadOverrides={simulator.setHeadOverrides}
+                        updateHeadWeight={simulator.updateHeadWeight}
+                        scenarioId={activeScenario?.id}
+                        theme={theme}
+                        setHoveredItem={setHoveredItem}
+                        setSourceTokenId={simulator.setSourceTokenId}
+                      />
+                    )}
+                    {activePhase === 3 && (
+                      <Phase3_FFN
+                        activeFFN={simulator.activeFFN}
+                        activeAttention={simulator.activeAttention}
+                        mlpThreshold={simulator.mlpThreshold}
+                        setMlpThreshold={simulator.setMlpThreshold}
+                        noise={simulator.noise}
+                        scenarioId={activeScenario?.id}
+                        theme={theme}
+                        setHoveredItem={setHoveredItem}
+                      />
+                    )}
+                    {activePhase === 4 && (
+                      <Phase4_Decoding
+                        topKTokens={activeScenario?.phase_4_decoding?.top_k_tokens}
+                        settings={activeScenario?.phase_4_decoding?.settings}
+                        activeFFN={simulator.activeFFN}
+                        activeAttention={simulator.activeAttention}
+                        temperature={simulator.temperature}
+                        setTemperature={simulator.setTemperature}
+                        noise={simulator.noise}
+                        setNoise={simulator.setNoise}
+                        headOverrides={simulator.headOverrides}
+                        setHeadOverrides={simulator.setHeadOverrides}
+                        activeProfileId={simulator.activeProfileId}
+                        attentionProfiles={activeScenario?.phase_2_attention?.attention_profiles}
+                        selectedToken={simulator.selectedToken}
+                        setSelectedToken={simulator.setSelectedToken}
+                        scenarioId={activeScenario?.id}
+                        mlpThreshold={simulator.mlpThreshold}
+                        theme={theme}
+                        setHoveredItem={setHoveredItem}
+                      />
+                    )}
+                    {activePhase === 5 && (
+                      <Phase5_Analysis
+                        activeScenario={activeScenario}
+                        finalOutputs={simulator.finalOutputs}
+                        activeAttention={simulator.activeAttention}
+                        selectedToken={simulator.selectedToken}
+                        temperature={simulator.temperature}
+                        noise={simulator.noise}
+                        mlpThreshold={simulator.mlpThreshold}
+                        positionWeight={simulator.positionWeight}
+                        theme={theme}
+                        setHoveredItem={setHoveredItem}
+                      />
+                    )}
                   </div>
                 )}
               </div>

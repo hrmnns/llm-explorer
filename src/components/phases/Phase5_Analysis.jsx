@@ -1,21 +1,22 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import PhaseLayout from './../PhaseLayout';
-import { useScenarios } from '../../context/ScenarioContext';
 
-const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
-  const { activeScenario: contextScenario } = useScenarios();
-  const { 
-    temperature, 
-    noise, 
-    mlpThreshold, 
-    positionWeight, 
-    activeAttention, 
-    selectedToken,
-    finalOutputs,
-    activeScenario: simScenario
-  } = simulator;
-  
-  const scenario = contextScenario || simScenario;
+
+const Phase5_Analysis = ({
+  activeScenario, // passed from App
+  finalOutputs = [],
+  activeAttention = { avgSignal: 1.0 },
+  selectedToken,
+  temperature,
+  noise,
+  mlpThreshold,
+  positionWeight,
+  theme,
+  setHoveredItem
+}) => {
+  // Removed useScenarios
+
+  const scenario = activeScenario;
   const [selectedStep, setSelectedStep] = useState(null);
   const lastScenarioId = useRef(scenario?.id);
 
@@ -34,11 +35,11 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
   const winner = useMemo(() => {
     let target = selectedToken;
     if (!target && finalOutputs?.length > 0) {
-      target = [...finalOutputs].sort((a, b) => 
+      target = [...finalOutputs].sort((a, b) =>
         (b.dynamicProb ?? b.probability) - (a.dynamicProb ?? a.probability)
       )[0];
     }
-    
+
     if (target) {
       return {
         ...target,
@@ -53,7 +54,7 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
 
   const getNarrative = () => {
     const label = winner.safeLabel;
-    
+
     if (isCritical) {
       return `System-Instabilität detektiert: Bei einer Signal-Integrität von nur ${(pipelineSignal * 100).toFixed(0)}% und einem Noise-Level von ${noise.toFixed(2)} ist die Wahl von "${label}" mathematisch instabil. Die Kausalitätskette ist durch Rauschen unterbrochen.`;
     }
@@ -81,14 +82,14 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
   const steps = [
     {
       label: "1. Tokenisierung",
-      val: `${scenario?.phase_0_tokenization?.tokens?.length || 0} Einheiten`, 
+      val: `${scenario?.phase_0_tokenization?.tokens?.length || 0} Einheiten`,
       icon: "📑",
       story: `Der Eingabetext wurde in diskrete Tokens zerlegt. Jedes Element erhielt eine Positions-Kodierung (PE), damit das Modell die Wortreihenfolge mathematisch erfassen kann.`,
       details: { "Analyse-Details": "Die Segmentierung erfolgte via Byte-Pair-Encoding. Die IDs bilden die Grundlage für den Zugriff auf die Embedding-Matrix." }
     },
     {
       label: "2. Embedding Raum",
-      val: noise > 0.5 ? "Diffus" : "Präzise", 
+      val: noise > 0.5 ? "Diffus" : "Präzise",
       icon: "📍",
       story: `Die Tokens wurden in den n-dimensionalen Raum eingebettet. Mit einer Positions-Gewichtung von ${(positionWeight * 100).toFixed(0)}% wurden die Vektoren für die Kontext-Analyse vorbereitet.`,
       details: { "Vektor-Erkenntnis": `Der Noise-Level von ${noise.toFixed(2)} bestimmt die Schärfe der semantischen Trennung zwischen den Begriffen.` }
@@ -102,15 +103,15 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
     },
     {
       label: "4. Wissens-FFN",
-      val: winner.safeType, 
+      val: winner.safeType,
       icon: "🧠",
       story: `Das FFN-Layer hat das Signal mit internen Wissens-Clustern abgeglichen. Die Kategorie "${winner.safeType}" wurde dabei erfolgreich über den Threshold von ${mlpThreshold.toFixed(2)} gehoben.`,
       details: { "Wissens-Analyse": "Die neuronale Aktivierung transformiert abstrakte Aufmerksamkeit in konkrete semantische Konzepte des Weltwissens." }
     },
     {
       label: "5. Decoding",
-      val: winner.safeLabel, 
-      icon: "🎯", 
+      val: winner.safeLabel,
+      icon: "🎯",
       highlight: true,
       story: `Der Softmax-Prozess hat die Logits normalisiert. "${winner.safeLabel}" ging mit ${(displayProbability * 100).toFixed(1)}% als Sieger hervor und wurde zurück in Text transformiert.`,
       details: { "Inferenz-Interpretation": `Das Ergebnis ist bei einer Temperature von ${temperature.toFixed(1)} ${temperature > 1.0 ? 'kreativ-variabel' : 'hochgradig deterministisch'}.` }
@@ -123,10 +124,10 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
       setHoveredItem(null);
     } else {
       setSelectedStep(index);
-      setHoveredItem({ 
-        title: step.label, 
-        subtitle: "Prozess-Parameter", 
-        data: step.details 
+      setHoveredItem({
+        title: step.label,
+        subtitle: "Prozess-Parameter",
+        data: step.details
       });
     }
   };
@@ -139,15 +140,15 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
       subtitle="Zusammenfassender Entscheidungspfad des Modells"
       theme={theme}
       badges={[
-        { text: `Integrität: ${(pipelineSignal * 100).toFixed(0)}%`, className: isCritical ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-blue-500/10 text-blue-500 border-blue-500/20" },
-        { text: `${(displayProbability * 100).toFixed(1)}% Konfidenz`, className: "bg-green-500/10 text-green-500 border-green-500/20" }
+        { text: `Integrität: ${(pipelineSignal * 100).toFixed(0)}%`, className: isCritical ? "bg-error/10 text-error border-error/20" : "bg-primary/10 text-primary border-primary/20" },
+        { text: `${(displayProbability * 100).toFixed(1)}% Konfidenz`, className: "bg-success/10 text-success border-success/20" }
       ]}
       visualization={
         <div className="w-full flex flex-col items-center px-2 py-4 bg-explore-viz rounded-lg" onClick={() => { setSelectedStep(null); setHoveredItem(null); }}>
-          
+
           {/* Narratives System-Urteil */}
           <div className="mb-12 text-center max-w-3xl mx-auto border-b border-explore-border pb-10">
-            <h3 className={`text-[10px] uppercase font-black tracking-[0.4em] mb-6 ${isCritical ? 'text-red-500' : 'text-blue-500'}`}>
+            <h3 className={`text-[10px] uppercase font-black tracking-[0.4em] mb-6 ${isCritical ? 'text-error' : 'text-primary'}`}>
               System-Interpretation
             </h3>
             <p className="text-lg lg:text-xl font-light leading-relaxed italic px-10 transition-all duration-700 text-content-main">
@@ -159,16 +160,16 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
           <div className="flex flex-col items-center w-full max-w-2xl mx-auto relative pb-10">
             {steps.map((step, i) => (
               <React.Fragment key={i}>
-                <div 
+                <div
                   className={`relative z-10 flex flex-col w-full p-8 rounded-[2.5rem] border-2 transition-all duration-500 cursor-pointer group
-                    ${selectedStep === i 
-                      ? 'bg-blue-500/10 border-blue-500 shadow-[0_0_40px_rgba(59,130,246,0.15)] scale-[1.04]' 
-                      : 'bg-explore-card border-explore-border hover:border-blue-500/50'}`}
+                    ${selectedStep === i
+                      ? 'bg-primary/10 border-primary shadow-[0_0_40px_var(--color-primary-dim)] scale-[1.04]'
+                      : 'bg-explore-card border-explore-border hover:border-primary/50'}`}
                   onClick={(e) => { e.stopPropagation(); handleStepClick(step, i); }}
                 >
                   <div className="flex items-center gap-8 mb-4">
                     <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-3xl transition-all duration-500 group-hover:rotate-6
-                      ${i === 4 ? 'bg-green-500/20 text-green-500 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 'bg-explore-item text-content-dim'}`}>
+                      ${i === 4 ? 'bg-success/20 text-success shadow-[0_0_20px_var(--color-success-dim)]' : 'bg-explore-item text-content-dim'}`}>
                       {step.icon}
                     </div>
                     <div className="flex flex-col">
@@ -180,11 +181,11 @@ const Phase5_Analysis = ({ simulator, setHoveredItem, theme }) => {
                     {step.story}
                   </p>
                 </div>
-                
+
                 {/* Verbindungslinie */}
                 {i < steps.length - 1 && (
                   <div className="flex flex-col items-center">
-                    <div className={`w-1 h-12 transition-all duration-1000 ${selectedStep !== null && selectedStep >= i ? 'bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,1)]' : 'bg-explore-border'}`}></div>
+                    <div className={`w-1 h-12 transition-all duration-1000 ${selectedStep !== null && selectedStep >= i ? 'bg-primary shadow-[0_0_20px_var(--color-primary)]' : 'bg-explore-border'}`}></div>
                   </div>
                 )}
               </React.Fragment>

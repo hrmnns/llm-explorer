@@ -1,22 +1,41 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import PhaseLayout from './../PhaseLayout';
-import { useScenarios } from '../../context/ScenarioContext';
 
-const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
-  const { activeScenario } = useScenarios();
-  const {
-    temperature, setTemperature, activeAttention,
-    setSelectedToken, mlpThreshold, activeFFN, noise, setNoise,
-    headOverrides, setHeadOverrides, activeProfileId,
-    selectedToken
-  } = simulator;
 
+const Phase4_Decoding = ({
+  topKTokens = [], // raw token data from scenario
+  settings = {}, // decoding settings from scenario
+  activeFFN = [],
+  activeAttention = { avgSignal: 1.0 },
+  temperature,
+  setTemperature,
+  noise,
+  setNoise,
+  headOverrides,
+  setHeadOverrides,
+  activeProfileId,
+  activeProfileRules = [], // easier to pass rules directly? or profiles? 
+  // Wait, Goal Seeking needs profile rules to map heads.
+  // Let's pass 'activeProfile' specifically or 'profiles'.
+  attentionProfiles = [],
+  selectedToken,
+  setSelectedToken,
+  scenarioId,
+  theme,
+  setHoveredItem,
+  mlpThreshold // Added missing prop
+}) => {
+  // Removed useScenarios
+
+  // Local state for phase-specific settings
   const [selectedLabel, setSelectedLabel] = useState(null);
   const [topK, setTopK] = useState(5);
   const [minPThreshold, setMinPThreshold] = useState(0.05);
   const [simulationState, setSimulationState] = useState({ outputs: [], winner: null });
   const [isShuffling, setIsShuffling] = useState(false);
-  const lastScenarioId = useRef(activeScenario?.id);
+  const lastScenarioId = useRef(scenarioId);
+
+
 
   // --- Goal-Seeking Logik (🎯) ---
   const handleForceOutcome = useCallback((target) => {
@@ -24,8 +43,7 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
     const targetFFN = activeFFN?.find(f => String(f.id).toLowerCase() === String(categoryId).toLowerCase());
     const linkedHeadId = targetFFN?.linked_head;
 
-    const profiles = activeScenario?.phase_2_attention?.attention_profiles || [];
-    const activeProfile = profiles.find(p => String(p.id) === String(activeProfileId));
+    const activeProfile = attentionProfiles.find(p => String(p.id) === String(activeProfileId));
 
     const relevantRules = activeProfile?.rules?.filter(r =>
       Number(r.head) === Number(linkedHeadId)
@@ -69,7 +87,7 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
         "Quellen": relevantRules.map(r => `T${r.source}`).join(', ')
       }
     });
-  }, [activeScenario, activeFFN, activeProfileId, setHeadOverrides, setHoveredItem, setNoise, setSelectedToken]);
+  }, [attentionProfiles, activeFFN, activeProfileId, setHeadOverrides, setHoveredItem, setNoise, setSelectedToken]);
 
   const getItemVisuals = useCallback((item) => {
     const matchingCategory = activeFFN?.find(cat =>
@@ -82,12 +100,11 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
   }, [activeFFN]);
 
   const calculateLogic = useCallback(() => {
-    const scenario = activeScenario;
-    const sourceTokens = scenario?.phase_4_decoding?.top_k_tokens;
+    const sourceTokens = topKTokens;
     if (!sourceTokens || sourceTokens.length === 0) return [];
 
     const T = Math.max(0.01, parseFloat(temperature) || 0.7);
-    const biasMultiplier = scenario?.phase_4_decoding?.settings?.logit_bias_multiplier || 12;
+    const biasMultiplier = settings?.logit_bias_multiplier || 12;
 
     const results = sourceTokens.map(item => {
       const liveFFNData = activeFFN?.find(f => String(f.id).toLowerCase().trim() === String(item.category_link).toLowerCase().trim());
@@ -113,7 +130,7 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
       ...item,
       dynamicProb: sumExp > 0 ? item.exp / sumExp : 0
     }));
-  }, [activeFFN, activeScenario, temperature, noise, mlpThreshold, activeAttention]);
+  }, [activeFFN, topKTokens, settings, temperature, noise, mlpThreshold, activeAttention]);
 
   const getInspectorData = useCallback((out) => {
     if (!out) return null;
@@ -130,12 +147,18 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
   }, [getItemVisuals]);
 
   useEffect(() => {
-    if (activeScenario?.id !== lastScenarioId.current) {
+    if (scenarioId !== lastScenarioId.current) {
       setSelectedLabel(null);
-      lastScenarioId.current = activeScenario?.id;
+      lastScenarioId.current = scenarioId;
     }
 
     if (!isShuffling) {
+      // Re-run local decoding logic when dependencies change
+      // Note: The LLMEngine also does decoding, but Phase 4 component seems to implement
+      // a visual/interactive version with local jitter/sampling that might differ slightly,
+      // or it is visualizing the process.
+      // The Engine's finalOutputs are correct, but this component re-calculates for the visual effect?
+      // Yes, it adds jitter here: const jitter = (Math.random() - 0.5) * (noise || 0) * 2.0;
       const results = calculateLogic();
       if (results.length > 0) {
         const sorted = [...results].sort((a, b) => b.dynamicProb - a.dynamicProb);
@@ -145,7 +168,7 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
         });
       }
     }
-  }, [calculateLogic, activeScenario?.id, isShuffling, headOverrides, selectedToken]);
+  }, [calculateLogic, scenarioId, isShuffling, headOverrides, selectedToken]);
 
   const triggerResample = () => {
     setIsShuffling(true);
@@ -181,20 +204,20 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
       subtitle="Physikalische Signal-Modulation & Sampling"
       theme={theme}
       badges={[
-        { text: `Entropy: ${noise.toFixed(2)}`, className: noise > 1 ? "text-orange-500" : "text-content-dim" },
-        { text: `Aktiv: ${activeOptionsCount}`, className: "text-blue-500 border-blue-500/20 bg-blue-500/5" }
+        { text: `Entropy: ${noise.toFixed(2)}`, className: noise > 1 ? "text-warning" : "text-content-dim" },
+        { text: `Aktiv: ${activeOptionsCount}`, className: "text-primary border-primary/20 bg-primary/5" }
       ]}
       visualization={
-        <div className="flex flex-row min-h-[550px] lg:h-full w-full gap-4 relative pt-12 pb-24 px-4 bg-explore-viz rounded-lg" onClick={() => { setSelectedLabel(null); setHoveredItem(null); }}>
+        <div className="flex flex-row min-h-[550px] h-full w-full gap-4 relative pt-12 pb-24 px-4 bg-explore-viz rounded-lg" onClick={() => { setSelectedLabel(null); setHoveredItem(null); }}>
 
           {/* Y-Achse */}
-          <div className="flex flex-col justify-between items-end pb-0 pt-0 text-[9px] font-black w-8 shrink-0 text-content-dim h-[calc(100%-24px)]">
+          <div className="flex flex-col justify-between items-end pb-0 pt-0 text-[9px] font-black w-8 shrink-0 text-content-dim self-stretch">
             <span>100%</span>
             <span>50%</span>
             <span className="translate-y-2">0%</span>
           </div>
 
-          <div className="relative flex-1 h-[calc(100%-24px)] flex flex-col justify-end border-b-2 border-explore-border">
+          <div className="relative flex-1 flex flex-col justify-end border-b-2 border-explore-border self-stretch">
 
             {/* Grid Lines */}
             <div className="absolute inset-0 pointer-events-none text-explore-border opacity-20">
@@ -203,9 +226,9 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
             </div>
 
             {/* Min-P Gate Line */}
-            <div className="absolute left-0 w-full border-t-2 border-dashed border-red-500/50 z-30 transition-all duration-500 pointer-events-none"
+            <div className="absolute left-0 w-full border-t-2 border-dashed border-error/50 z-30 transition-all duration-500 pointer-events-none"
               style={{ bottom: `${minPThreshold * 100}%` }}>
-              <div className="absolute right-0 -top-2.5 px-1.5 py-0.5 bg-red-600 text-[7px] text-white rounded font-black uppercase shadow-lg">
+              <div className="absolute right-0 -top-2.5 px-1.5 py-0.5 bg-error text-[7px] text-white rounded font-black uppercase shadow-lg">
                 Min-P: {(minPThreshold * 100).toFixed(0)}%
               </div>
             </div>
@@ -233,7 +256,7 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
                     {/* Goal-Seek Button */}
                     <button
                       onClick={(e) => { e.stopPropagation(); handleForceOutcome(out); }}
-                      className="absolute -top-10 opacity-0 group-hover:opacity-100 hover:scale-125 transition-all z-50 p-2 bg-blue-600 rounded-full border-2 border-white shadow-xl text-[14px]"
+                      className="absolute -top-10 opacity-0 group-hover:opacity-100 hover:scale-125 transition-all z-50 p-2 bg-primary-hover rounded-full border-2 border-white shadow-xl text-[14px]"
                     >
                       🎯
                     </button>
@@ -247,7 +270,7 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
                     <div className="mb-2 text-xs">{icon}</div>
 
                     {/* Der eigentliche Balken */}
-                    <div className={`w-full max-w-[44px] rounded-t-xl transition-all duration-700 ${isWinner ? 'ring-2 ring-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : ''}`}
+                    <div className={`w-full max-w-[44px] rounded-t-xl transition-all duration-700 ${isWinner ? 'ring-2 ring-primary shadow-[0_0_20px_var(--color-primary-border)]' : ''}`}
                       style={{
                         height: isShuffling ? `${Math.random() * 100}%` : `${out.dynamicProb * 100}%`,
                         backgroundColor: (isActive || isWinner) ? color : 'var(--color-explore-border)',
@@ -257,10 +280,10 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
 
                     {/* Beschriftung */}
                     <div className="absolute top-[calc(100%+10px)] w-full text-center">
-                      <span className={`text-[9px] font-black uppercase mb-1 block ${isActive || isWinner ? 'text-blue-500' : 'text-content-dim'}`}>
+                      <span className={`text-[9px] font-black uppercase mb-1 block ${isActive || isWinner ? 'text-primary' : 'text-content-dim'}`}>
                         {(out.dynamicProb * 100).toFixed(0)}%
                       </span>
-                      <span className={`text-[10px] font-black uppercase truncate block ${isWinner ? 'text-blue-500 scale-110' : 'text-content-dim'}`}>
+                      <span className={`text-[10px] font-black uppercase truncate block ${isWinner ? 'text-primary scale-110' : 'text-content-dim'}`}>
                         {out.token}
                       </span>
                     </div>
@@ -274,31 +297,31 @@ const Phase4_Decoding = ({ simulator, setHoveredItem, theme }) => {
       controls={[
         <div key="c-temp" className="px-4 py-3 rounded-2xl bg-explore-card border border-explore-border flex flex-col justify-center h-full">
           <div className="flex justify-between items-center mb-2">
-            <label className="text-[9px] uppercase font-black text-blue-500 tracking-widest">Temperature</label>
-            <div className="text-xs font-mono font-black text-blue-500">{temperature.toFixed(2)}</div>
+            <label className="text-[9px] uppercase font-black text-primary tracking-widest">Temperature</label>
+            <div className="text-xs font-mono font-black text-primary">{temperature.toFixed(2)}</div>
           </div>
-          <input type="range" min="0.1" max="2.0" step="0.1" value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-full h-1.5 bg-explore-item accent-blue-500 cursor-pointer" />
+          <input type="range" min="0.1" max="2.0" step="0.1" value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-full h-1.5 bg-explore-item accent-primary cursor-pointer" />
         </div>,
         <div key="c-topk" className="px-4 py-3 rounded-2xl bg-explore-card border border-explore-border flex flex-col justify-center h-full">
           <div className="flex justify-between items-center mb-2">
-            <label className="text-[9px] uppercase font-black text-green-500 tracking-widest">Top-K Filter</label>
-            <div className="text-xs font-mono font-black text-green-500">{topK}</div>
+            <label className="text-[9px] uppercase font-black text-success tracking-widest">Top-K Filter</label>
+            <div className="text-xs font-mono font-black text-success">{topK}</div>
           </div>
-          <input type="range" min="1" max="10" step="1" value={topK} onChange={(e) => setTopK(parseInt(e.target.value))} className="w-full h-1.5 bg-explore-item accent-green-500 cursor-pointer" />
+          <input type="range" min="1" max="10" step="1" value={topK} onChange={(e) => setTopK(parseInt(e.target.value))} className="w-full h-1.5 bg-explore-item accent-success cursor-pointer" />
         </div>,
         <div key="c-minp" className="px-4 py-3 rounded-2xl bg-explore-card border border-explore-border flex flex-col justify-center h-full">
           <div className="flex justify-between items-center mb-2">
-            <label className="text-[9px] uppercase font-black text-red-500 tracking-widest">Min-P Threshold</label>
-            <div className="text-xs font-mono font-black text-red-500">{(minPThreshold * 100).toFixed(0)}%</div>
+            <label className="text-[9px] uppercase font-black text-error tracking-widest">Min-P Threshold</label>
+            <div className="text-xs font-mono font-black text-error">{(minPThreshold * 100).toFixed(0)}%</div>
           </div>
-          <input type="range" min="0.01" max="0.25" step="0.01" value={minPThreshold} onChange={(e) => setMinPThreshold(parseFloat(e.target.value))} className="w-full h-1.5 bg-explore-item accent-red-500 cursor-pointer" />
+          <input type="range" min="0.01" max="0.25" step="0.01" value={minPThreshold} onChange={(e) => setMinPThreshold(parseFloat(e.target.value))} className="w-full h-1.5 bg-explore-item accent-error cursor-pointer" />
         </div>,
         <div key="c-sample" className="h-full">
           <button
             disabled={isShuffling || activeOptionsCount <= 1}
             onClick={triggerResample}
             className={`w-full h-full min-h-[56px] rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all border-2
-            ${(isShuffling || activeOptionsCount <= 1) ? 'bg-explore-item text-content-dim border-transparent' : 'bg-blue-600 text-white border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-[1.02]'}`}
+            ${(isShuffling || activeOptionsCount <= 1) ? 'bg-explore-item text-content-dim border-transparent' : 'bg-primary hover:bg-primary-hover text-white border-primary shadow-[0_0_20px_var(--color-primary-dim)] hover:scale-[1.02]'}`}
           >
             {isShuffling ? "Sampling..." : "🎲 Re-Sample"}
           </button>

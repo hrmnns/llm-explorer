@@ -8,12 +8,12 @@ const GlossaryModal = ({ isOpen, onClose, data }) => {
       <div className="bg-explore-nav border border-explore-border w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden text-content-main">
         {/* Header */}
         <div className="p-6 border-b border-explore-border flex justify-between items-center bg-explore-nav">
-          <h2 className="text-xl font-bold text-blue-500 uppercase tracking-tighter">
+          <h2 className="text-xl font-bold text-primary uppercase tracking-tighter">
             Wissens-Datenbank
           </h2>
-          <button 
-            onClick={onClose} 
-            className="text-3xl font-light text-content-dim hover:text-blue-500 transition-colors"
+          <button
+            onClick={onClose}
+            className="text-3xl font-light text-content-dim hover:text-primary transition-colors"
           >
             &times;
           </button>
@@ -23,8 +23,8 @@ const GlossaryModal = ({ isOpen, onClose, data }) => {
         <div className="p-6 overflow-y-auto space-y-4 bg-explore-app/50 custom-scrollbar">
           {data?.terms?.length > 0 ? (
             data.terms.map((term, i) => (
-              <div key={i} className="p-5 bg-explore-item border border-explore-border rounded-2xl hover:border-blue-500/30 transition-colors group">
-                <h3 className="text-blue-500 text-sm font-black uppercase tracking-wider group-hover:text-blue-400 transition-colors">
+              <div key={i} className="p-5 bg-explore-item border border-explore-border rounded-2xl hover:border-primary/30 transition-colors group">
+                <h3 className="text-primary text-sm font-black uppercase tracking-wider group-hover:text-primary-hover transition-colors">
                   {term.title}
                 </h3>
                 <p className="text-content-muted text-[12px] italic mt-2 leading-relaxed">

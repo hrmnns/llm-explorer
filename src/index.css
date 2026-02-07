@@ -23,6 +23,23 @@
   --color-content-main: var(--color-text-main);
   --color-content-muted: var(--color-text-muted);
   --color-content-dim: var(--color-text-dim);
+
+  /* Semantic Mappings */
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-dim: var(--color-primary-dim);
+  --color-primary-border: var(--color-primary-border);
+
+  --color-success: var(--color-success);
+  --color-success-dim: var(--color-success-dim);
+
+  --color-warning: var(--color-warning);
+  --color-warning-dim: var(--color-warning-dim);
+  --color-warning-hover: var(--color-warning-hover);
+
+  --color-error: var(--color-error);
+  --color-error-dim: var(--color-error-dim);
+  --color-error-hover: var(--color-error-hover);
 }
 
 /* Der Rest deiner Datei ( @layer base etc. ) bleibt wie zuvor */
@@ -32,49 +49,106 @@
     /* --- LIGHT MODE VARIABLES --- */
     --color-bg-app: #f8fafc;
     --color-bg-nav: #ffffff;
-    --color-bg-viz: #f1f5f9; /* #ffffff; */
-    --color-bg-card: #f1f5f9;      /* Zurück auf slate-100 (vorher Test-Rot) */
+    --color-bg-viz: #f1f5f9;
+    /* #ffffff; */
+    --color-bg-card: #ffffff;
+    /* Zurück auf slate-100 (vorher Test-Rot) -> Jetzt Weiß für besseren Kontrast zu Viz */
     --color-bg-item: #ffffff;
-    
-    --color-border-main: #cbd5e1; /* #e2e8f0; */
+
+    --color-border-main: #cbd5e1;
+    /* #e2e8f0; */
     --color-border-subtle: #f1f5f9;
-    
+
     --color-text-main: #0f172a;
     --color-text-muted: #64748b;
     --color-text-dim: #94a3b8;
 
     --color-sb-track: #f1f5f9;
     --color-sb-thumb: #cbd5e1;
+
+    /* --- SEMANTIC COLORS (Light Mode) --- */
+    --color-primary: #3b82f6;
+    /* blue-500 */
+    --color-primary-hover: #2563eb;
+    /* blue-600 */
+    --color-primary-dim: rgba(59, 130, 246, 0.1);
+    --color-primary-border: rgba(59, 130, 246, 0.2);
+
+    --color-success: #22c55e;
+    /* green-500 */
+    --color-success-dim: rgba(34, 197, 94, 0.1);
+
+    --color-warning: #f97316;
+    /* orange-500 */
+    --color-warning-dim: rgba(249, 115, 22, 0.1);
+    --color-warning-hover: #ea580c;
+    /* orange-600 */
+
+    --color-error: #ef4444;
+    /* red-500 */
+    --color-error-dim: rgba(239, 68, 68, 0.1);
+    --color-error-hover: #dc2626;
+    /* red-600 */
   }
 
   /* Tailwind v4 erkennt den Darkmode automatisch über diese Klasse */
-.dark {
+  .dark {
     /* --- DARK MODE VARIABLES --- */
-    --color-bg-app: #020617;    /* Sehr dunkles Blau/Schwarz */
-    --color-bg-nav: #0f172a;    /* Slate 900 */
-    
+    --color-bg-app: #020617;
+    /* Sehr dunkles Blau/Schwarz */
+    --color-bg-nav: #0f172a;
+    /* Slate 900 */
+
     /* WICHTIG: Solid statt Transparent, damit kein Weiß durchkommt */
-    --color-bg-viz: #020617; /* #020617;     */
-    --color-bg-card: #0f172a;   
-    --color-bg-item: #1e293b;   /* Etwas heller für Tokens */
-    
-    --color-border-main: #334155; /* rgba(255, 255, 255, 0.1); */
+    --color-bg-viz: #020617;
+    /* #020617;     */
+    --color-bg-card: #0f172a;
+    --color-bg-item: #1e293b;
+    /* Etwas heller für Tokens */
+
+    --color-border-main: #334155;
+    /* rgba(255, 255, 255, 0.1); */
     --color-border-subtle: rgba(255, 255, 255, 0.05);
-    
+
     /* Text-Korrektur (vorher war es fast schwarz) */
-    --color-text-main: #f1f5f9; 
+    --color-text-main: #f1f5f9;
     --color-text-muted: #94a3b8;
     --color-text-dim: #64748b;
 
     --color-sb-track: #020617;
     --color-sb-thumb: #1e293b;
+
+    /* --- SEMANTIC COLORS (Dark Mode) --- */
+    --color-primary: #3b82f6;
+    /* blue-500 */
+    --color-primary-hover: #2563eb;
+    /* blue-600 */
+    --color-primary-dim: rgba(59, 130, 246, 0.1);
+    --color-primary-border: rgba(59, 130, 246, 0.2);
+
+    --color-success: #22c55e;
+    /* green-500 */
+    --color-success-dim: rgba(34, 197, 94, 0.1);
+
+    --color-warning: #f97316;
+    /* orange-500 */
+    --color-warning-dim: rgba(249, 115, 22, 0.1);
+    --color-warning-hover: #ea580c;
+    /* orange-600 */
+
+    --color-error: #ef4444;
+    /* red-500 */
+    --color-error-dim: rgba(239, 68, 68, 0.1);
+    --color-error-hover: #dc2626;
+    /* red-600 */
   }
 
   body {
-  background-color: var(--color-bg-app);
-  color: var(--color-text-main);
-}
-/*
+    background-color: var(--color-bg-app);
+    color: var(--color-text-main);
+  }
+
+  /*
   body {
     background-color: var(--color-bg-app);
     color: var(--color-text-main);
@@ -85,6 +159,7 @@
 }
 
 @layer components {
+
   /* Stil für die Custom-Range-Slider */
   input[type='range'] {
     @apply appearance-none bg-transparent cursor-pointer;
@@ -100,8 +175,17 @@
   }
 
   @keyframes alert-pulse {
-    0%, 100% { opacity: 1; filter: brightness(1); }
-    50% { opacity: 0.7; filter: brightness(1.5) drop-shadow(0 0 10px rgba(220, 38, 38, 0.8)); }
+
+    0%,
+    100% {
+      opacity: 1;
+      filter: brightness(1);
+    }
+
+    50% {
+      opacity: 0.7;
+      filter: brightness(1.5) drop-shadow(0 0 10px rgba(220, 38, 38, 0.8));
+    }
   }
 }
 

@@ -3,7 +3,7 @@ import React from 'react';
 const PhaseLayout = ({
     title,
     subtitle,
-    badges = [], 
+    badges = [],
     visualization,
     controls
 }) => {
@@ -13,7 +13,7 @@ const PhaseLayout = ({
             {/* HEADER: Nutzt zentrale Border-Variable */}
             <header className="flex flex-wrap items-center justify-between gap-4 mb-4 shrink-0 border-b border-explore-border pb-4">
                 <div className="flex flex-col min-w-[150px]">
-                    <h2 className="text-blue-500 uppercase font-black tracking-[0.2em] text-[9px] mb-1 leading-none">
+                    <h2 className="text-primary uppercase font-black tracking-[0.2em] text-[9px] mb-1 leading-none">
                         {title}
                     </h2>
                     <p className="text-base font-bold tracking-tight leading-none">

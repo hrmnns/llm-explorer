@@ -31,16 +31,16 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                 `}
             >
                 <div className={`absolute top-0 lg:top-auto lg:left-0 w-full lg:w-[2px] h-[2px] lg:h-3/4 rounded-full transition-all duration-500
-                    ${isCritical ? 'bg-red-500 shadow-[0_0_8px_red]' : isDegraded ? 'bg-orange-500' : 'bg-blue-500'}
+                    ${isCritical ? 'bg-error shadow-[0_0_8px_red]' : isDegraded ? 'bg-warning' : 'bg-primary'}
                 `} />
-                <span className="lg:rotate-180 lg:[writing-mode:vertical-lr] text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/70">System Details</span>
-                <div className="text-blue-500/40 text-base lg:rotate-0 rotate-90">«</div>
+                <span className="lg:rotate-180 lg:[writing-mode:vertical-lr] text-[9px] font-black uppercase tracking-[0.3em] text-primary/70">System Details</span>
+                <div className="text-primary/40 text-base lg:rotate-0 rotate-90">«</div>
             </button>
         </div>
     );
 
-    const MetricBox = ({ label, value, unit = "", color = "text-blue-500" }) => (
-        <div className="flex flex-col p-3 rounded-lg bg-explore-item border border-explore-border transition-all hover:bg-blue-500/5 overflow-hidden">
+    const MetricBox = ({ label, value, unit = "", color = "text-primary" }) => (
+        <div className="flex flex-col p-3 rounded-lg bg-explore-item border border-explore-border transition-all hover:bg-primary/5 overflow-hidden">
             <span className="text-[7px] uppercase font-black text-content-dim tracking-widest mb-1">{label}</span>
             <span className={`text-[10px] font-mono font-bold truncate ${color}`}>{value}{unit}</span>
         </div>
@@ -51,35 +51,34 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
 
             <div className="flex justify-between items-start mb-5 shrink-0">
                 <div>
-                    <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-500 mb-0.5">System Monitor</h3>
+                    <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-primary mb-0.5">System Monitor</h3>
                     <h4 className="text-sm font-bold uppercase tracking-tighter opacity-90">{phaseContent[currentPhaseIndex]?.title}</h4>
                 </div>
                 <button onClick={() => setIsExpanded(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-explore-item transition-colors text-content-dim hover:text-content-main text-xl">×</button>
             </div>
 
             <div className="flex-1 space-y-6 overflow-y-auto pr-1 custom-scrollbar">
-                
+
                 {/* SIGNAL STATUS */}
                 <section className="animate-in fade-in slide-in-from-top-2 duration-700">
-                    <div className={`p-3 rounded-xl border transition-all duration-500 ${
-                        isCritical ? 'bg-red-500/10 border-red-500/40' : 
-                        isDegraded ? 'bg-orange-500/10 border-orange-500/40' : 'bg-blue-500/5 border-blue-500/20'
-                    }`}>
+                    <div className={`p-3 rounded-xl border transition-all duration-500 ${isCritical ? 'bg-error/10 border-error/40' :
+                            isDegraded ? 'bg-warning/10 border-warning/40' : 'bg-primary/5 border-primary/20'
+                        }`}>
                         <div className="flex justify-between items-center mb-2">
-                            <span className={`text-[8px] font-black uppercase tracking-widest ${isCritical ? 'text-red-500' : isDegraded ? 'text-orange-500' : 'text-blue-500'}`}>
+                            <span className={`text-[8px] font-black uppercase tracking-widest ${isCritical ? 'text-error' : isDegraded ? 'text-warning' : 'text-primary'}`}>
                                 {isCritical ? '⚠️ Signal Critical' : isDegraded ? '⚡ Signal Degraded' : '💎 Signal Clear'}
                             </span>
                             <span className="text-[10px] font-mono font-bold text-content-main">{(pipelineSignal * 100).toFixed(0)}%</span>
                         </div>
                         <div className="w-full h-1 bg-explore-item rounded-full overflow-hidden">
-                            <div className={`h-full transition-all duration-1000 ease-out ${isCritical ? 'bg-red-500' : isDegraded ? 'bg-orange-500' : 'bg-blue-500'}`} style={{ width: `${pipelineSignal * 100}%` }} />
+                            <div className={`h-full transition-all duration-1000 ease-out ${isCritical ? 'bg-error' : isDegraded ? 'bg-warning' : 'bg-primary'}`} style={{ width: `${pipelineSignal * 100}%` }} />
                         </div>
                     </div>
                 </section>
 
                 {/* PHASE INFO */}
                 <section>
-                    <div className="p-4 rounded-lg bg-blue-500/5 border border-blue-500/10 border-l-2 border-l-blue-500 shadow-inner">
+                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/10 border-l-2 border-l-primary shadow-inner">
                         <p className="text-[10px] leading-relaxed text-content-muted italic font-medium">{phaseContent[currentPhaseIndex]?.details}</p>
                     </div>
                 </section>
@@ -93,34 +92,34 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                     {showTech && (
                         <div className="grid grid-cols-2 gap-2 animate-in fade-in duration-300">
                             <div className="col-span-2"><MetricBox label="Active Scenario" value={activeScenario?.name || "None"} /></div>
-                            <MetricBox label="Noise" value={(simulator.noise * 100).toFixed(0)} unit="%" color={isCritical ? "text-red-500" : isDegraded ? "text-orange-500" : "text-blue-500"} />
+                            <MetricBox label="Noise" value={(simulator.noise * 100).toFixed(0)} unit="%" color={isCritical ? "text-error" : isDegraded ? "text-warning" : "text-primary"} />
                             <MetricBox label="Pos. Weight" value={simulator.positionWeight?.toFixed(2)} />
-                            
+
                             {activePhase === 1 && (
-                                <div className="col-span-2 mt-1 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10 border-dashed animate-pulse">
-                                    <p className="text-[9px] leading-snug text-blue-500/80 italic font-medium">
+                                <div className="col-span-2 mt-1 p-3 rounded-lg bg-primary/5 border border-primary/10 border-dashed animate-pulse">
+                                    <p className="text-[9px] leading-snug text-primary/80 italic font-medium">
                                         Vektor-Basis stabil. Konfiguration der Fokus-Köpfe erfolgt in Phase 2
                                     </p>
                                 </div>
                             )}
 
-                            {activePhase >= 3 && <MetricBox label="FFN Activation" value={(pipelineSignal * 100).toFixed(1)} unit="%" color="text-green-500" />}
-                            {activePhase >= 4 && <MetricBox label="Temperature" value={simulator.temperature?.toFixed(2)} color={simulator.temperature > 1.2 ? "text-orange-500" : "text-blue-500"} />}
+                            {activePhase >= 3 && <MetricBox label="FFN Activation" value={(pipelineSignal * 100).toFixed(1)} unit="%" color="text-success" />}
+                            {activePhase >= 4 && <MetricBox label="Temperature" value={simulator.temperature?.toFixed(2)} color={simulator.temperature > 1.2 ? "text-warning" : "text-primary"} />}
                         </div>
                     )}
                 </section>
 
                 {/* INSPECTOR SECTION */}
                 <section className="flex flex-col border-t border-explore-border pt-5 pb-4">
-                    <p className="text-[9px] font-black text-blue-500 mb-4 uppercase tracking-[0.2em] flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${hoveredItem ? 'bg-blue-500 animate-pulse' : 'bg-content-dim/30'}`}></span>
+                    <p className="text-[9px] font-black text-primary mb-4 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <span className={`w-1.5 h-1.5 rounded-full ${hoveredItem ? 'bg-primary animate-pulse' : 'bg-content-dim/30'}`}></span>
                         Pipeline Inspector
                     </p>
 
                     <div className={`min-h-[160px] rounded-xl border transition-all duration-500 ${hoveredItem
                         ? 'bg-explore-item border-blue-500/30 p-4 shadow-sm'
                         : 'border-dashed border-explore-border flex items-center justify-center p-4'
-                    }`}>
+                        }`}>
                         {hoveredItem ? (
                             <div className="animate-in fade-in slide-in-from-right-2 duration-300 w-full">
                                 <h6 className="text-[10px] font-black uppercase mb-4 text-blue-500 border-b border-explore-border pb-1 flex justify-between items-end">
@@ -141,10 +140,10 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                                         if (isMultilineBlock(key, value)) {
                                             return (
                                                 <div key={key} className="flex flex-col gap-2 group/text">
-                                                    <span className="text-[7px] uppercase font-black text-content-dim tracking-widest group-hover/text:text-blue-500/60 transition-colors">
+                                                    <span className="text-[7px] uppercase font-black text-content-dim tracking-widest group-hover/text:text-primary/60 transition-colors">
                                                         {key}
                                                     </span>
-                                                    <p className="text-[10px] leading-relaxed italic text-content-muted font-medium bg-blue-500/5 p-3 rounded-xl border border-blue-500/10 shadow-inner group-hover/text:bg-blue-500/10 transition-all">
+                                                    <p className="text-[10px] leading-relaxed italic text-content-muted font-medium bg-primary/5 p-3 rounded-xl border border-primary/10 shadow-inner group-hover/text:bg-primary/10 transition-all">
                                                         {value}
                                                     </p>
                                                 </div>
@@ -155,7 +154,7 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                                             <div key={key} className="flex flex-col gap-1 group/row">
                                                 <div className="flex justify-between items-end">
                                                     <span className="text-[7px] uppercase font-black text-content-dim tracking-tighter group-hover/row:text-content-muted transition-colors">{key}</span>
-                                                    <span className="text-[10px] font-bold text-blue-500 font-mono tracking-tight group-hover/row:scale-105 transition-transform origin-right">{value}</span>
+                                                    <span className="text-[10px] font-bold text-primary font-mono tracking-tight group-hover/row:scale-105 transition-transform origin-right">{value}</span>
                                                 </div>
                                             </div>
                                         );
@@ -165,7 +164,7 @@ const PhaseSidebar = ({ activePhase, activeScenario, simulator, theme, isExpande
                         ) : (
                             <div className="text-center group">
                                 <div className="text-[8px] uppercase font-black tracking-[0.3em] text-content-dim/30 group-hover:text-content-dim/50 transition-all duration-700">
-                                    System Standby<br/>
+                                    System Standby<br />
                                     <span className="font-normal lowercase tracking-normal">Select item to probe pipeline</span>
                                 </div>
                             </div>

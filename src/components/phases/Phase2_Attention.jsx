@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import PhaseLayout from './../PhaseLayout';
-import { useScenarios } from '../../context/ScenarioContext';
+
 
 const idsMatch = (a, b) => {
   if (a === null || b === null || a === undefined || b === undefined) return false;
@@ -10,25 +10,26 @@ const idsMatch = (a, b) => {
 const generateKey = (profileId, sourceId, headId) =>
   `${String(profileId)}_s${String(sourceId)}_h${String(headId)}`;
 
-const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
-  const { activeScenario } = useScenarios();
-  
-  const { 
-    activeAttention, 
-    activeProfileId, 
-    headOverrides,
-    setHeadOverrides,
-    setSourceTokenId,
-    setSelectedLabel,
-    setTopK,
-    setMinPThreshold,
-    setIsShuffling
-  } = simulator;
+const Phase2_Attention = ({
+  tokens = [],
+  activeAttention = { avgSignal: 1.0, profiles: [] },
+  activeProfileId,
+  setActiveProfileId,
+  headOverrides,
+  setHeadOverrides,
+  updateHeadWeight,
+  scenarioId,
+  theme,
+  setHoveredItem,
+  setSourceTokenId
+}) => {
+  // Removed useScenarios() as we pass scenarioId and data via props
 
   const pipelineSignal = activeAttention?.avgSignal || 1.0;
-  const SESSION_STORAGE_KEY = activeScenario ? `sim_overrides_${activeScenario.id}` : 'sim_overrides_temp';
-  const PERSIST_HEAD_KEY = activeScenario ? `sim_lastHead_${activeScenario.id}` : null;
-  const PERSIST_TOKEN_KEY = activeScenario ? `sim_lastToken_${activeScenario.id}` : null;
+  // Use scenarioId for storage keys to avoid stale state across scenarios
+  const SESSION_STORAGE_KEY = scenarioId ? `sim_overrides_${scenarioId}` : 'sim_overrides_temp';
+  const PERSIST_HEAD_KEY = scenarioId ? `sim_lastHead_${scenarioId}` : null;
+  const PERSIST_TOKEN_KEY = scenarioId ? `sim_lastToken_${scenarioId}` : null;
 
   const [selectedTokenId, setSelectedTokenId] = useState(() => {
     try {
@@ -51,18 +52,19 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
   useEffect(() => {
     if (!headOverrides || isInteracting.current) return;
 
-    const forcedEntry = Object.entries(headOverrides).find(([key, val]) => 
+    const forcedEntry = Object.entries(headOverrides).find(([key, val]) =>
       val === 1.0 && key.startsWith(`${activeProfileId}_`)
     );
 
     if (forcedEntry) {
       const [key] = forcedEntry;
       const match = key.match(/_s([^_]+)_h(\d+)/);
-      
+
       if (match) {
         const [, sId, hId] = match;
         const headNum = parseInt(hId);
 
+        // Auto-select token and head if forced by Goal Seeking from another phase
         if ((!idsMatch(sId, selectedTokenId) || activeHead !== headNum) && key !== lastSyncedKey.current) {
           lastSyncedKey.current = key;
           setSelectedTokenId(sId);
@@ -72,7 +74,7 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
         }
       }
     }
-  }, [headOverrides, activeProfileId, selectedTokenId, activeHead]);
+  }, [headOverrides, activeProfileId, selectedTokenId, activeHead, PERSIST_TOKEN_KEY, PERSIST_HEAD_KEY]);
 
   const handleHeadChange = (hId) => {
     if (isInteracting.current) return;
@@ -88,41 +90,40 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
   const [hoveredTokenId, setHoveredTokenId] = useState(null);
   const [zoom, setZoom] = useState(1);
 
+  // Keep internal session storage sync
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem(SESSION_STORAGE_KEY);
+      // We only restore if overrides are empty (initial load)
       if (saved && setHeadOverrides && Object.keys(headOverrides || {}).length === 0) {
         setHeadOverrides(JSON.parse(saved));
       }
     } catch (e) { }
   }, [SESSION_STORAGE_KEY, setHeadOverrides, headOverrides]);
 
-  const lastScenarioId = useRef(activeScenario?.id);
+  const lastScenarioId = useRef(scenarioId);
 
+  // Reset logic when scenario changes
   useEffect(() => {
-    if (!activeScenario) return;
-    const isNewScenario = lastScenarioId.current !== activeScenario.id;
+    if (!scenarioId) return;
+    const isNewScenario = lastScenarioId.current !== scenarioId;
     if (isNewScenario) {
-      if (setSelectedLabel) setSelectedLabel(null);
-      if (setTopK) setTopK(5);
-      if (setMinPThreshold) setMinPThreshold(0.05);
-      if (setIsShuffling) setIsShuffling(false);
+      // Local reset
       if (setHeadOverrides) setHeadOverrides({});
-      
+
       const savedToken = PERSIST_TOKEN_KEY ? sessionStorage.getItem(PERSIST_TOKEN_KEY) : null;
-      const defaultTokenId = savedToken || activeScenario.phase_0_tokenization?.tokens[activeScenario.phase_0_tokenization?.tokens.length - 2]?.id || activeScenario.phase_0_tokenization?.tokens[0]?.id;
-      
+      // Default to last-but-one token (usually the last input token before generation)
+      const defaultTokenId = savedToken || tokens[tokens.length - 2]?.id || tokens[0]?.id;
+
       if (defaultTokenId) {
         setSelectedTokenId(defaultTokenId);
-        if (setSourceTokenId) setSourceTokenId(defaultTokenId);
       }
-      lastScenarioId.current = activeScenario.id;
+      lastScenarioId.current = scenarioId;
       lastSyncedKey.current = null;
     }
-  }, [activeScenario?.id]);
+  }, [scenarioId, tokens, PERSIST_TOKEN_KEY]);
 
-  const tokens = activeScenario?.phase_0_tokenization?.tokens || [];
-  const profiles = activeScenario?.phase_2_attention?.attention_profiles || [];
+  const profiles = activeAttention?.profiles || [];
 
   const interactiveTokenIds = useMemo(() => {
     const currentProfile = profiles.find(p => p.id === activeProfileId);
@@ -190,9 +191,9 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
       );
     }
     const baseStrength = rule ? parseFloat(rule.strength) : 0;
-    return { 
-      strength: baseStrength * sliderVal, 
-      hasRule: !!rule, 
+    return {
+      strength: baseStrength * sliderVal,
+      hasRule: !!rule,
       explanation: rule?.explanation || "Keine spezifische Regel hinterlegt.",
       label: rule?.label || "Neutrale Kopplung"
     };
@@ -208,11 +209,11 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
     return count;
   };
 
-  const headDefinitions = { 
-    1: { label: "Semantik", desc: "Inhaltliche Ähnlichkeit." }, 
-    2: { label: "Syntax", desc: "Grammatikalische Abhängigkeiten." }, 
-    3: { label: "Logik", desc: "Kausale Zusammenhänge." }, 
-    4: { label: "Struktur", desc: "Formale Abschnitte." } 
+  const headDefinitions = {
+    1: { label: "Semantik", desc: "Inhaltliche Ähnlichkeit." },
+    2: { label: "Syntax", desc: "Grammatikalische Abhängigkeiten." },
+    3: { label: "Logik", desc: "Kausale Zusammenhänge." },
+    4: { label: "Struktur", desc: "Formale Abschnitte." }
   };
 
   useEffect(() => {
@@ -246,12 +247,12 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
     const newVal = parseFloat(val);
     const key = generateKey(activeProfileId, currentSourceTokenId, headId);
     lastSyncedKey.current = key;
-    if (simulator.updateHeadWeight) simulator.updateHeadWeight(key, newVal);
-    const next = { ...(headOverrides || {}), [key]: newVal };
-    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(next));
+    if (updateHeadWeight) updateHeadWeight(key, newVal);
+    // Note: headOverrides is typically updated by the parent via updateHeadWeight calling setHeadOverrides
+    // But if we want optimistic updates we could do it locally, but better to rely on props
   };
 
-  const themeColor = pipelineSignal < 0.4 ? '#ef4444' : (pipelineSignal < 0.7 ? '#f97316' : '#3b82f6');
+  const themeColor = pipelineSignal < 0.4 ? 'var(--color-error)' : (pipelineSignal < 0.7 ? 'var(--color-warning)' : 'var(--color-primary)');
 
   return (
     <PhaseLayout
@@ -259,16 +260,16 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
       subtitle="Justierung der Multi-Head Gewichtung"
       theme={theme}
       badges={[
-        { text: headDefinitions[activeHead].label, className: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
-        { text: Object.keys(headOverrides || {}).length > 0 ? "User Modus" : "Auto-Pilot", className: "bg-amber-500/10 text-amber-500 border-amber-500/20" }
+        { text: headDefinitions[activeHead].label, className: "bg-primary/10 text-primary border-primary/20" },
+        { text: Object.keys(headOverrides || {}).length > 0 ? "User Modus" : "Auto-Pilot", className: "bg-warning/10 text-warning border-warning/20" }
       ]}
       visualization={
         <div className="relative w-full h-full min-h-[420px] flex items-center justify-center overflow-hidden bg-explore-viz rounded-lg">
           <div className="absolute top-6 right-6 flex flex-col gap-2 z-50">
-            <button onClick={() => setZoom(z => Math.min(z + 0.2, 2.5))} className="w-10 h-10 rounded-xl bg-explore-nav border border-explore-border text-content-main hover:bg-blue-600 hover:text-white transition-all shadow-xl font-bold">+</button>
-            <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))} className="w-10 h-10 rounded-xl bg-explore-nav border border-explore-border text-content-main hover:bg-blue-600 hover:text-white transition-all shadow-xl">-</button>
-            <button title="Alle Heads auf 0" onClick={handleZeroAll} className="w-10 h-10 rounded-xl bg-explore-nav border border-explore-border text-content-main flex items-center justify-center mt-2 hover:bg-orange-600 hover:text-white transition-all font-black text-xs">Ø</button>
-            <button title="Reset" onClick={handleReset} className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-xl">
+            <button onClick={() => setZoom(z => Math.min(z + 0.2, 2.5))} className="w-10 h-10 rounded-xl bg-explore-nav border border-explore-border text-content-main hover:bg-primary-hover hover:text-white transition-all shadow-xl font-bold">+</button>
+            <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))} className="w-10 h-10 rounded-xl bg-explore-nav border border-explore-border text-content-main hover:bg-primary-hover hover:text-white transition-all shadow-xl">-</button>
+            <button title="Alle Heads auf 0" onClick={handleZeroAll} className="w-10 h-10 rounded-xl bg-explore-nav border border-explore-border text-content-main flex items-center justify-center mt-2 hover:bg-warning-hover hover:text-white transition-all font-black text-xs">Ø</button>
+            <button title="Reset" onClick={handleReset} className="w-10 h-10 rounded-xl bg-error/10 border border-error/30 text-error flex items-center justify-center hover:bg-error hover:text-white transition-all shadow-xl">
               <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-1.103 4.116c-.806 1.347-2.277 2.25-3.965 2.25-2.5 0-4.5-2.03-4.5-4.5s2.03-4.5 4.5-4.5c1.75 0 3.27 1 4.026 2.484.061.121.23.13.34.023l.592-.572a.124.124 0 0 0 .03-.127C10.17 3.501 8.25 2 6 2 2.69 2 0 4.69 0 8s2.69 6 6 6c2.123 0 3.997-1.123 5.062-2.803.047-.074.024-.173-.05-.223l-.56-.381a.125.125 0 0 0-.121-.011z" /></svg>
             </button>
           </div>
@@ -306,10 +307,10 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
                 const isProfileInteractive = interactiveTokenIds.has(String(token.id).trim());
                 return (
                   <div key={`tk-${token.id}`} className="absolute pointer-events-auto transition-all duration-700 ease-in-out" style={{ left: `${xPct}%`, top: `${yPct}%`, transform: 'translate(-50%, -50%)', zIndex: isCenter ? 50 : 20 }}>
-                    {isProfileInteractive && !isCenter && <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_12px_#3b82f6] border border-white/20" />}
+                    {isProfileInteractive && !isCenter && <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-primary rounded-full animate-pulse shadow-[0_0_12px_var(--color-primary)] border border-white/20" />}
                     {isCenter ? (
                       <div className="flex flex-col items-center">
-                        <span className="text-[8px] font-black uppercase text-blue-500 mb-2 tracking-widest animate-pulse">Query</span>
+                        <span className="text-[8px] font-black uppercase text-primary mb-2 tracking-widest animate-pulse">Query</span>
                         <div className="w-20 h-20 rounded-full border-[6px] bg-explore-nav flex items-center justify-center shadow-2xl" style={{ borderColor: themeColor, boxShadow: `0 0 35px ${themeColor}50` }}>
                           <span className="text-content-main font-black text-[11px] uppercase text-center px-2">{token.text}</span>
                         </div>
@@ -319,7 +320,7 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
                         onClick={() => handleTokenSelect(token.id)}
                         onMouseEnter={() => setHoveredTokenId(token.id)}
                         onMouseLeave={() => setHoveredTokenId(null)}
-                        className={`px-4 py-1.5 rounded-2xl border-2 font-mono text-[10px] font-black cursor-pointer transition-all ${strength > 0.1 ? 'bg-explore-nav border-blue-500 text-content-main shadow-2xl scale-110' : 'bg-explore-item border-explore-border text-content-dim opacity-70 hover:opacity-100'}`}>
+                        className={`px-4 py-1.5 rounded-2xl border-2 font-mono text-[10px] font-black cursor-pointer transition-all ${strength > 0.1 ? 'bg-explore-nav border-primary text-content-main shadow-2xl scale-110' : 'bg-explore-item border-explore-border text-content-dim opacity-70 hover:opacity-100'}`}>
                         {token.text}
                       </div>
                     )}
@@ -332,13 +333,13 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
       }
       controls={[
         <div key="c-heads" className="flex flex-col gap-3">
-          <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">Attention Heads</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-primary">Attention Heads</span>
           <div className="grid grid-cols-2 gap-2">
             {[1, 2, 3, 4].map(h => {
               const activeCount = getHeadActiveCount(h);
               const currentVal = headOverrides[`${activeProfileId}_s${currentSourceTokenId}_h${h}`] ?? 0.7;
               return (
-                <div key={h} onClick={() => handleHeadChange(h)} className={`p-3 rounded-2xl border-2 transition-all cursor-pointer ${activeHead === h ? 'bg-blue-600 border-blue-400 text-white shadow-lg' : 'bg-explore-card border-explore-border text-content-dim hover:border-blue-500/50'}`}>
+                <div key={h} onClick={() => handleHeadChange(h)} className={`p-3 rounded-2xl border-2 transition-all cursor-pointer ${activeHead === h ? 'bg-primary-hover border-primary text-white shadow-lg' : 'bg-explore-card border-explore-border text-content-dim hover:border-primary/50'}`}>
                   <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-2">
                       <span className={`text-[10px] font-black uppercase ${activeHead === h ? 'text-white' : 'text-content-main'}`}>{headDefinitions[h].label}</span>
@@ -346,16 +347,16 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
                         {currentVal.toFixed(2)}
                       </span>
                     </div>
-                    {activeCount > 0 && <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black ${activeHead === h ? 'bg-white text-blue-600' : 'bg-blue-500 text-white'}`}>{activeCount}</div>}
+                    {activeCount > 0 && <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black ${activeHead === h ? 'bg-white text-primary' : 'bg-primary text-white'}`}>{activeCount}</div>}
                   </div>
-                  <input type="range" min="0" max="1" step="0.05" value={currentVal} 
+                  <input type="range" min="0" max="1" step="0.05" value={currentVal}
                     onPointerDown={e => { e.stopPropagation(); isInteracting.current = true; }}
                     onPointerUp={() => { isInteracting.current = false; }}
                     onMouseDown={e => { e.stopPropagation(); isInteracting.current = true; }}
                     onMouseUp={() => { isInteracting.current = false; }}
-                    onClick={e => e.stopPropagation()} 
-                    onInput={e => handleSliderChange(h, e.target.value)} 
-                    className={`w-full h-1.5 rounded-lg appearance-none cursor-ew-resize ${activeHead === h ? 'bg-white/30 accent-white' : 'bg-explore-item accent-blue-500'}`} />
+                    onClick={e => e.stopPropagation()}
+                    onInput={e => handleSliderChange(h, e.target.value)}
+                    className={`w-full h-1.5 rounded-lg appearance-none cursor-ew-resize ${activeHead === h ? 'bg-white/30 accent-white' : 'bg-explore-item accent-primary'}`} />
                 </div>
               );
             })}
@@ -365,7 +366,7 @@ const Phase2_Attention = ({ simulator, setHoveredItem, theme }) => {
           <span className="text-[10px] font-black uppercase tracking-widest text-content-dim">Inference Context</span>
           <div className="grid grid-cols-2 gap-2">
             {profiles.map(p => (
-              <button key={p.id} onClick={() => simulator.setActiveProfileId?.(p.id)} className={`h-12 px-4 rounded-2xl border-2 text-[10px] font-black uppercase transition-all ${activeProfileId === p.id ? 'bg-blue-500/10 border-blue-500 text-blue-500 shadow-inner' : 'bg-explore-card border-explore-border text-content-dim hover:border-blue-500/50'}`}>
+              <button key={p.id} onClick={() => setActiveProfileId && setActiveProfileId(p.id)} className={`h-12 px-4 rounded-2xl border-2 text-[10px] font-black uppercase transition-all ${activeProfileId === p.id ? 'bg-primary/10 border-primary text-primary shadow-inner' : 'bg-explore-card border-explore-border text-content-dim hover:border-primary/50'}`}>
                 {p.label}
               </button>
             ))}

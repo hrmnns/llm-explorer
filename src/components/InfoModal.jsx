@@ -1,6 +1,6 @@
 import React from 'react';
-import { useScenarios } from '../context/ScenarioContext'; 
-import AppConfig from '../utils/AppConfig'; 
+import { useScenarios } from '../context/ScenarioContext';
+import AppConfig from '../utils/AppConfig';
 
 const InfoModal = ({ isOpen, onClose, theme }) => {
   const { scenariosData } = useScenarios();
@@ -14,20 +14,20 @@ const InfoModal = ({ isOpen, onClose, theme }) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
         onClick={onClose}
       />
-      
+
       {/* Modal Content */}
       <div className="relative w-full max-w-lg rounded-[2rem] border border-explore-border shadow-2xl overflow-hidden animate-in zoom-in duration-300 bg-explore-nav text-content-main">
-        
+
         {/* Header mit Branding */}
         <div className="p-8 pb-4 text-center">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20 text-3xl">
+          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/20 text-3xl">
             🧠
           </div>
-          <h2 className="text-2xl font-black uppercase tracking-tighter text-blue-500">
+          <h2 className="text-2xl font-black uppercase tracking-tighter text-primary">
             LLM Explorer <span className="font-light opacity-50 text-sm tracking-normal text-content-dim">CHERWARE.DE</span>
           </h2>
 
@@ -39,7 +39,7 @@ const InfoModal = ({ isOpen, onClose, theme }) => {
               </span>
               <span className="text-content-dim">|</span>
               <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-content-muted">
-                Build: <span className="text-blue-500 font-bold">{appVersion}</span>
+                Build: <span className="text-primary font-bold">{appVersion}</span>
               </span>
             </div>
             <div className="text-[9px] font-mono uppercase tracking-[0.2em] text-content-dim opacity-40">
@@ -51,7 +51,7 @@ const InfoModal = ({ isOpen, onClose, theme }) => {
         {/* Content */}
         <div className="px-8 py-4 space-y-6">
           <div className="space-y-2">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-500">Das Projekt</h4>
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Das Projekt</h4>
             <p className="text-sm text-content-muted leading-relaxed font-medium">
               Dieses Simulation-Tool wurde entwickelt, um die "Black Box" moderner Sprachmodelle (LLMs) zu öffnen. Es macht sichtbar, wie mathematische Vektoren, neuronale Filter und probabilistisches Sampling zusammenwirken, um eine scheinbar menschliche Antwort zu generieren.
             </p>
@@ -78,9 +78,9 @@ const InfoModal = ({ isOpen, onClose, theme }) => {
 
         {/* Footer / Close Button */}
         <div className="p-8 pt-4">
-          <button 
+          <button
             onClick={onClose}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl uppercase tracking-widest transition-all shadow-lg shadow-blue-500/10"
+            className="w-full py-3 bg-primary hover:bg-primary-hover text-white text-xs font-black rounded-xl uppercase tracking-widest transition-all shadow-lg shadow-primary/10"
           >
             Schließen
           </button>

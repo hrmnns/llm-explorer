@@ -18,11 +18,11 @@ const InternalHeader = ({
 
       {/* BRANDING */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20 text-lg">
+        <div className="w-8 h-8 bg-primary-hover rounded-lg flex items-center justify-center shadow-lg shadow-primary/20 text-lg">
           🧠
         </div>
         <div className="flex flex-col">
-          <h1 className="text-sm font-black uppercase tracking-tighter leading-none text-blue-500">
+          <h1 className="text-sm font-black uppercase tracking-tighter leading-none text-primary">
             LLM Explorer
           </h1>
           <span className="text-[8px] font-mono text-content-dim tracking-[0.2em] uppercase leading-tight">
@@ -34,21 +34,24 @@ const InternalHeader = ({
       {/* NAVIGATION */}
       <div className="flex items-center gap-2">
 
-        {/* 1. SZENARIO WECHSELN (Rot-Akzent) */}
+        {/* 1. SZENARIO WECHSELN (Rot-Akzent -> Warning/Error? Let's use Error for 'Reset' vibe or Primary?) 
+            Actually, 'Wechseln' is 'Reform/Restart', often Red or Orange. 
+            Original was Red. Let's use Error.
+        */}
         {showScenarioSelector && (
           <button
             onClick={onRestart}
-            className={`${baseBtnClass} hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-500`}
+            className={`${baseBtnClass} hover:border-error/40 hover:bg-error/10 hover:text-error`}
           >
             <span className="text-xs group-hover:rotate-[-180deg] transition-transform duration-500">↺</span>
             <span className={labelClass}>Wechseln</span>
           </button>
         )}
 
-        {/* 2. WISSENS-DB (Blau-Akzent) */}
+        {/* 2. WISSENS-DB (Blau-Akzent -> Primary) */}
         <button
           onClick={onOpenHelp}
-          className={`${baseBtnClass} hover:border-blue-500/40 hover:bg-blue-500/10 hover:text-blue-500`}
+          className={`${baseBtnClass} hover:border-primary/40 hover:bg-primary/10 hover:text-primary`}
         >
           <span className="text-xs">📖</span>
           <span className={labelClass}>Wissens-DB</span>
