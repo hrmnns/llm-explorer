@@ -11,26 +11,31 @@
         "tokens": [
           {
             "id": "0",
+            "vocab_id": "1409",
             "text": "Die",
             "explanation": "Bestimmter Artikel, Feminin. In diesem Kontext fungiert er als struktureller Anker. Linguistisch leitet er das Subjekt ein und dient im Modell oft als Träger für den übergeordneten Satz-Modus (z.B. historisch vs. aktuell)."
           },
           {
             "id": "1",
+            "vocab_id": "8920",
             "text": "Hauptstadt",
             "explanation": "Ein relationales Nomen, das zwingend eine Ergänzung (von X) erfordert. Es aktiviert im FFN-Layer komplexe Wissensstrukturen über Geografie, Verwaltung und nationale Identität."
           },
           {
             "id": "2",
+            "vocab_id": "1123",
             "text": "von",
             "explanation": "Präposition zur Einleitung des Genitiv-Attributs. Sie stellt die logische Verbindung zwischen dem Konzept 'Hauptstadt' und der spezifischen Entität 'Deutschland' her."
           },
           {
             "id": "3",
+            "vocab_id": "5567",
             "text": "Deutschland",
             "explanation": "Eigennamen-Entität. Dies ist der primäre Fakten-Anker im Vektorraum. Er liefert die notwendigen Koordinaten, um aus der allgemeinen Kategorie 'Hauptstadt' einen spezifischen geografischen Punkt zu extrahieren."
           },
           {
             "id": "4",
+            "vocab_id": "312",
             "text": "ist",
             "explanation": "Kopula-Verb (Sein). Es dient als Prädikat und stellt die Äquivalenz zwischen dem Subjekt und dem kommenden Prädikatsnomen her. Im Decoding-Prozess ist dies der Moment der höchsten Entropie vor der Entscheidung."
           }
@@ -51,8 +56,7 @@
         },
         "token_vectors": [
           {
-            "token_index": 0,
-            "text": "Die",
+            "id": "0",
             "base_vector": [
               -0.9,
               0.8
@@ -64,8 +68,7 @@
             "explanation": "Struktureller Artikel: Dient hier als primäre Quelle für den historischen Pfad (Head 4), um Zustände wie 'ehemalig' zu adressieren."
           },
           {
-            "token_index": 1,
-            "text": "Hauptstadt",
+            "id": "1",
             "base_vector": [
               0.2,
               0.6
@@ -77,8 +80,7 @@
             "explanation": "Relationales Nomen: Besetzt eine zentrale Position im Vektorraum und wartet auf die Spezifizierung durch die 'Deutschland'-Entität."
           },
           {
-            "token_index": 2,
-            "text": "von",
+            "id": "2",
             "base_vector": [
               -0.7,
               0.9
@@ -90,8 +92,7 @@
             "explanation": "Connector: Erzeugt ein starkes Signal für geografische Relationen und Distanzberechnungen (Head 1)."
           },
           {
-            "token_index": 3,
-            "text": "Deutschland",
+            "id": "3",
             "base_vector": [
               0.95,
               -0.8
@@ -103,8 +104,7 @@
             "explanation": "Massive Entität: Liefert die höchste semantische Dichte und fungiert als Zielpunkt für fast alle Attention-Heads."
           },
           {
-            "token_index": 4,
-            "text": "ist",
+            "id": "4",
             "base_vector": [
               -0.85,
               0.7
@@ -118,6 +118,9 @@
         ]
       },
       "phase_2_attention": {
+        "settings": {
+          "default_head_strength": 0.85
+        },
         "attention_profiles": [
           {
             "id": "mindset-selector",
@@ -256,56 +259,67 @@
         "tokens": [
           {
             "id": "0",
+            "vocab_id": "1409",
             "text": "Der",
             "explanation": "Start-Token."
           },
           {
             "id": "1",
+            "vocab_id": "4115",
             "text": "Bank",
             "explanation": "Polysem 1 (Finanz)."
           },
           {
             "id": "2",
+            "vocab_id": "31222",
             "text": "räuber",
             "explanation": "Kontext-Geber für Verbrechen."
           },
           {
             "id": "3",
+            "vocab_id": "312",
             "text": "sitzt",
             "explanation": "Verb."
           },
           {
             "id": "4",
+            "vocab_id": "1123",
             "text": "auf",
             "explanation": "Präposition."
           },
           {
             "id": "5",
+            "vocab_id": "998",
             "text": "einer",
             "explanation": "Artikel."
           },
           {
             "id": "6",
+            "vocab_id": "4115",
             "text": "Bank",
             "explanation": "Polysem 2 (Möbel)."
           },
           {
             "id": "7",
+            "vocab_id": "1209",
             "text": "vor",
             "explanation": "Präposition."
           },
           {
             "id": "8",
+            "vocab_id": "1409",
             "text": "der",
             "explanation": "Artikel."
           },
           {
             "id": "9",
+            "vocab_id": "4115",
             "text": "Bank",
             "explanation": "Polysem 3 (Gebäude)."
           },
           {
             "id": "10",
+            "vocab_id": "49199",
             "text": ".",
             "explanation": "Query-Token / Satzende."
           }
@@ -326,8 +340,7 @@
         },
         "token_vectors": [
           {
-            "token_index": 0,
-            "text": "Der",
+            "id": "0",
             "base_vector": [
               -0.5,
               0.0
@@ -338,8 +351,7 @@
             ]
           },
           {
-            "token_index": 1,
-            "text": "Bank (1)",
+            "id": "1",
             "base_vector": [
               0.8,
               -0.4
@@ -350,8 +362,7 @@
             ]
           },
           {
-            "token_index": 2,
-            "text": "räuber",
+            "id": "2",
             "base_vector": [
               0.3,
               0.9
@@ -362,8 +373,7 @@
             ]
           },
           {
-            "token_index": 3,
-            "text": "sitzt",
+            "id": "3",
             "base_vector": [
               -0.2,
               0.6
@@ -374,8 +384,7 @@
             ]
           },
           {
-            "token_index": 4,
-            "text": "auf",
+            "id": "4",
             "base_vector": [
               -0.7,
               -0.1
@@ -386,8 +395,7 @@
             ]
           },
           {
-            "token_index": 5,
-            "text": "einer",
+            "id": "5",
             "base_vector": [
               -0.4,
               0.0
@@ -398,8 +406,7 @@
             ]
           },
           {
-            "token_index": 6,
-            "text": "Bank (2)",
+            "id": "6",
             "base_vector": [
               0.8,
               -0.4
@@ -410,8 +417,7 @@
             ]
           },
           {
-            "token_index": 7,
-            "text": "vor",
+            "id": "7",
             "base_vector": [
               -0.6,
               -0.2
@@ -422,8 +428,7 @@
             ]
           },
           {
-            "token_index": 8,
-            "text": "der",
+            "id": "8",
             "base_vector": [
               -0.5,
               0.0
@@ -434,8 +439,7 @@
             ]
           },
           {
-            "token_index": 9,
-            "text": "Bank (3)",
+            "id": "9",
             "base_vector": [
               0.8,
               -0.4
@@ -446,8 +450,7 @@
             ]
           },
           {
-            "token_index": 10,
-            "text": ".",
+            "id": "10",
             "base_vector": [
               0.0,
               -1.0
@@ -460,6 +463,9 @@
         ]
       },
       "phase_2_attention": {
+        "settings": {
+          "default_head_strength": 0.6
+        },
         "attention_profiles": [
           {
             "id": "triple-context-resolver",
@@ -468,48 +474,48 @@
               {
                 "head": 1,
                 "label": "context_r_b",
-                "source": 2,
-                "target": 1,
+                "source": "2",
+                "target": "1",
                 "strength": 2.0,
                 "explanation": "Kontext: Räuber -> Bank (1)"
               },
               {
                 "head": 1,
                 "label": "readout_crime",
-                "source": 10,
-                "target": 1,
+                "source": "10",
+                "target": "1",
                 "strength": 2.0,
                 "explanation": "Readout: Punkt -> Bank (1)"
               },
               {
                 "head": 2,
                 "label": "context_a_b",
-                "source": 4,
-                "target": 6,
+                "source": "4",
+                "target": "6",
                 "strength": 1.8,
                 "explanation": "Kontext: auf -> Bank (2)"
               },
               {
                 "head": 2,
                 "label": "readout_furniture",
-                "source": 10,
-                "target": 6,
+                "source": "10",
+                "target": "6",
                 "strength": 1.8,
                 "explanation": "Readout: Punkt -> Bank (2)"
               },
               {
                 "head": 3,
                 "label": "context_v_b",
-                "source": 7,
-                "target": 9,
+                "source": "7",
+                "target": "9",
                 "strength": 1.5,
                 "explanation": "Kontext: vor -> Bank (3)"
               },
               {
                 "head": 3,
                 "label": "readout_arch",
-                "source": 10,
-                "target": 9,
+                "source": "10",
+                "target": "9",
                 "strength": 1.5,
                 "explanation": "Readout: Punkt -> Bank (3)"
               }
